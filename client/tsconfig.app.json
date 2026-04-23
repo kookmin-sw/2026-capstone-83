@@ -1,0 +1,52 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".", // 기준 경로를 프로젝트 루트로 설정[cite: 5]
+    "paths": {
+      "app/*": [
+        "src/app/*"
+      ],
+      "pages/*": [
+        "src/pages/*"
+      ],
+      "widgets/*": [
+        "src/widgets/*"
+      ],
+      "features/*": [
+        "src/features/*"
+      ],
+      "entities/*": [
+        "src/entities/*"
+      ],
+      "shared/*": [
+        "src/shared/*"
+      ] // shared 레이어 설정[cite: 5]
+    },
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "es2023",
+    "lib": [
+      "ES2023",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "esnext",
+    "types": [
+      "vite/client"
+    ],
+    "skipLibCheck": true,
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+    /* Linting */
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true
+  },
+  "include": [
+    "src"
+  ]
+}
