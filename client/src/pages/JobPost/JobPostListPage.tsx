@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
-import { JobPostList } from 'widgets/jobpost-list/ui/JobPostList';
+import { JobPostList } from 'widgets/jobPost/jobpost-list/ui/JobPostList';
+
 
 const JobPostListPage = () => {
   return (

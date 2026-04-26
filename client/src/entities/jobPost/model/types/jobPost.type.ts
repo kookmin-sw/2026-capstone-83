@@ -33,6 +33,38 @@ export interface JobPostDetail extends JobPost {
   items?: string[]; // 준비물
 }
 
+export type JobPostOverviewProps = Pick<
+  JobPostDetail,
+  'id' |
+  'title' |
+  'company' |
+  'createdAt' |
+  'wage' |
+  'wageType' |
+  'deadline' |
+  'totalSlots' |
+  'filledSlots' |
+  'companyLogoUrl' |
+  'workDate' |
+  'workStart' |
+  'workEnd'
+>;
+
+export type JobPostWorkContentProps = Pick<
+  JobPostDetail,
+  'requirements' |
+  'benefits' |
+  'tasks' |
+  'items'
+>;
+
+export type JobPostDescriptionProps = Pick<
+  JobPostDetail,
+  'description' |
+  'descriptionUrl'
+>;
+
+
 //공고 생성 요청 타입
 // 회사 이미지와 상세 정보 이미지는 일단 File 타입으로 정의, 
 // 프론트에서 s3 업로드 후 URL로 변환해서 백엔드에 전달할 지, 아니면 백엔드에서 직접 s3 업로드할 지 논의 필요

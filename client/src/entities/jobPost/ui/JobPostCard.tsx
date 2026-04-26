@@ -6,6 +6,7 @@ import type { JobPost } from '../model/types/jobPost.type';
 import { Banknote, Calendar, Clock, MapPin } from 'lucide-react';
 import { APPLICATION_STATUS_MAP, RECRUITMENT_STATUS_MAP } from '../model/constants';
 import { Link } from 'react-router-dom';
+import { calculateDDay } from 'shared/lib/calculateDDay';
 
 interface JobPostCardProps {
   data: JobPost;
@@ -35,12 +36,7 @@ export const JobPostCard = ({ data, extraActions }: JobPostCardProps) => {
   const recruitInfo = RECRUITMENT_STATUS_MAP[postStatus];
   const applyInfo = APPLICATION_STATUS_MAP[applyStatus];
 
-  // D-Day 계산 로직 (예시)
-  const calculateDDay = (deadline: string) => {
-    const diff = new Date(deadline).getTime() - new Date().getTime();
-    const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
-    return days <= 0 ? 'D-Day' : `D-${days}`;
-  };
+
 
   return (
     <Link to={`/jobpost/${id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>

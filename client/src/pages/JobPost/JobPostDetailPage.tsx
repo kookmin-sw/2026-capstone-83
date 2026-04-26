@@ -1,10 +1,17 @@
-import React from 'react'
+
+import { useParams } from 'react-router-dom';
+
 import styled from 'styled-components'
+import { JobPostDetailContent } from 'widgets/jobPost/JobPostDetail/ui/JobPostDetailContent';
 
 const JobPostDetailPage = () => {
+
+  const { id } = useParams();
+
+
   return (
     <JobPostDetailPageStyle>
-      <h1>JobPostDetailPage</h1>
+      <JobPostDetailContent postId={Number(id)} />
     </JobPostDetailPageStyle>
   )
 }
