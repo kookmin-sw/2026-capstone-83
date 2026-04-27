@@ -3,10 +3,13 @@ package com.itda.service;
 import com.itda.dto.request.JobPostFilterRequest;
 import com.itda.dto.response.CursorPageResponse;
 import com.itda.dto.response.JobPostCardResponse;
+import com.itda.entity.Workplace;
 import com.itda.entity.JobPost;
 import com.itda.enums.JobPostStatus;
 import com.itda.exception.NotFoundException;
 import com.itda.repository.JobPostRepository;
+import com.itda.dto.request.JobPostCreateRequest;
+import com.itda.dto.response.JobPostDetailResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -61,11 +64,11 @@ public class JobPostService {
      * 공고 상세 조회
      * 공고 카드 클릭 시 상세 페이지에서 사용
      */
-    public JobPost getJobPost(Long id) {
-        return jobPostRepository.findById(id)
+    public JobPostDetailResponse getJobPost(Long id) {
+        JobPost post = jobPostRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
+        return JobPostDetailResponse.from(post);
     }
-
     /**
      * 고용주 본인 공고 목록 조회
      */
@@ -82,10 +85,12 @@ public class JobPostService {
 
     /**
      * 공고 등록
+     * JobPostCreateRequest DTO로 받아서 Entity 변환 후 저장
      */
     @Transactional
-    public JobPost createJobPost(JobPost jobPost) {
-        return jobPostRepository.save(jobPost);
+    public JobPostDetailResponse createJobPost(JobPostCreateRequest request, Workplace workplace) {
+        JobPost saved = jobPostRepository.save(request.toEntity(workplace));
+        return JobPostDetailResponse.from(saved);
     }
 
     /**
