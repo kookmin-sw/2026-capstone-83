@@ -1,0 +1,1147 @@
+[
+  {
+    "id": 1,
+    "title": "성수동 신축 현장 자재 운반",
+    "company": "워크브릿지 건설",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=WorkBridge",
+    "location": "서울 성동구 성수동",
+    "wage": 165000,
+    "wageType": "DAILY",
+    "totalSlots": 20,
+    "filledSlots": 8,
+    "workDate": "2026/05/10",
+    "workStart": "08:00",
+    "workEnd": "17:00",
+    "leftDays": 15,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/05/05",
+    "liked": false,
+    "description": "성수동 아파트 신축 현장에서 자재 정리를 도와주실 분을 모집합니다.",
+    "descriptionUrl": "https://picsum.photos/seed/1/800/1200",
+    "createdAt": "2026/04/20",
+    "updatedAt": "2026/04/20",
+    "requirements": [
+      "신체 건강하신 분",
+      "안전화 소지자"
+    ],
+    "benefits": [
+      "중식 제공",
+      "간식 제공"
+    ],
+    "tasks": [
+      "자재 운반",
+      "폐자재 정리",
+      "현장 청소"
+    ],
+    "items": [
+      "안전화",
+      "장갑"
+    ]
+  },
+  {
+    "id": 2,
+    "title": "강남역 카페 테라스 서빙",
+    "company": "스타커피 강남점",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=StarCoffee",
+    "location": "서울 강남구 역삼동",
+    "wage": 12000,
+    "wageType": "HOURLY",
+    "totalSlots": 3,
+    "filledSlots": 3,
+    "workDate": "2026/04/28",
+    "workStart": "12:00",
+    "workEnd": "18:00",
+    "leftDays": 2,
+    "postStatus": "ALMOST_CLOSED",
+    "applyStatus": "APPLYING",
+    "deadline": "2026/04/25",
+    "liked": true,
+    "description": "주말 테라스 구역 서빙 및 고객 응대 업무입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/2/800/1200",
+    "createdAt": "2026/04/21",
+    "updatedAt": "2026/04/22",
+    "requirements": [
+      "관련 업무 유경험자 우대",
+      "밝은 미소"
+    ],
+    "benefits": [
+      "커피 무료 제공",
+      "식대 지원"
+    ],
+    "tasks": [
+      "주문 확인",
+      "음식 서빙",
+      "테이블 정리"
+    ],
+    "items": [
+      "흰색 셔츠",
+      "검정 슬랙스"
+    ]
+  },
+  {
+    "id": 3,
+    "title": "물류 센터 상하차 보조",
+    "company": "로켓배송 파트너스",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=RocketLogistics",
+    "location": "경기 용인시 처인구",
+    "wage": 145000,
+    "wageType": "DAILY",
+    "totalSlots": 50,
+    "filledSlots": 48,
+    "workDate": "2026/05/01",
+    "workStart": "20:00",
+    "workEnd": "05:00",
+    "leftDays": 4,
+    "postStatus": "ALMOST_CLOSED",
+    "applyStatus": "HIRED",
+    "deadline": "2026/04/28",
+    "liked": false,
+    "description": "야간 물류 상하차 보조 업무입니다. 통근버스 운행합니다.",
+    "descriptionUrl": "https://picsum.photos/seed/3/800/1200",
+    "createdAt": "2026/04/22",
+    "updatedAt": "2026/04/22",
+    "requirements": [
+      "야간 근무 가능자",
+      "체력 좋으신 분"
+    ],
+    "benefits": [
+      "통근버스",
+      "야간 수당",
+      "고용보험"
+    ],
+    "tasks": [
+      "택배 분류",
+      "상하차 지원"
+    ],
+    "items": [
+      "편한 복장"
+    ]
+  },
+  {
+    "id": 4,
+    "title": "공연장 진행 요원 (단기)",
+    "company": "해피이벤트",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=HappyEvent",
+    "location": "서울 송파구 잠실동",
+    "wage": 11000,
+    "wageType": "HOURLY",
+    "totalSlots": 100,
+    "filledSlots": 60,
+    "workDate": "2026/06/15",
+    "workStart": "14:00",
+    "workEnd": "22:00",
+    "leftDays": 45,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/06/10",
+    "liked": true,
+    "description": "유명 가수의 콘서트 현장에서 관객 안내 및 질서 유지를 담당합니다.",
+    "descriptionUrl": "https://picsum.photos/seed/4/800/1200",
+    "createdAt": "2026/04/23",
+    "updatedAt": "2026/04/23",
+    "requirements": [
+      "성실함",
+      "검정색 바지 소지"
+    ],
+    "benefits": [
+      "공연 관람 가능",
+      "저녁 식사"
+    ],
+    "tasks": [
+      "티켓 확인",
+      "관객 안내",
+      "좌석 배치"
+    ],
+    "items": [
+      "검정 운동화"
+    ]
+  },
+  {
+    "id": 5,
+    "title": "사무 보조 및 데이터 입력",
+    "company": "데이터 솔루션즈",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=DataSolutions",
+    "location": "서울 구로구",
+    "wage": 2600000,
+    "wageType": "MONTHLY",
+    "totalSlots": 2,
+    "filledSlots": 1,
+    "workDate": "2026/05/01",
+    "workStart": "09:00",
+    "workEnd": "18:00",
+    "leftDays": 5,
+    "postStatus": "OPEN",
+    "applyStatus": "SELECTED",
+    "deadline": "2026/04/30",
+    "liked": false,
+    "description": "간단한 엑셀 문서 정리 및 데이터 업로드 업무입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/5/800/1200",
+    "createdAt": "2026/04/24",
+    "updatedAt": "2026/04/25",
+    "requirements": [
+      "한글/엑셀 활용 가능자"
+    ],
+    "benefits": [
+      "연차",
+      "사대보험",
+      "커피 무제한"
+    ],
+    "tasks": [
+      "엑셀 입력",
+      "서류 정리"
+    ],
+    "items": [
+      "개인 텀블러"
+    ]
+  },
+  {
+    "id": 6,
+    "title": "백화점 주차 안내",
+    "company": "그랜드몰",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=GrandMall",
+    "location": "부산 해운대구",
+    "wage": 11500,
+    "wageType": "HOURLY",
+    "totalSlots": 10,
+    "filledSlots": 2,
+    "workDate": "2026/05/20",
+    "workStart": "10:00",
+    "workEnd": "19:00",
+    "leftDays": 25,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/05/15",
+    "liked": false,
+    "description": "주말 백화점 주차장 진입 안내 업무입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/6/800/1200",
+    "createdAt": "2026/04/25",
+    "updatedAt": "2026/04/25",
+    "requirements": [
+      "운전면허 소지자 우대"
+    ],
+    "benefits": [
+      "유니폼 지급",
+      "백화점 할인"
+    ],
+    "tasks": [
+      "주차 안내",
+      "차량 이동"
+    ],
+    "items": [
+      "검정 구두"
+    ]
+  },
+  {
+    "id": 7,
+    "title": "주방 보조 및 설거지",
+    "company": "맛있는 밥집",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=YummyFood",
+    "location": "서울 마포구 망원동",
+    "wage": 13000,
+    "wageType": "HOURLY",
+    "totalSlots": 2,
+    "filledSlots": 1,
+    "workDate": "2026/05/01",
+    "workStart": "18:00",
+    "workEnd": "22:00",
+    "leftDays": 6,
+    "postStatus": "OPEN",
+    "applyStatus": "REJECTED",
+    "deadline": "2026/04/28",
+    "liked": true,
+    "description": "저녁 시간대 주방 보조 및 설거지 하실 분 구합니다.",
+    "descriptionUrl": "https://picsum.photos/seed/7/800/1200",
+    "createdAt": "2026/04/20",
+    "updatedAt": "2026/04/21",
+    "requirements": [
+      "보건증 소지자 필수"
+    ],
+    "benefits": [
+      "저녁 식사",
+      "퇴근 지원비"
+    ],
+    "tasks": [
+      "식기 세척",
+      "식재료 손질"
+    ],
+    "items": [
+      "앞치마"
+    ]
+  },
+  {
+    "id": 8,
+    "title": "전시회 안내 가이드",
+    "company": "아트갤러리",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=ArtGallery",
+    "location": "서울 종로구",
+    "wage": 11000,
+    "wageType": "HOURLY",
+    "totalSlots": 5,
+    "filledSlots": 4,
+    "workDate": "2026/06/01",
+    "workStart": "09:30",
+    "workEnd": "18:30",
+    "leftDays": 38,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/05/28",
+    "liked": true,
+    "description": "미디어 아트 전시회 도슨트 보조 및 입장 안내입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/8/800/1200",
+    "createdAt": "2026/04/22",
+    "updatedAt": "2026/04/22",
+    "requirements": [
+      "미술 전공자 우대",
+      "영어 가능자"
+    ],
+    "benefits": [
+      "무료 전시 관람",
+      "활동 증명서"
+    ],
+    "tasks": [
+      "작품 안내",
+      "입장권 확인"
+    ],
+    "items": [
+      "단정한 정장"
+    ]
+  },
+  {
+    "id": 9,
+    "title": "이사 짐 운반 보조",
+    "company": "신속이사",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=FastMove",
+    "location": "인천 미추홀구",
+    "wage": 180000,
+    "wageType": "DAILY",
+    "totalSlots": 4,
+    "filledSlots": 0,
+    "workDate": "2026/05/05",
+    "workStart": "07:30",
+    "workEnd": "16:30",
+    "leftDays": 10,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/05/02",
+    "liked": false,
+    "description": "가정집 포장 이사 상하차 보조 업무입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/9/800/1200",
+    "createdAt": "2026/04/23",
+    "updatedAt": "2026/04/23",
+    "requirements": [
+      "힘 좋으신 분",
+      "성실한 분"
+    ],
+    "benefits": [
+      "아침/점심 제공",
+      "인센티브"
+    ],
+    "tasks": [
+      "가구 운반",
+      "박스 포장"
+    ],
+    "items": [
+      "작업복"
+    ]
+  },
+  {
+    "id": 10,
+    "title": "반려견 산책 알바",
+    "company": "펫프렌즈",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=PetFriends",
+    "location": "서울 서초구",
+    "wage": 15000,
+    "wageType": "HOURLY",
+    "totalSlots": 1,
+    "filledSlots": 1,
+    "workDate": "2026/04/30",
+    "workStart": "15:00",
+    "workEnd": "17:00",
+    "leftDays": 3,
+    "postStatus": "CLOSED",
+    "applyStatus": "HIRED",
+    "deadline": "2026/04/27",
+    "liked": true,
+    "description": "대형견 산책 보조 및 돌봄 업무입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/10/800/1200",
+    "createdAt": "2026/04/24",
+    "updatedAt": "2026/04/24",
+    "requirements": [
+      "강아지를 사랑하시는 분",
+      "대형견 통제 가능"
+    ],
+    "benefits": [
+      "간식 지원",
+      "자유로운 분위기"
+    ],
+    "tasks": [
+      "동네 산책",
+      "물 주기"
+    ],
+    "items": [
+      "편한 운동화"
+    ]
+  },
+  {
+    "id": 11,
+    "title": "편의점 야간 스태프",
+    "company": "GS27 성수점",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=GS27",
+    "location": "서울 성동구",
+    "wage": 10500,
+    "wageType": "HOURLY",
+    "totalSlots": 1,
+    "filledSlots": 0,
+    "workDate": "2026/05/15",
+    "workStart": "22:00",
+    "workEnd": "06:00",
+    "leftDays": 20,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/05/10",
+    "liked": false,
+    "description": "야간 상품 진열 및 계산 업무입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/11/800/1200",
+    "createdAt": "2026/04/25",
+    "updatedAt": "2026/04/25",
+    "requirements": [
+      "인근 거주자",
+      "장기 근무 가능"
+    ],
+    "benefits": [
+      "야간 수당",
+      "유니폼 제공"
+    ],
+    "tasks": [
+      "포스 계산",
+      "물건 진열",
+      "청소"
+    ],
+    "items": [
+      "보건증"
+    ]
+  },
+  {
+    "id": 12,
+    "title": "팝업스토어 판매 보조",
+    "company": "트렌디샵",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=TrendyShop",
+    "location": "서울 성동구 성수동",
+    "wage": 12000,
+    "wageType": "HOURLY",
+    "totalSlots": 8,
+    "filledSlots": 5,
+    "workDate": "2026/06/05",
+    "workStart": "11:00",
+    "workEnd": "20:00",
+    "leftDays": 40,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/06/01",
+    "liked": true,
+    "description": "유명 캐릭터 굿즈 팝업스토어 안내 및 결제 보조입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/12/800/1200",
+    "createdAt": "2026/04/26",
+    "updatedAt": "2026/04/26",
+    "requirements": [
+      "활발한 성격",
+      "판매 유경험자"
+    ],
+    "benefits": [
+      "굿즈 할인",
+      "간식 제공"
+    ],
+    "tasks": [
+      "줄 세우기",
+      "상품 안내",
+      "포스"
+    ],
+    "items": [
+      "개인 소장 패션"
+    ]
+  },
+  {
+    "id": 13,
+    "title": "세차장 손세차 보조",
+    "company": "반짝세차",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=ShinyCar",
+    "location": "서울 동대문구",
+    "wage": 140000,
+    "wageType": "DAILY",
+    "totalSlots": 2,
+    "filledSlots": 2,
+    "workDate": "2026/04/25",
+    "workStart": "09:00",
+    "workEnd": "18:00",
+    "leftDays": 0,
+    "postStatus": "CLOSED",
+    "applyStatus": "HIRED",
+    "deadline": "2026/04/24",
+    "liked": false,
+    "description": "실내 세차 및 물기 제거 보조원 모집합니다.",
+    "descriptionUrl": "https://picsum.photos/seed/13/800/1200",
+    "createdAt": "2026/04/20",
+    "updatedAt": "2026/04/24",
+    "requirements": [
+      "꼼꼼하신 분",
+      "성실함"
+    ],
+    "benefits": [
+      "점심 식사",
+      "우천 시 휴무"
+    ],
+    "tasks": [
+      "물기 닦기",
+      "진공 청소"
+    ],
+    "items": [
+      "장화"
+    ]
+  },
+  {
+    "id": 14,
+    "title": "영화 촬영 엑스트라",
+    "company": "필름픽쳐스",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=FilmPictures",
+    "location": "서울 영등포구 여의도",
+    "wage": 110000,
+    "wageType": "DAILY",
+    "totalSlots": 30,
+    "filledSlots": 25,
+    "workDate": "2026/05/20",
+    "workStart": "06:00",
+    "workEnd": "18:00",
+    "leftDays": 23,
+    "postStatus": "OPEN",
+    "applyStatus": "APPLYING",
+    "deadline": "2026/05/17",
+    "liked": true,
+    "description": "사극 배경 시장 상인 역할 엑스트라 모집합니다.",
+    "descriptionUrl": "https://picsum.photos/seed/14/800/1200",
+    "createdAt": "2026/04/21",
+    "updatedAt": "2026/04/21",
+    "requirements": [
+      "염색하지 않은 머리",
+      "문신 없는 분"
+    ],
+    "benefits": [
+      "촬영 식사",
+      "연예인 관람"
+    ],
+    "tasks": [
+      "배경 인원",
+      "연기 보조"
+    ],
+    "items": [
+      "흰색 런닝"
+    ]
+  },
+  {
+    "id": 15,
+    "title": "아파트 단지 조경 관리",
+    "company": "푸른조경",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=GreenLandscape",
+    "location": "서울 송파구",
+    "wage": 155000,
+    "wageType": "DAILY",
+    "totalSlots": 5,
+    "filledSlots": 1,
+    "workDate": "2026/05/12",
+    "workStart": "08:30",
+    "workEnd": "16:30",
+    "leftDays": 15,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/05/07",
+    "liked": false,
+    "description": "화단 꽃 심기 및 잔디 깎기 보조 업무입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/15/800/1200",
+    "createdAt": "2026/04/22",
+    "updatedAt": "2026/04/22",
+    "requirements": [
+      "야외 작업 가능자"
+    ],
+    "benefits": [
+      "생수 무제한",
+      "우비 지급"
+    ],
+    "tasks": [
+      "꽃 심기",
+      "잡초 제거"
+    ],
+    "items": [
+      "모자",
+      "팔토시"
+    ]
+  },
+  {
+    "id": 16,
+    "title": "행사장 주차 유도",
+    "company": "시큐리티 가드",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=SecurityGuard",
+    "location": "경기 고양시 일산킨텍스",
+    "wage": 12000,
+    "wageType": "HOURLY",
+    "totalSlots": 20,
+    "filledSlots": 18,
+    "workDate": "2026/05/22",
+    "workStart": "09:00",
+    "workEnd": "18:00",
+    "leftDays": 25,
+    "postStatus": "ALMOST_CLOSED",
+    "applyStatus": "NONE",
+    "deadline": "2026/05/20",
+    "liked": false,
+    "description": "박람회 기간 주차장 유도 및 차량 안내입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/16/800/1200",
+    "createdAt": "2026/04/23",
+    "updatedAt": "2026/04/23",
+    "requirements": [
+      "경광봉 유경험자 우대"
+    ],
+    "benefits": [
+      "식권 지급",
+      "교통비 지원"
+    ],
+    "tasks": [
+      "차량 유도",
+      "만차 안내"
+    ],
+    "items": [
+      "편한 신발"
+    ]
+  },
+  {
+    "id": 17,
+    "title": "병원 검진 안내 보조",
+    "company": "서울메디컬",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=SeoulMedical",
+    "location": "서울 강남구",
+    "wage": 2800000,
+    "wageType": "MONTHLY",
+    "totalSlots": 3,
+    "filledSlots": 2,
+    "workDate": "2026/06/01",
+    "workStart": "08:00",
+    "workEnd": "17:00",
+    "leftDays": 35,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/05/25",
+    "liked": true,
+    "description": "건강검진 센터 층별 안내 및 탈의실 관리입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/17/800/1200",
+    "createdAt": "2026/04/24",
+    "updatedAt": "2026/04/24",
+    "requirements": [
+      "서비스 정신 투철"
+    ],
+    "benefits": [
+      "직원 건강검진 할인",
+      "점심 제공"
+    ],
+    "tasks": [
+      "고객 안내",
+      "검진복 배부"
+    ],
+    "items": [
+      "단정한 용모"
+    ]
+  },
+  {
+    "id": 18,
+    "title": "축구 경기장 안전요원",
+    "company": "스포츠가드",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=SportsGuard",
+    "location": "서울 마포구 상암동",
+    "wage": 11000,
+    "wageType": "HOURLY",
+    "totalSlots": 50,
+    "filledSlots": 10,
+    "workDate": "2026/06/10",
+    "workStart": "16:00",
+    "workEnd": "21:00",
+    "leftDays": 42,
+    "postStatus": "OPEN",
+    "applyStatus": "APPLYING",
+    "deadline": "2026/06/05",
+    "liked": false,
+    "description": "K리그 홈 경기 관중석 질서 유지 보조 업무입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/18/800/1200",
+    "createdAt": "2026/04/25",
+    "updatedAt": "2026/04/25",
+    "requirements": [
+      "신체 건장한 분",
+      "검정색 바지"
+    ],
+    "benefits": [
+      "경기 관람",
+      "간식 지급"
+    ],
+    "tasks": [
+      "관중석 질서 유지",
+      "입구 통제"
+    ],
+    "items": [
+      "검정 운동화"
+    ]
+  },
+  {
+    "id": 19,
+    "title": "베이커리 주방 보조",
+    "company": "브레드하우스",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=BreadHouse",
+    "location": "서울 동작구 노량진",
+    "wage": 10000,
+    "wageType": "HOURLY",
+    "totalSlots": 2,
+    "filledSlots": 0,
+    "workDate": "2026/05/01",
+    "workStart": "06:00",
+    "workEnd": "11:00",
+    "leftDays": 6,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/04/30",
+    "liked": true,
+    "description": "빵 반죽 보조 및 오븐 관리 업무입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/19/800/1200",
+    "createdAt": "2026/04/20",
+    "updatedAt": "2026/04/20",
+    "requirements": [
+      "제빵 기능사 준비생 우대",
+      "보건증"
+    ],
+    "benefits": [
+      "빵 무료 제공",
+      "장기 근무 환영"
+    ],
+    "tasks": [
+      "성형 보조",
+      "팬 정리"
+    ],
+    "items": [
+      "위생모",
+      "앞치마"
+    ]
+  },
+  {
+    "id": 20,
+    "title": "전단지 배포 알바",
+    "company": "피자왕",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=PizzaKing",
+    "location": "서울 은평구",
+    "wage": 13000,
+    "wageType": "HOURLY",
+    "totalSlots": 3,
+    "filledSlots": 2,
+    "workDate": "2026/04/28",
+    "workStart": "16:00",
+    "workEnd": "20:00",
+    "leftDays": 2,
+    "postStatus": "ALMOST_CLOSED",
+    "applyStatus": "NONE",
+    "deadline": "2026/04/26",
+    "liked": false,
+    "description": "아파트 단지 전단지 배부 업무입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/20/800/1200",
+    "createdAt": "2026/04/21",
+    "updatedAt": "2026/04/21",
+    "requirements": [
+      "발 빠른 분",
+      "성실한 분"
+    ],
+    "benefits": [
+      "피자 할인권",
+      "생수 지급"
+    ],
+    "tasks": [
+      "전단지 배포"
+    ],
+    "items": [
+      "편한 운동화"
+    ]
+  },
+  {
+    "id": 21,
+    "title": "가구 조립 보조",
+    "company": "홈퍼니처",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=HomeFurniture",
+    "location": "서울 용산구 한남동",
+    "wage": 145000,
+    "wageType": "DAILY",
+    "totalSlots": 2,
+    "filledSlots": 1,
+    "workDate": "2026/05/08",
+    "workStart": "09:00",
+    "workEnd": "18:00",
+    "leftDays": 12,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/05/04",
+    "liked": false,
+    "description": "가정집 가구 배송 및 조립 보조 업무입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/21/800/1200",
+    "createdAt": "2026/04/22",
+    "updatedAt": "2026/04/22",
+    "requirements": [
+      "드릴 사용 가능자",
+      "비흡연자 선호"
+    ],
+    "benefits": [
+      "점심 식사",
+      "상해보험"
+    ],
+    "tasks": [
+      "가구 운반",
+      "조립 지원"
+    ],
+    "items": [
+      "장갑"
+    ]
+  },
+  {
+    "id": 22,
+    "title": "서점 도서 정리",
+    "company": "북월드",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=BookWorld",
+    "location": "서울 강서구",
+    "wage": 9900,
+    "wageType": "HOURLY",
+    "totalSlots": 5,
+    "filledSlots": 4,
+    "workDate": "2026/05/25",
+    "workStart": "13:00",
+    "workEnd": "18:00",
+    "leftDays": 30,
+    "postStatus": "OPEN",
+    "applyStatus": "APPLYING",
+    "deadline": "2026/05/20",
+    "liked": true,
+    "description": "반품 도서 분류 및 서가 정리 업무입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/22/800/1200",
+    "createdAt": "2026/04/23",
+    "updatedAt": "2026/04/23",
+    "requirements": [
+      "책을 좋아하시는 분",
+      "꼼꼼함"
+    ],
+    "benefits": [
+      "도서 구입 할인",
+      "마일리지 적립"
+    ],
+    "tasks": [
+      "도서 스캐닝",
+      "서가 정리"
+    ],
+    "items": [
+      "편한 복장"
+    ]
+  },
+  {
+    "id": 23,
+    "title": "피트니스 센터 안내",
+    "company": "근육헬스",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=GymPower",
+    "location": "서울 중구",
+    "wage": 10000,
+    "wageType": "HOURLY",
+    "totalSlots": 1,
+    "filledSlots": 1,
+    "workDate": "2026/05/01",
+    "workStart": "06:00",
+    "workEnd": "10:00",
+    "leftDays": 5,
+    "postStatus": "CLOSED",
+    "applyStatus": "HIRED",
+    "deadline": "2026/04/28",
+    "liked": false,
+    "description": "오픈 시간대 회원 입장 체크 및 수건 정리입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/23/800/1200",
+    "createdAt": "2026/04/24",
+    "updatedAt": "2026/04/24",
+    "requirements": [
+      "인근 거주자 필수",
+      "성실성"
+    ],
+    "benefits": [
+      "헬스장 무료 이용",
+      "단백질 쉐이크 지원"
+    ],
+    "tasks": [
+      "회원 응대",
+      "수건 세탁"
+    ],
+    "items": [
+      "운동복"
+    ]
+  },
+  {
+    "id": 24,
+    "title": "드라마 촬영장 현장 정리",
+    "company": "픽쳐코리아",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=PictureKorea",
+    "location": "경기 파주시",
+    "wage": 135000,
+    "wageType": "DAILY",
+    "totalSlots": 10,
+    "filledSlots": 2,
+    "workDate": "2026/06/20",
+    "workStart": "07:00",
+    "workEnd": "16:00",
+    "leftDays": 55,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/06/15",
+    "liked": true,
+    "description": "야외 촬영장 철거 및 소품 운반 보조입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/24/800/1200",
+    "createdAt": "2026/04/25",
+    "updatedAt": "2026/04/25",
+    "requirements": [
+      "운전 가능자 우대",
+      "신체 건강"
+    ],
+    "benefits": [
+      "식사 제공",
+      "파주 통근차"
+    ],
+    "tasks": [
+      "장비 운반",
+      "쓰레기 정리"
+    ],
+    "items": [
+      "장갑",
+      "운동화"
+    ]
+  },
+  {
+    "id": 25,
+    "title": "반찬가게 주방 보조",
+    "company": "엄마손반찬",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=MomFood",
+    "location": "서울 성북구",
+    "wage": 11000,
+    "wageType": "HOURLY",
+    "totalSlots": 2,
+    "filledSlots": 1,
+    "workDate": "2026/05/02",
+    "workStart": "09:00",
+    "workEnd": "14:00",
+    "leftDays": 7,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/04/30",
+    "liked": false,
+    "description": "재료 손질 및 용기 포장 보조입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/25/800/1200",
+    "createdAt": "2026/04/20",
+    "updatedAt": "2026/04/20",
+    "requirements": [
+      "요리 유경험자 우대",
+      "보건증"
+    ],
+    "benefits": [
+      "반찬 제공",
+      "명절 보너스"
+    ],
+    "tasks": [
+      "야채 다듬기",
+      "용기 라벨링"
+    ],
+    "items": [
+      "머리망"
+    ]
+  },
+  {
+    "id": 26,
+    "title": "키즈카페 안전 요원",
+    "company": "플레이키즈",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=PlayKids",
+    "location": "서울 양천구 목동",
+    "wage": 10500,
+    "wageType": "HOURLY",
+    "totalSlots": 4,
+    "filledSlots": 2,
+    "workDate": "2026/05/18",
+    "workStart": "10:00",
+    "workEnd": "18:00",
+    "leftDays": 22,
+    "postStatus": "OPEN",
+    "applyStatus": "APPLYING",
+    "deadline": "2026/05/15",
+    "liked": true,
+    "description": "어린이 놀이 시설 안전 관리 및 장난감 정리입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/26/800/1200",
+    "createdAt": "2026/04/21",
+    "updatedAt": "2026/04/21",
+    "requirements": [
+      "유아교육과 우대",
+      "아이를 좋아하시는 분"
+    ],
+    "benefits": [
+      "식대 지원",
+      "장기 우대"
+    ],
+    "tasks": [
+      "아이 케어",
+      "장난감 소독"
+    ],
+    "items": [
+      "밝은색 티셔츠"
+    ]
+  },
+  {
+    "id": 27,
+    "title": "철거 현장 잔해 수거",
+    "company": "강철산업",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=SteelIndustry",
+    "location": "서울 강동구",
+    "wage": 170000,
+    "wageType": "DAILY",
+    "totalSlots": 6,
+    "filledSlots": 6,
+    "workDate": "2026/04/26",
+    "workStart": "07:00",
+    "workEnd": "16:00",
+    "leftDays": 0,
+    "postStatus": "CLOSED",
+    "applyStatus": "HIRED",
+    "deadline": "2026/04/25",
+    "liked": false,
+    "description": "상가 내부 철거 후 잔해 수거 및 마대 작업입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/27/800/1200",
+    "createdAt": "2026/04/22",
+    "updatedAt": "2026/04/22",
+    "requirements": [
+      "건강하신 분",
+      "안전 교육 이수증"
+    ],
+    "benefits": [
+      "아침 식사",
+      "당일 입금"
+    ],
+    "tasks": [
+      "마대 담기",
+      "트럭 상차"
+    ],
+    "items": [
+      "안전화"
+    ]
+  },
+  {
+    "id": 28,
+    "title": "도서관 야간 경비",
+    "company": "세이프원",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=SafeOne",
+    "location": "서울 노원구",
+    "wage": 12500,
+    "wageType": "HOURLY",
+    "totalSlots": 1,
+    "filledSlots": 0,
+    "workDate": "2026/06/01",
+    "workStart": "21:00",
+    "workEnd": "06:00",
+    "leftDays": 36,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/05/28",
+    "liked": false,
+    "description": "야간 도서관 순찰 및 출입 통제 관리입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/28/800/1200",
+    "createdAt": "2026/04/23",
+    "updatedAt": "2026/04/23",
+    "requirements": [
+      "신체 건강",
+      "범죄 경력 없는 분"
+    ],
+    "benefits": [
+      "야간 휴게실",
+      "4대 보험"
+    ],
+    "tasks": [
+      "시설 순찰",
+      "화재 예방"
+    ],
+    "items": [
+      "단정한 용모"
+    ]
+  },
+  {
+    "id": 29,
+    "title": "주말 결혼식 주차 보조",
+    "company": "퀸즈웨딩",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=QueensWedding",
+    "location": "서울 강남구 압구정동",
+    "wage": 12000,
+    "wageType": "HOURLY",
+    "totalSlots": 4,
+    "filledSlots": 1,
+    "workDate": "2026/05/30",
+    "workStart": "10:30",
+    "workEnd": "16:30",
+    "leftDays": 35,
+    "postStatus": "OPEN",
+    "applyStatus": "NONE",
+    "deadline": "2026/05/27",
+    "liked": true,
+    "description": "예식장 하객 차량 주차 안내 보조원입니다.",
+    "descriptionUrl": "https://picsum.photos/seed/29/800/1200",
+    "createdAt": "2026/04/24",
+    "updatedAt": "2026/04/24",
+    "requirements": [
+      "밝은 인사성",
+      "정장 스타일 바지"
+    ],
+    "benefits": [
+      "뷔페 식권 제공",
+      "주급 가능"
+    ],
+    "tasks": [
+      "하객 안내",
+      "주차 유도"
+    ],
+    "items": [
+      "흰색 셔츠"
+    ]
+  },
+  {
+    "id": 30,
+    "title": "데이터 라벨링 단기 알바",
+    "company": "AI랩",
+    "companyLogoUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=AILab",
+    "location": "재택 근무",
+    "wage": 3200000,
+    "wageType": "MONTHLY",
+    "totalSlots": 15,
+    "filledSlots": 10,
+    "workDate": "2026/07/01",
+    "workStart": "00:00",
+    "workEnd": "23:59",
+    "leftDays": 65,
+    "postStatus": "OPEN",
+    "applyStatus": "APPLYING",
+    "deadline": "2026/06/25",
+    "liked": true,
+    "description": "이미지 데이터 바운딩 박스 라벨링 업무입니다. (재택)",
+    "descriptionUrl": "https://picsum.photos/seed/30/800/1200",
+    "createdAt": "2026/04/25",
+    "updatedAt": "2026/04/25",
+    "requirements": [
+      "컴퓨터 사용 가능자",
+      "가이드 숙지"
+    ],
+    "benefits": [
+      "재택 근무",
+      "성과급 별도"
+    ],
+    "tasks": [
+      "이미지 라벨링",
+      "데이터 검수"
+    ],
+    "items": [
+      "개인 PC"
+    ]
+  }
+]
