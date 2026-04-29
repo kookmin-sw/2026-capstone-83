@@ -4,8 +4,8 @@ import { Banknote, Calendar, Clock, MapPin } from 'lucide-react';
 
 import Section from 'shared/ui/Layout/Section';
 import { calculateDDay } from 'shared/lib/calculateDDay';
-import type { JobPostOverviewProps } from '../model/types/jobPost.type';
-import { Header } from './JobPost.styled';
+import type { JobPostOverviewProps } from '../../model/types/jobPost.type';
+import { Header } from '../JobPost.styled';
 
 interface Props {
   data: JobPostOverviewProps | null; // 공고 개요 정보 (로딩 상태를 위해 null 허용)

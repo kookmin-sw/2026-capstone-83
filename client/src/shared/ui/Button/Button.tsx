@@ -9,7 +9,7 @@ import type { BorderRadiusKey, ButtonScheme, ButtonSize, FontSizeKey, FontWeight
 interface Props extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   buttonSize: ButtonSize;
-  fontSize: FontSizeKey;
+  fontSize?: FontSizeKey;
   fontWeight?: FontWeightKey;
   scheme: ButtonScheme;
   borderRadius?: BorderRadiusKey;
@@ -70,6 +70,10 @@ const ButtonStyle = styled.button.withConfig({
     theme.buttonScheme[scheme].boxShadow
       ? theme.buttonScheme[scheme].boxShadow
       : 'none'};
+  
+  svg {
+    stroke: ${({ theme, scheme }) => theme.buttonScheme[scheme].color};
+  }
 
 
   &:focus {

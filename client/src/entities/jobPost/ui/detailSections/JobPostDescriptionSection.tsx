@@ -1,7 +1,7 @@
 import React from 'react'
 import Section from 'shared/ui/Layout/Section';
 import styled from 'styled-components'
-import type { JobPostDescriptionProps, JobPostDetail } from '../model/types/jobPost.type';
+import type { JobPostDescriptionProps, JobPostDetail } from '../../model/types/jobPost.type';
 
 export const JobPostDescriptionSection = ({ data }: { data: JobPostDescriptionProps }) => {
 

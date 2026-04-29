@@ -1,6 +1,6 @@
 import React from 'react'
 import styled from 'styled-components'
-import type { JobPostDetail, JobPostWorkContentProps } from '../model/types/jobPost.type';
+import type { JobPostDetail, JobPostWorkContentProps } from '../../model/types/jobPost.type';
 import Section from 'shared/ui/Layout/Section';
 
 
