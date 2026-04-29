@@ -4,39 +4,53 @@ import com.itda.entity.JobPost;
 import com.itda.enums.JobPostStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
 import java.util.List;
 
-@Repository
 public interface JobPostRepository extends JpaRepository<JobPost, Long> {
 
-    // 모집중인 공고 전체 조회
+    // 기존 메서드들
     List<JobPost> findByStatus(JobPostStatus status);
-
-    // 급여 높은 순 정렬
     List<JobPost> findByStatusOrderByWageDesc(JobPostStatus status);
-
-    // 날짜 범위 조회 (캘린더용)
-    List<JobPost> findByWorkDateBetween(LocalDate start, LocalDate end);
-
-    // 키워드 검색
+    List<JobPost> findByStatusOrderByDeadlineAsc(JobPostStatus status);
     List<JobPost> findByStatusAndTitleContaining(JobPostStatus status, String keyword);
 
-    // 마감 임박순 정렬
-    List<JobPost> findByStatusOrderByDeadlineAsc(JobPostStatus status);
-
-    // 사업장 ID로 조회 (고용주 캘린더용)
-    List<JobPost> findByWorkplaceId(Long workplaceId);
-
-    // 사업장 ID + 날짜 범위 (고용주 캘린더 월간/주간)
-    List<JobPost> findByWorkplaceIdAndWorkDateBetween(Long workplaceId, LocalDate start, LocalDate end);
-
-    // 고용주 전체 공고 조회
+    // 고용주 공고 목록 조회
     @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.id = :employerId")
-    List<JobPost> findByEmployerId(Long employerId);
+    List<JobPost> findByEmployerId(@Param("employerId") Long employerId);
 
-    // 고용주 공고 + 날짜 범위
-    @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.id = :employerId AND j.workDate BETWEEN :start AND :end")
-    List<JobPost> findByEmployerIdAndWorkDateBetween(Long employerId, LocalDate start, LocalDate end);
+    // 캘린더용 날짜 범위 조회
+    @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.id = :employerId " +
+            "AND j.workDate BETWEEN :start AND :end")
+    List<JobPost> findByEmployerIdAndWorkDateBetween(
+            @Param("employerId") Long employerId,
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end);
+
+    /**
+     * 공고 목록 통합 필터 조회 (커서 방식 페이지네이션)
+     * JobPostFilterRequest의 모든 필터 조건을 하나의 쿼리로 처리
+     */
+    @Query("SELECT j FROM JobPost j " +
+            "WHERE j.status = 'OPEN' " +
+            "AND (:cursor IS NULL OR j.id < :cursor) " +
+            "AND (:keyword IS NULL OR j.title LIKE %:keyword%) " +
+            "AND (:jobCategory IS NULL OR j.jobCategory = :jobCategory) " +
+            "AND (:jobSubcategory IS NULL OR j.jobSubcategory = :jobSubcategory) " +
+            "AND (:location IS NULL OR j.workplace.address LIKE %:location%) " +
+            "AND (:workDate IS NULL OR CAST(j.workDate AS string) = :workDate) " +
+            "ORDER BY " +
+            "CASE WHEN :sortType = 'WAGE' THEN j.wage END DESC, " +
+            "CASE WHEN :sortType = 'DEADLINE' THEN j.deadline END ASC, " +
+            "j.id DESC")
+    List<JobPost> findByFilter(
+            @Param("cursor") Long cursor,
+            @Param("keyword") String keyword,
+            @Param("jobCategory") String jobCategory,
+            @Param("jobSubcategory") String jobSubcategory,
+            @Param("location") String location,
+            @Param("workDate") String workDate,
+            @Param("sortType") String sortType,
+            org.springframework.data.domain.Pageable pageable);
 }
