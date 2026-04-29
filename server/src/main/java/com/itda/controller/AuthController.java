@@ -1,8 +1,10 @@
 package com.itda.controller;
 
+import com.itda.dto.response.LoginResponse;
 import com.itda.entity.User;
 import com.itda.enums.UserRole;
 import com.itda.repository.UserRepository;
+import com.itda.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -15,6 +17,16 @@ public class AuthController {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
+
+    /**
+     * 카카오 로그인
+     * 프론트에서 카카오 인가 코드(code)를 받아서 전달
+     */
+    @PostMapping("/kakao")
+    public ResponseEntity<LoginResponse> kakaoLogin(@RequestParam String code) {
+        return ResponseEntity.ok(authService.kakaoLogin(code));
+    }
 
     // 테스트용 회원가입
     @PostMapping("/register")
