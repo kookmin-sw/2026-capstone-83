@@ -1,5 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
-import styled from 'styled-components';
+import { useState, useRef, useEffect } from 'react';
 import { Wrapper, Label, RequiredMark, InputWrapper, ErrorMsg, SelectTrigger, Placeholder, ArrowIcon, OptionList, OptionItem } from './InputStyle';
 import type { FontSizeKey } from 'shared/types/theme';
 
@@ -73,7 +72,7 @@ export const InputSelectCustom = ({
               <OptionItem
                 key={option.value}
                 onClick={() => {
-                  onChange(option.value);
+                  onChange?.(option.value);
                   setIsOpen(false);
                 }}
                 $isSelected={value === option.value}

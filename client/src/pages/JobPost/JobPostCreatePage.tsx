@@ -1,6 +1,5 @@
 
-import { JobPostBasicInfoFields } from 'entities/jobPost/ui/InputFields/JobPostBasicInfoFields';
-import React from 'react'
+
 import styled from 'styled-components'
 import { JobPostCreateForm } from 'widgets/jobPost/jobPostForm/JobPostCreateForm';
 

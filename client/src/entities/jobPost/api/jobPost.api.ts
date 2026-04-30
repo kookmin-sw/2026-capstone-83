@@ -1,7 +1,34 @@
-import type { JobPost, JobPostCreate, JobPostDetail } from "../model/types/jobPost.type";
+import { httpClient } from "shared/api/httpClient";
+import type { GetJobPostsParams, JobPost, JobPostCreate, JobPostDetail, JobPostListCursor } from "../model/types/jobPost.type";
 import mockJobPostData from "shared/mocks/data/mockJobPostData.json";
+import { toFormData } from "shared/lib/toFormData";
 
-//mock API 함수 -
+
+//공고 목록 조회
+export const fetchJobPosts = async (data: GetJobPostsParams): Promise<JobPostListCursor> => {
+  const response = await httpClient.get<JobPostListCursor>('/api/v1/job-posts', {
+    params: data,
+  });
+  return response.data;
+};
+
+//공고 상세 조회
+export const fetchJobPost = async (id: number): Promise<JobPostDetail> => {
+  const response = await httpClient.get<JobPostDetail>(`/api/v1/job-posts/${id}`);
+  return response.data;
+};
+
+//공고 생성
+export const createJobPost = async (data: JobPostCreate) => {
+  // form data 변환 유틸함수
+  const formData = toFormData(data);
+
+  const response = await httpClient.post('/api/v1/job-posts', formData);
+  return response.data;
+};
+
+
+//=========================mock API 함수 ======================================
 export const fetchMockJobPosts = (): Promise<JobPost[]> => {
   return new Promise((resolve) => {
 

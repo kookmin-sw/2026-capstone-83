@@ -16,7 +16,7 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'Inter', sans-serif;
 
 
-    @media ${({ theme }) => theme.mediaQuery.tablet} {
+    @media ${({ theme }) => theme.mediaQuery.tablet_small} {
       font-size: 14px;
     }
 

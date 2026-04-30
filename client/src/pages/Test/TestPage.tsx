@@ -2,7 +2,7 @@
 import { dummyJobPost } from 'entities/jobPost/ui/dummy';
 import { JobPostCard } from 'entities/jobPost/ui/JobPostCard';
 
-import React from 'react'
+
 import Badge from 'shared/ui/Badge/Badge';
 import Button from 'shared/ui/Button/Button';
 import InputHeader from 'shared/ui/Input/InputHeader';

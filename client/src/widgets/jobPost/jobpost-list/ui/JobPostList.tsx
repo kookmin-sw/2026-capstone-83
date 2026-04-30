@@ -1,8 +1,7 @@
 
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { JobPostCard } from 'entities/jobPost/ui/JobPostCard';
 import * as S from './JobPostList.styled';
-import { dummyJobPost } from 'entities/jobPost/ui/dummy';
 import type { JobPost } from 'entities/jobPost/model/types/jobPost.type';
 import { fetchMockJobPosts } from 'entities/jobPost/api/jobPost.api';
 

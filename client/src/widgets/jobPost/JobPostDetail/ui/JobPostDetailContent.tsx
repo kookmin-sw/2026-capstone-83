@@ -1,6 +1,4 @@
 
-
-
 import { fetchMockJobPost } from 'entities/jobPost/api/jobPost.api';
 import type { JobPostDetail } from 'entities/jobPost/model/types/jobPost.type';
 import { JobPostDescriptionSection } from 'entities/jobPost/ui/detailSections/JobPostDescriptionSection';
@@ -30,7 +28,11 @@ export const JobPostDetailContent = ({ postId }: Props) => {
     });
   }, [postId]);
 
-  const { location } = detailData || {};
+  if (!detailData) {
+    return <Main><Article><div>로딩 중...</div></Article></Main>;
+  }
+
+  const { location } = detailData;
 
   return (
     <Main>

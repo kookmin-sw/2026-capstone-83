@@ -1,4 +1,4 @@
-import React from 'react'
+
 import styled from 'styled-components'
 import { JobPostList } from 'widgets/jobPost/jobpost-list/ui/JobPostList';
 
