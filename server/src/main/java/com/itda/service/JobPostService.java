@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -85,10 +86,16 @@ public class JobPostService {
 
     /**
      * 공고 등록
-     * JobPostCreateRequest DTO로 받아서 Entity 변환 후 저장
+     * 이미지 파일은 추후 S3 연동 시 업로드 처리 예정
+     * 현재는 이미지 URL 없이 저장
      */
     @Transactional
-    public JobPostDetailResponse createJobPost(JobPostCreateRequest request, Workplace workplace) {
+    public JobPostDetailResponse createJobPost(
+            JobPostCreateRequest request,
+            Workplace workplace,
+            MultipartFile companyLogoImage,
+            MultipartFile descriptionImage) {
+        // TODO: S3 업로드 연동 시 이미지 URL 처리 추가
         JobPost saved = jobPostRepository.save(request.toEntity(workplace));
         return JobPostDetailResponse.from(saved);
     }

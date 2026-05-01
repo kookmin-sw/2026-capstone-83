@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
 import lombok.AllArgsConstructor;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -38,11 +39,20 @@ public class User {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @Column(nullable = false, length = 100)
+    @Column(unique = true, nullable = false, length = 100)
     private String email;
 
     @Column(nullable = false, length = 20)
     private String phone;
+
+    @Column(name = "birth")
+    private LocalDate birth;
+
+    @Column(name = "gender")
+    private Integer gender;
+
+    @Column(name = "location", length = 255)
+    private String location;
 
     @Column(name = "profile_image_url", length = 500)
     private String profileImageUrl;
