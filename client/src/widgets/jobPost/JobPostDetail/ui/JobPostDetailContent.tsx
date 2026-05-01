@@ -1,5 +1,6 @@
 
 import { fetchMockJobPost } from 'entities/jobPost/api/jobPost.api';
+import { useJobPost } from 'entities/jobPost/model/hooks/useJobPost';
 import type { JobPostDetail } from 'entities/jobPost/model/types/jobPost.type';
 import { JobPostDescriptionSection } from 'entities/jobPost/ui/detailSections/JobPostDescriptionSection';
 import { JobPostDetailOverviewSection } from 'entities/jobPost/ui/detailSections/JobPostDetailOverviewSection';
@@ -18,40 +19,35 @@ interface Props {
 
 export const JobPostDetailContent = ({ postId }: Props) => {
 
-  const [detailData, setDetailData] = useState<JobPostDetail | null>(null);
 
 
-  useEffect(() => {
-    fetchMockJobPost(Number(postId)).then((data) => {
-      console.log('Fetched job post detail:', data);
-      setDetailData(data);
-    });
-  }, [postId]);
+  const { data: post, isLoading, isError } = useJobPost(postId);
 
-  if (!detailData) {
-    return <Main><Article><div>로딩 중...</div></Article></Main>;
-  }
+  if (isLoading) return <div>공고 내용을 불러오는 중입니다...</div>;
+  if (isError || !post) return <div>공고를 찾을 수 없습니다.</div>;
 
-  const { location } = detailData;
+
+
+  const { location } = post;
 
   return (
     <Main>
       <Article>
         {/* 1. 상단 개요 섹션 (비즈니스 로직인 버튼 포함) */}
         <JobPostDetailOverviewSection
-          data={detailData}
+          data={post}
         //actions={<><LikeButton id={detailData.id} /><ApplyButton id={detailData.id} /></>}
         />
 
         {/* 2. 근무 내용 섹션 */}
-        <JobPostWorkContentSection data={detailData} />
+        <JobPostWorkContentSection data={post} />
 
         {/* 3. 근무지 섹션 (지도 포함) */}
         <JobPostLocationSection address={location} />
 
 
         {/* 4. 상세 정보 섹션 */}
-        <JobPostDescriptionSection data={detailData} />
+        <JobPostDescriptionSection data={post} />
       </Article>
     </Main>
   );

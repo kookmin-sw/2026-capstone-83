@@ -12,6 +12,14 @@ export const fetchJobPosts = async (data: GetJobPostsParams): Promise<JobPostLis
   return response.data;
 };
 
+// body 버전
+// export const fetchJobPosts = async (data: GetJobPostsParams): Promise<JobPostListCursor> => {
+//   // 기존 GET + params 방식에서 POST + body 방식으로 변경
+//   const response = await httpClient.post<JobPostListCursor>('/api/v1/job-posts', data);
+//   return response.data;
+// };
+
+
 //공고 상세 조회
 export const fetchJobPost = async (id: number): Promise<JobPostDetail> => {
   const response = await httpClient.get<JobPostDetail>(`/api/v1/job-posts/${id}`);
