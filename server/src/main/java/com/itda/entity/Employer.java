@@ -20,6 +20,9 @@ public class Employer {
     @JoinColumn(name = "user_id", nullable = false, unique = true)
     private User user;
 
+    @Column(name = "business_number", length = 20)
+    private String businessNumber;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
