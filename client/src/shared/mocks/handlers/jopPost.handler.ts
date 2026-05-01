@@ -1,6 +1,5 @@
 import { http, HttpResponse } from 'msw';
 import mockJobPostData from '../data/mockJobPostData.json'
-import type { JobPost } from 'entities/jobPost/model/types/jobPost.type';
 import { BASE_URL } from './constants';
 
 

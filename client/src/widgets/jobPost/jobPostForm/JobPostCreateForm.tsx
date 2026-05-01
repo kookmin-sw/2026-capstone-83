@@ -7,7 +7,6 @@ import type { JobPostCreate } from 'entities/jobPost/model/types/jobPost.type';
 import Main from 'shared/ui/Layout/Main';
 import Article from 'shared/ui/Layout/Article';
 import { JobPostBasicInfoFields } from 'entities/jobPost/ui/InputFields/JobPostBasicInfoFields';
-import { createMockJobPost } from 'entities/jobPost/api/jobPost.api';
 import { JobPostLocationField } from 'entities/jobPost/ui/InputFields/JobPostLocationField';
 import { JobPostDescriptionField } from 'entities/jobPost/ui/InputFields/JobPostDescriptionField';
 import { JobPostWorkContentFields } from 'entities/jobPost/ui/InputFields/JobPostWorkContentFields';
@@ -22,7 +21,7 @@ import { useCreateJobPost } from 'features/jobPost/hooks/useCreateJobPost';
 
 export const JobPostCreateForm = () => {
   const { handleSubmit, register, setValue, formState } = useForm<JobPostCreate>(); // 폼 상태 관리
-  const { mutate, isPending, isError } = useCreateJobPost();
+  const { mutate } = useCreateJobPost();
 
 
   const onSubmit = (data: JobPostCreate) => {

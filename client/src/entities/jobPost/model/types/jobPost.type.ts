@@ -69,6 +69,7 @@ export type JobPostDescriptionProps = Pick<
 // 회사 이미지와 상세 정보 이미지는 일단 File 타입으로 정의, 
 // 프론트에서 s3 업로드 후 URL로 변환해서 백엔드에 전달할 지, 아니면 백엔드에서 직접 s3 업로드할 지 논의 필요
 export interface JobPostCreate {
+  workplaceId?: number;
   title: string;
   company: string;
   companyLogoImage?: File | null;
@@ -87,6 +88,10 @@ export interface JobPostCreate {
   benefits?: string[];
   tasks: string[];
   items?: string[];
+}
+
+export interface JobPostCreateResponse {
+  jobPostId: number;
 }
 
 

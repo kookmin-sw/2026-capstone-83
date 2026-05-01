@@ -1,3 +1,5 @@
+import LoginPage from 'pages/auth/LoginPage'
+import SignupPage from 'pages/auth/SignupPage'
 import JobPostCreatePage from 'pages/JobPost/JobPostCreatePage'
 import JobPostDetailPage from 'pages/JobPost/JobPostDetailPage'
 import { JobPostListPage } from 'pages/JobPost/JobPostListPage'
@@ -10,9 +12,14 @@ const Routers = () => {
   return (
     <Routes>
       <Route path="/" element={<MainPage />} />
+
       <Route path="/jobposts" element={<JobPostListPage />} />
       <Route path="/jobpost/:id" element={<JobPostDetailPage />} />
       <Route path="/jobpost/create" element={<JobPostCreatePage />} />
+
+      <Route path='/login' element={<LoginPage />} />
+      <Route path='/signup' element={<SignupPage />} />
+
 
       <Route path="/test" element={<TestPage />} />
     </Routes>

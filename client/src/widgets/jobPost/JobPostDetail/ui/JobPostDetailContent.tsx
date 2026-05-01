@@ -1,12 +1,9 @@
 
-import { fetchMockJobPost } from 'entities/jobPost/api/jobPost.api';
 import { useJobPost } from 'entities/jobPost/model/hooks/useJobPost';
-import type { JobPostDetail } from 'entities/jobPost/model/types/jobPost.type';
 import { JobPostDescriptionSection } from 'entities/jobPost/ui/detailSections/JobPostDescriptionSection';
 import { JobPostDetailOverviewSection } from 'entities/jobPost/ui/detailSections/JobPostDetailOverviewSection';
 import { JobPostLocationSection } from 'entities/jobPost/ui/detailSections/JobPostLocationSection';
 import { JobPostWorkContentSection } from 'entities/jobPost/ui/detailSections/JobPostWorkContentSection';
-import { useEffect, useState } from 'react';
 //import { ApplyButton, LikeButton } from 'features/jobApply'; // 지원 관련 기능
 import Article from 'shared/ui/Layout/Article';
 import Main from 'shared/ui/Layout/Main';

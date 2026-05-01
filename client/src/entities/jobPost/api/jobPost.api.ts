@@ -31,9 +31,37 @@ export const createJobPost = async (data: JobPostCreate) => {
   // form data 변환 유틸함수
   const formData = toFormData(data);
 
-  const response = await httpClient.post('/api/v1/job-posts', formData);
+  const response = await httpClient.post('/api/v1/job-posts', formData,
+    {
+      params: {
+        workplaceId: 1,
+      },
+    }
+  );
   return response.data;
 };
+
+// export const createJobPost = async (data: JobPostCreate) => {
+//   const formData = new FormData();
+
+//   // 1. 이미지와 텍스트를 분리합니다.
+//   const { companyLogoImage, descriptionImage, ...textContent } = data;
+
+//   /** 
+//    * 2. 텍스트 데이터 전체를 'data'라는 하나의 이름으로 묶습니다.
+//    * 이때 Blob을 써서 "이 상자 안의 내용은 JSON입니다"라고 라벨을 붙입니다.
+//    */
+//   const jsonBlob = new Blob([JSON.stringify(textContent)], {
+//     type: 'application/json'
+//   });
+//   formData.append('data', jsonBlob);
+
+//   // 3. 파일은 백엔드가 정의한 이름 그대로 따로 담습니다.
+//   if (companyLogoImage) formData.append('companyLogoImage', companyLogoImage);
+//   if (descriptionImage) formData.append('descriptionImage', descriptionImage);
+
+//   return await httpClient.post('/api/v1/job-posts', formData);
+// };
 
 
 //=========================mock API 함수 ======================================

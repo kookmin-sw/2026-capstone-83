@@ -4,8 +4,9 @@ import { useInView } from 'react-intersection-observer';
 import { JobPostCard } from 'entities/jobPost/ui/JobPostCard';
 import * as S from './JobPostList.styled';
 import { useJobPostsInfinite } from 'entities/jobPost/model/hooks/useJobPostsInfinite';
+import type { GetJobPostsParams } from 'entities/jobPost/model/types/jobPost.type';
 
-export const JobPostInfiniteList = ({ filterParams }: { filterParams: any }) => {
+export const JobPostInfiniteList = ({ filterParams }: { filterParams: GetJobPostsParams }) => {
   // 1. 무한 스크롤 훅 호출
   const {
     data,
@@ -38,7 +39,7 @@ export const JobPostInfiniteList = ({ filterParams }: { filterParams: any }) => 
       )}
 
       {/* 4. 리스트 끝 관찰용 타겟 */}
-      <S.ObserverTarget ref={ref}>[cite: 6]
+      <S.ObserverTarget ref={ref}>
         {isFetchingNextPage && <p>더 많은 공고 로딩 중...</p>}
       </S.ObserverTarget>
     </S.ListContainer>
