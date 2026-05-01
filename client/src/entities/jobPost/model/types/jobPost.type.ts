@@ -91,7 +91,7 @@ export interface JobPostCreate {
 }
 
 export interface JobPostCreateResponse {
-  jobPostId: number;
+  newPost: JobPostDetail;
 }
 
 
