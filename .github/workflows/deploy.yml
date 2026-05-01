@@ -32,5 +32,6 @@ jobs:
               -DDB_PASSWORD=${{ secrets.DB_PASSWORD }} \
               -jar /home/ec2-user/2026-capstone-83/server/build/libs/itda-0.0.1-SNAPSHOT.jar \
               > /home/ec2-user/app.log 2>&1 &
+            disown
             
             echo "Deploy completed"
