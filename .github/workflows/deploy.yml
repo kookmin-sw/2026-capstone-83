@@ -30,5 +30,7 @@ jobs:
               -DDB_URL=${{ secrets.DB_URL }} \
               -DDB_USERNAME=${{ secrets.DB_USERNAME }} \
               -DDB_PASSWORD=${{ secrets.DB_PASSWORD }} \
-              build/libs/itda-0.0.1-SNAPSHOT.jar \
-              > app.log 2>&1 &
+              -jar /home/ec2-user/2026-capstone-83/server/build/libs/itda-0.0.1-SNAPSHOT.jar \
+              > /home/ec2-user/app.log 2>&1 &
+            
+            echo "Deploy completed"
