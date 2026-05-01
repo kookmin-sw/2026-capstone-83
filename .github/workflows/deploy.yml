@@ -19,6 +19,7 @@ jobs:
             cd /home/ec2-user/2026-capstone-83
             git fetch origin main
             git reset --hard origin/main
+            chmod +x server/gradlew
 
             cd server
             ./gradlew bootJar
