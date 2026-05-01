@@ -51,14 +51,13 @@ public class JobPostService {
         }
 
         // Entity -> DTO 변환
-        List<JobPostCardResponse> content = posts.stream()
+        List<JobPostCardResponse> jobPosts = posts.stream()
                 .map(JobPostCardResponse::from)
                 .toList();
 
-        // 다음 커서 = 마지막 공고의 ID
-        Long nextCursor = hasNext ? content.get(content.size() - 1).id() : null;
+        Long nextCursor = hasNext ? jobPosts.get(jobPosts.size() - 1).id() : null;
 
-        return CursorPageResponse.of(content, nextCursor, hasNext);
+        return CursorPageResponse.of(jobPosts, nextCursor, hasNext);
     }
 
     /**
