@@ -6,6 +6,7 @@ import com.itda.dto.response.JobPostCardResponse;
 import com.itda.entity.Workplace;
 import com.itda.entity.JobPost;
 import com.itda.enums.JobPostStatus;
+import com.itda.enums.WageType;
 import com.itda.exception.NotFoundException;
 import com.itda.repository.JobPostRepository;
 import com.itda.dto.request.JobPostCreateRequest;
@@ -15,6 +16,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 
 @Service
@@ -70,10 +72,24 @@ public class JobPostService {
         return JobPostDetailResponse.from(post);
     }
     /**
-     * 고용주 본인 공고 목록 조회
+     * 고용주 본인 공고 목록 조회 (커서 페이지네이션)
      */
-    public List<JobPost> getJobPostsByEmployer(Long employerId) {
-        return jobPostRepository.findByEmployerId(employerId);
+    public CursorPageResponse<JobPostCardResponse> getJobPostsByEmployer(Long employerId, Long cursor, int size) {
+        int fetchSize = size + 1;
+        List<JobPost> posts = jobPostRepository.findByEmployerIdWithCursor(
+                employerId, cursor, PageRequest.of(0, fetchSize));
+
+        boolean hasNext = posts.size() > size;
+        if (hasNext) {
+            posts = posts.subList(0, size);
+        }
+
+        List<JobPostCardResponse> content = posts.stream()
+                .map(JobPostCardResponse::from)
+                .toList();
+
+        Long nextCursor = hasNext ? content.get(content.size() - 1).id() : null;
+        return CursorPageResponse.of(content, nextCursor, hasNext);
     }
 
     /**
@@ -91,6 +107,51 @@ public class JobPostService {
     public JobPostDetailResponse createJobPost(JobPostCreateRequest request, Workplace workplace) {
         JobPost saved = jobPostRepository.save(request.toEntity(workplace));
         return JobPostDetailResponse.from(saved);
+    }
+
+    /**
+     * 공고 수정
+     * 기존 공고를 찾아서 새 데이터로 덮어쓰기
+     */
+    @Transactional
+    public JobPostDetailResponse updateJobPost(Long id, JobPostCreateRequest request) {
+        JobPost existing = jobPostRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
+
+        JobPost updated = JobPost.builder()
+                .id(existing.getId())
+                .workplace(existing.getWorkplace())
+                .title(request.title())
+                .jobCategory(request.jobCategory())
+                .jobSubcategory(request.jobSubcategory())
+                .wage(request.wage())
+                .wageType(WageType.valueOf(request.wageType()))
+                .workDate(LocalDate.parse(request.workDate()))
+                .workStart(LocalTime.parse(request.workStart()))
+                .workEnd(LocalTime.parse(request.workEnd()))
+                .totalSlots(request.totalSlots())
+                .filledSlots(existing.getFilledSlots())
+                .status(existing.getStatus())
+                .deadline(LocalDate.parse(request.deadline()))
+                .description(request.description())
+                .s3ContentUrl(request.s3ContentUrl())
+                .requirements(request.requirements())
+                .benefits(request.benefits())
+                .tasks(request.tasks())
+                .items(request.items())
+                .build();
+
+        return JobPostDetailResponse.from(jobPostRepository.save(updated));
+    }
+
+    /**
+     * 공고 삭제
+     */
+    @Transactional
+    public void deleteJobPost(Long id) {
+        JobPost jobPost = jobPostRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
+        jobPostRepository.delete(jobPost);
     }
 
     /**

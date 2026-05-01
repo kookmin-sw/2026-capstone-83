@@ -1,5 +1,6 @@
 package com.itda.entity;
 
+import com.itda.enums.Gender;
 import com.itda.enums.OAuthProvider;
 import com.itda.enums.UserRole;
 import jakarta.persistence.*;
@@ -7,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Builder;
 import lombok.AllArgsConstructor;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -46,6 +48,19 @@ public class User {
 
     @Column(name = "profile_image_url", length = 500)
     private String profileImageUrl;
+
+    // 생년월일 (나이 계산용)
+    @Column(name = "birth_date")
+    private LocalDate birthDate;
+
+    // 성별
+    @Enumerated(EnumType.STRING)
+    @Column(length = 10)
+    private Gender gender;
+
+    // 거주 지역
+    @Column(length = 255)
+    private String address;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)

@@ -1,5 +1,8 @@
 package com.itda.controller;
 
+import com.itda.dto.response.ApplicantResponse;
+import com.itda.dto.response.ApplicationResponse;
+import com.itda.dto.response.CursorPageResponse;
 import com.itda.entity.Application;
 import com.itda.entity.User;
 import com.itda.repository.UserRepository;
@@ -39,25 +42,43 @@ public class ApplicationController {
 
     // 고용주 → 채용 확정
     @PatchMapping("/{applicationId}/hire")
-    public ResponseEntity<Application> hire(@PathVariable Long applicationId) {
+    public ResponseEntity<ApplicantResponse> hire(@PathVariable Long applicationId) {
         return ResponseEntity.ok(applicationService.hire(applicationId));
     }
 
     // 고용주 → 거절
     @PatchMapping("/{applicationId}/reject")
-    public ResponseEntity<Application> reject(@PathVariable Long applicationId) {
+    public ResponseEntity<ApplicantResponse> reject(@PathVariable Long applicationId) {
         return ResponseEntity.ok(applicationService.reject(applicationId));
     }
 
-    // 공고별 지원자 목록 (고용주)
+    // 공고별 지원자 목록 (고용주) - 커서 페이지네이션
     @GetMapping("/job-post/{jobPostId}")
-    public ResponseEntity<List<Application>> getApplicationsByJobPost(@PathVariable Long jobPostId) {
-        return ResponseEntity.ok(applicationService.getApplicationsByJobPost(jobPostId));
+    public ResponseEntity<CursorPageResponse<ApplicantResponse>> getApplicationsByJobPost(
+            @PathVariable Long jobPostId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(applicationService.getApplicationsByJobPost(jobPostId, cursor, size));
     }
 
-    // 내 지원 목록 (지원자)
+    // 공고별 근무자 목록 (고용주) - HIRED 상태인 지원자만
+    @GetMapping("/job-post/{jobPostId}/workers")
+    public ResponseEntity<List<ApplicantResponse>> getWorkersByJobPost(@PathVariable Long jobPostId) {
+        return ResponseEntity.ok(applicationService.getWorkersByJobPost(jobPostId));
+    }
+
+    // 근무 완료 처리 (고용주)
+    @PostMapping("/{applicationId}/complete")
+    public ResponseEntity<ApplicantResponse> complete(@PathVariable Long applicationId) {
+        return ResponseEntity.ok(applicationService.complete(applicationId));
+    }
+
+    // 내 지원 목록 (지원자) - 커서 페이지네이션
     @GetMapping("/applicant/{applicantUserId}")
-    public ResponseEntity<List<Application>> getMyApplications(@PathVariable Long applicantUserId) {
-        return ResponseEntity.ok(applicationService.getMyApplications(applicantUserId));
+    public ResponseEntity<CursorPageResponse<ApplicationResponse>> getMyApplications(
+            @PathVariable Long applicantUserId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(applicationService.getMyApplications(applicantUserId, cursor, size));
     }
 }

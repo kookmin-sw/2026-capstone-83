@@ -45,12 +45,15 @@ public class JobPostController {
         return ResponseEntity.ok(jobPostService.getJobPost(id));
     }
     /**
-     * 고용주 본인 공고 목록 조회
-     * GET /api/v1/job-posts/employer/{employerId}
+     * 고용주 본인 공고 목록 조회 (커서 페이지네이션)
+     * GET /api/v1/job-posts/employer/{employerId}?cursor=&size=
      */
     @GetMapping("/employer/{employerId}")
-    public ResponseEntity<List<JobPost>> getJobPostsByEmployer(@PathVariable Long employerId) {
-        return ResponseEntity.ok(jobPostService.getJobPostsByEmployer(employerId));
+    public ResponseEntity<CursorPageResponse<JobPostCardResponse>> getJobPostsByEmployer(
+            @PathVariable Long employerId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(jobPostService.getJobPostsByEmployer(employerId, cursor, size));
     }
 
     /**
@@ -77,6 +80,27 @@ public class JobPostController {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(jobPostService.createJobPost(request, workplace));
+    }
+
+    /**
+     * 공고 수정
+     * PUT /api/v1/job-posts/{id}
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<JobPostDetailResponse> updateJobPost(
+            @PathVariable Long id,
+            @RequestBody JobPostCreateRequest request) {
+        return ResponseEntity.ok(jobPostService.updateJobPost(id, request));
+    }
+
+    /**
+     * 공고 삭제
+     * DELETE /api/v1/job-posts/{id}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteJobPost(@PathVariable Long id) {
+        jobPostService.deleteJobPost(id);
+        return ResponseEntity.ok().build();
     }
 
     /**
