@@ -18,6 +18,7 @@ jobs:
           script: |
             cd /home/ec2-user/2026-capstone-83
             git pull origin main
+            git reset --hard origin/main
 
             cd server
             ./gradlew bootJar
