@@ -69,15 +69,16 @@ public class JobPostController {
 
     /**
      * 공고 등록
-     * POST /api/v1/job-posts
-     * multipart/form-data로 텍스트 필드 + 이미지 파일 함께 수신
+     * POST /api/v1/job-posts?workplaceId=1
+     * multipart/form-data 각 필드를 JobPostCreateRequest DTO에 자동 매핑
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<JobPostDetailResponse> createJobPost(
-            @RequestPart("data") JobPostCreateRequest request,
+            @RequestParam Long workplaceId,
+            @ModelAttribute JobPostCreateRequest request,
             @RequestPart(value = "companyLogoImage", required = false) MultipartFile companyLogoImage,
             @RequestPart(value = "descriptionImage", required = false) MultipartFile descriptionImage) {
-        Workplace workplace = workplaceRepository.findById(request.workplaceId())
+        Workplace workplace = workplaceRepository.findById(workplaceId)
                 .orElseThrow(() -> new RuntimeException("사업장을 찾을 수 없습니다."));
         return ResponseEntity
                 .status(HttpStatus.CREATED)
