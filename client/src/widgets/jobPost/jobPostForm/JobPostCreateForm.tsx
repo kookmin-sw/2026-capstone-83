@@ -18,9 +18,11 @@ import { ImageRemoveButton } from 'features/control-Image/RemoveButton';
 import { AddressSearchButton } from 'features/search-address/AddressSearchButton';
 import { splitByComma } from 'shared/lib/transformString';
 import Button from 'shared/ui/Button/Button';
+import { useCreateJobPost } from 'features/jobPost/hooks/useCreateJobPost';
 
 export const JobPostCreateForm = () => {
   const { handleSubmit, register, setValue, formState } = useForm<JobPostCreate>(); // 폼 상태 관리
+  const { mutate, isPending, isError } = useCreateJobPost();
 
 
   const onSubmit = (data: JobPostCreate) => {
@@ -35,10 +37,15 @@ export const JobPostCreateForm = () => {
     };
 
     console.log('가공된 데이터:', requestBody);
-    createMockJobPost(requestBody)
-      .then((response) => {
+    mutate(requestBody, {
+      onSuccess: (response) => {
         console.log('Job post created successfully:', response);
-      });
+        // 페이지 이동 등
+      },
+      onError: (error) => {
+        console.error('Error creating job post:', error);
+      }
+    });
   };
 
   const {
