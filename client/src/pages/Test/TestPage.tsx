@@ -2,9 +2,10 @@
 import { dummyJobPost } from 'entities/jobPost/ui/dummy';
 import { JobPostCard } from 'entities/jobPost/ui/JobPostCard';
 
-import React from 'react'
+
 import Badge from 'shared/ui/Badge/Badge';
 import Button from 'shared/ui/Button/Button';
+import InputHeader from 'shared/ui/Input/InputHeader';
 import { InputSelect } from 'shared/ui/Input/InputSelect';
 import { InputSelectCustom } from 'shared/ui/Input/InputSelectCustom';
 import { InputText } from 'shared/ui/Input/InputText';
@@ -82,8 +83,14 @@ const TestPage = () => {
       <JobPostCard
         data={dummyJobPost}
       />
+      <br />
+
+      <InputHeader title='근무내용' />
+      <br />
+      <br />
 
     </TestPageStyle>
+
 
   )
 }

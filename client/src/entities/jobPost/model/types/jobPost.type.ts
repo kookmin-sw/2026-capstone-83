@@ -115,6 +115,8 @@ export interface GetJobPostsParams {
   sortType?: 'WAGE' | 'LOCATION' | 'WORK_DATE'; // 정렬 기준 필터
 }
 
+// 목록 조회 응답
+// offset 응답
 export interface JobPostListOffset {
   jobPosts: JobPost[]; // 공고 목록
   totalElements: number; // 전체 공고 개수
@@ -124,10 +126,10 @@ export interface JobPostListOffset {
   isLast: boolean;       // 마지막 페이지 여부 
 }
 
+//커서 응답
 export interface JobPostListCursor {
   jobPosts: JobPost[]; // 공고 목록
   nextCursor: number | string | null; // 다음 요청 시 사용할 기준 ID (더 이상 없으면 null)
   hasNext: boolean;                   // 다음 페이지가 있는지 여부
 }
-
 

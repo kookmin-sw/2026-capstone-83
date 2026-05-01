@@ -1,6 +1,7 @@
 import type { BadgeScheme } from "shared/types/theme";
 import type { ApplyStatus, PostStatus } from "./types/jobPost.type";
 
+export const PAGE_SIZE = 12; // 페이지당 공고 수
 
 interface StatusInfo {
   label: string;
@@ -21,4 +22,4 @@ export const APPLICATION_STATUS_MAP = {
   SELECTED: { label: '승인 대기', scheme: 'secondary' },
   HIRED: { label: '채용 확정', scheme: 'success' },
   REJECTED: { label: '지원 종료', scheme: 'error' },
-} as const satisfies Record<ApplyStatus, StatusInfo>;
+} as const satisfies Record<ApplyStatus, StatusInfo | null>;

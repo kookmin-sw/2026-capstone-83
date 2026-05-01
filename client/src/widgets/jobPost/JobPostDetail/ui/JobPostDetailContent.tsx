@@ -1,12 +1,10 @@
 
-
-
 import { fetchMockJobPost } from 'entities/jobPost/api/jobPost.api';
 import type { JobPostDetail } from 'entities/jobPost/model/types/jobPost.type';
-import { JobPostDescriptionSection } from 'entities/jobPost/ui/JobPostDescriptionSection';
-import { JobPostDetailOverviewSection } from 'entities/jobPost/ui/JobPostDetailOverviewSection';
-import { JobPostLocationSection } from 'entities/jobPost/ui/JobPostLocationSection';
-import { JobPostWorkContentSection } from 'entities/jobPost/ui/JobPostWorkContentSection';
+import { JobPostDescriptionSection } from 'entities/jobPost/ui/detailSections/JobPostDescriptionSection';
+import { JobPostDetailOverviewSection } from 'entities/jobPost/ui/detailSections/JobPostDetailOverviewSection';
+import { JobPostLocationSection } from 'entities/jobPost/ui/detailSections/JobPostLocationSection';
+import { JobPostWorkContentSection } from 'entities/jobPost/ui/detailSections/JobPostWorkContentSection';
 import { useEffect, useState } from 'react';
 //import { ApplyButton, LikeButton } from 'features/jobApply'; // 지원 관련 기능
 import Article from 'shared/ui/Layout/Article';
@@ -30,7 +28,11 @@ export const JobPostDetailContent = ({ postId }: Props) => {
     });
   }, [postId]);
 
-  const { location } = detailData || {};
+  if (!detailData) {
+    return <Main><Article><div>로딩 중...</div></Article></Main>;
+  }
+
+  const { location } = detailData;
 
   return (
     <Main>

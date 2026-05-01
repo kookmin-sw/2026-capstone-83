@@ -53,6 +53,11 @@ const createButtonScheme = (color: Theme['color']): Theme['buttonScheme'] => ({
     backgroundColor: 'transparent',
     border: `1px solid ${color.border}`,
   },
+  icon: {
+    color: color.thirdText,
+    backgroundColor: color.background,
+    border: color.border,
+  },
 
 });
 
@@ -107,6 +112,7 @@ export const light: Theme = {
   buttonSize: {
     xsmall: { padding: '0.25rem 0.625rem' },
     small: { padding: '0.5rem 0.875rem' },
+    smallMedium: { padding: '1rem 1.5rem' },
     medium: { padding: '1rem 5rem' },
     large: { width: '100%', padding: '1rem 0' },
   },

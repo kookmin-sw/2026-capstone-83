@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { ButtonGroup, ErrorMsg, Label, RequiredMark, Wrapper } from './InputStyle';
 import Button from 'shared/ui/Button/Button'; // 기존 버튼 컴포넌트 import
 import type { FontSizeKey } from 'shared/types/theme';

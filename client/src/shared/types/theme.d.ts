@@ -30,6 +30,7 @@ export type FontWeightKey = 'regular' | 'medium' | 'semibold' | 'bold';
 export type ButtonSize =
   | 'large'
   | 'medium'
+  | 'smallMedium'
   | 'small'
   | 'xsmall';
 
@@ -38,7 +39,9 @@ export type ButtonScheme =
   | 'secondary'
   | 'option'
   | 'optionActive'
-  | 'like';
+  | 'like'
+  | 'icon'
+  ;
 
 export type BadgeScheme = 'primary' | 'secondary' | 'success' | 'neutral' | 'warning' | 'error';
 

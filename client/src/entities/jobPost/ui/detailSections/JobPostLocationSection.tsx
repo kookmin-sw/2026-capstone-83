@@ -1,4 +1,4 @@
-import React from 'react'
+
 import Section from 'shared/ui/Layout/Section';
 import styled from 'styled-components'
 

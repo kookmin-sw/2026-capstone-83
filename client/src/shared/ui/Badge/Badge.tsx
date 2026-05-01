@@ -26,8 +26,8 @@ export const BadgeStyle = styled.span<Props>`
   padding: 4px 12px;
   border-radius: 8px; 
   font-size: ${({ theme, fontSize }) => (fontSize ? theme.fontSize[fontSize] : theme.fontSize.xsmall)};
-  color: ${({ theme, scheme }) => theme.badgeScheme[scheme].color};
-  background-color: ${({ theme, scheme }) => theme.badgeScheme[scheme].backgroundColor};
+  color: ${({ theme, scheme }) => theme.badgeScheme[scheme!].color};
+  background-color: ${({ theme, scheme }) => theme.badgeScheme[scheme!].backgroundColor};
   font-weight: 600;
   line-height: 1.4;
   white-space: nowrap;
