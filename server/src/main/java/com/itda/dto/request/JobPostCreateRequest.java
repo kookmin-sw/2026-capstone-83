@@ -15,16 +15,13 @@ import java.util.List;
  */
 public record JobPostCreateRequest(
 
-        // 공고가 속할 사업장 ID
-        Long workplaceId,
-
         // 공고 제목
         String title,
 
-        // 업종 대분류 (건설·건축 / 물류·운송 등)
+        // 업종 대분류 - 옵셔널 (프론트 작업 전까지)
         String jobCategory,
 
-        // 업종 소분류
+        // 업종 소분류 - 옵셔널
         String jobSubcategory,
 
         // 급여 금액
@@ -63,7 +60,7 @@ public record JobPostCreateRequest(
         // 우대사항 목록
         List<String> benefits,
 
-        // 업무 내용 목록 (필수)
+        // 업무 내용 목록
         List<String> tasks,
 
         // 준비물 목록
@@ -74,7 +71,8 @@ public record JobPostCreateRequest(
         return JobPost.builder()
                 .workplace(workplace)
                 .title(title)
-                .jobCategory(jobCategory)
+                // jobCategory null이면 "미분류"로 기본값 처리
+                .jobCategory(jobCategory != null ? jobCategory : "미분류")
                 .jobSubcategory(jobSubcategory)
                 .wage(wage)
                 .wageType(WageType.valueOf(wageType))
@@ -82,7 +80,7 @@ public record JobPostCreateRequest(
                 .workStart(LocalTime.parse(workStart))
                 .workEnd(LocalTime.parse(workEnd))
                 .totalSlots(totalSlots)
-                .status(JobPostStatus.OPEN) // 등록 시 기본값 OPEN
+                .status(JobPostStatus.OPEN)
                 .deadline(LocalDate.parse(deadline))
                 .description(description)
                 .s3ContentUrl(s3ContentUrl)
