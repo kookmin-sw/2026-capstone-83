@@ -1,5 +1,4 @@
 
-import { useJobPost } from 'entities/jobPost/model/hooks/useJobPost';
 import { useParams } from 'react-router-dom';
 
 import styled from 'styled-components'

@@ -63,9 +63,7 @@ export const JobPostBasicInfoFields = ({ register, errors, previewUrl, imageActi
 
         {/* 근무 일시 (날짜 및 시간 범위) */}
         <S.RowGrid $cols="1fr auto 1fr auto 1fr auto 1fr">
-          <InputText label="근무 일시" type="date" {...register('workDateStart')} />
-          <S.Separator>~</S.Separator>
-          <InputText type="date" {...register('workDateEnd')} />
+          <InputText label="근무 일시" type="date" {...register('workDate')} />
           <S.VerticalDivider />
           <InputText type="time" {...register('workStart')} />
           <S.Separator>~</S.Separator>
