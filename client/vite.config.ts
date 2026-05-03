@@ -12,10 +12,10 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, __dirname, '');
 
   console.log('현재 모드:', mode);
-  console.log('읽어온 API 주소:', env.VITE_API_BASE_URL);
+  console.log('읽어온 API 주소:', env.VITE_PROXY_TARGET);
 
   // 프록시 target은 항상 실제 백엔드 주소를 사용 (.env 기본값)
-  const apiTarget = env.VITE_API_BASE_URL || 'http://localhost:8080';;
+  const apiTarget = env.VITE_PROXY_TARGET || 'http://localhost:8080';;
 
   return {
     plugins: [react()],
