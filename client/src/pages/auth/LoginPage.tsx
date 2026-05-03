@@ -1,14 +1,12 @@
-
-import styled from 'styled-components'
+import LoginForm from 'features/auth/ui/LoginForm';
+import { AuthPageBackground } from 'features/auth/ui/Auth.styled';
 
 const LoginPage = () => {
   return (
-    <LoginPageStyle>
-      <h1>LoginPage</h1>
-    </LoginPageStyle>
-  )
-}
+    <AuthPageBackground>
+      <LoginForm />
+    </AuthPageBackground>
+  );
+};
 
-const LoginPageStyle = styled.div``;
-
-export default LoginPage
+export default LoginPage;

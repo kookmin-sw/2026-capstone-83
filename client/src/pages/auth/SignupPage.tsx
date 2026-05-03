@@ -1,14 +1,12 @@
-
-import styled from 'styled-components'
+import SignupForm from 'features/auth/ui/SignupForm';
+import { AuthPageBackground } from 'features/auth/ui/Auth.styled';
 
 const SignupPage = () => {
   return (
-    <SignupPageStyle>
-      <h1>SignupPage</h1>
-    </SignupPageStyle>
-  )
-}
+    <AuthPageBackground>
+      <SignupForm />
+    </AuthPageBackground>
+  );
+};
 
-const SignupPageStyle = styled.div``;
-
-export default SignupPage
+export default SignupPage;

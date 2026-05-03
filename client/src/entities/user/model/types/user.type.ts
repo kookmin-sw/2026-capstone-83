@@ -1,6 +1,9 @@
 
+export type UserType = 'APPLICANT' | 'EMPLOYER' | 'MANAGER';
+
+
 export interface User {
-  role: string;
+  role: UserType;
   name: string;
   gender: number;
   email: string;
