@@ -1,6 +1,5 @@
 
-import { logout } from 'entities/auth/api/auth.api';
-import { useLogin, useLogout } from 'entities/auth/model/hooks/useAuth';
+import { useLogout } from 'entities/auth/model/hooks/useAuth';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import { useNavigate } from 'react-router-dom';
 import Button from 'shared/ui/Button/Button';
