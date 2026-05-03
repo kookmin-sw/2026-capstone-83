@@ -57,7 +57,6 @@ export const useRefresh = () => {
 };
 
 export const useLogout = () => {
-  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const clearAuth = useAuthStore((state) => state.clearAuth);
 
@@ -70,7 +69,6 @@ export const useLogout = () => {
       // 캐시된 모든 쿼리 무효화 (이전 사용자의 데이터 유출 방지)
       queryClient.clear();
 
-      navigate('/login');
     },
   });
 };
