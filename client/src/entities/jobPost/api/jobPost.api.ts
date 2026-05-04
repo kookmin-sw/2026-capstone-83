@@ -1,4 +1,4 @@
-import { httpClient } from "shared/api/httpClient";
+import { authClient, httpClient } from "shared/api/httpClient";
 import type { GetJobPostsParams, JobPost, JobPostCreate, JobPostDetail, JobPostListCursor } from "../model/types/jobPost.type";
 import mockJobPostData from "shared/mocks/data/mockJobPostData.json";
 import { toFormData } from "shared/lib/toFormData";
@@ -31,10 +31,10 @@ export const createJobPost = async (data: JobPostCreate) => {
   // form data 변환 유틸함수
   const formData = toFormData(data);
 
-  const response = await httpClient.post('/api/v1/job-posts', formData,
+  const response = await authClient.post('/api/v1/job-posts', formData,
     {
       params: {
-        workplaceId: 1,
+        workplaceId: 1, // 나중에 작업장 받아서 넣기
       },
     }
   );

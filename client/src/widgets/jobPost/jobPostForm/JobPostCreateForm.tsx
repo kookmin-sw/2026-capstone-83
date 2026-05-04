@@ -16,8 +16,8 @@ import { ImageUploadButton } from 'features/control-Image/UploadButton';
 import { ImageRemoveButton } from 'features/control-Image/RemoveButton';
 import { AddressSearchButton } from 'features/search-address/AddressSearchButton';
 import { splitByComma } from 'shared/lib/transformString';
-import Button from 'shared/ui/Button/Button';
 import { useCreateJobPost } from 'features/jobPost/hooks/useCreateJobPost';
+import CreateJobPostButton from 'features/jobPost/create-jobPost/CreateJobPostButton';
 
 export const JobPostCreateForm = () => {
   const { handleSubmit, register, setValue, formState } = useForm<JobPostCreate>(); // 폼 상태 관리
@@ -108,9 +108,7 @@ export const JobPostCreateForm = () => {
               }
             />
             <SubmitBlockSection>
-              <Button type="submit" scheme="primary" buttonSize="smallMedium" style={{ width: '100%' }}>
-                공고 등록
-              </Button>
+              <CreateJobPostButton />
             </SubmitBlockSection>
           </FieldsSection>
 
@@ -120,9 +118,7 @@ export const JobPostCreateForm = () => {
               onSave={methods.handleSubmit(onSave)}
               onTemporarySave={onTemporarySave}
             /> */}
-            <Button type="submit" scheme="primary" buttonSize="smallMedium" style={{ width: '100%' }}>
-              공고 등록
-            </Button>
+            <CreateJobPostButton />
           </StickySection>
 
         </FormContainer>

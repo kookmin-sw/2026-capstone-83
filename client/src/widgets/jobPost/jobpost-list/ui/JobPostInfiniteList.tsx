@@ -5,6 +5,8 @@ import { JobPostCard } from 'entities/jobPost/ui/JobPostCard';
 import * as S from './JobPostList.styled';
 import { useJobPostsInfinite } from 'entities/jobPost/model/hooks/useJobPostsInfinite';
 import type { GetJobPostsParams } from 'entities/jobPost/model/types/jobPost.type';
+import Loading from 'shared/ui/Loading/Loading';
+import Empty from 'shared/ui/Empty/Empty';
 
 export const JobPostInfiniteList = ({ filterParams }: { filterParams: GetJobPostsParams }) => {
   // 1. 무한 스크롤 훅 호출
@@ -26,8 +28,8 @@ export const JobPostInfiniteList = ({ filterParams }: { filterParams: GetJobPost
     }
   }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  if (status === 'pending') return <div>공고 불러오는 중...</div>;
-  if (status === 'error') return <div>데이터를 불러오는 데 실패했습니다.</div>;
+  if (status === 'pending') return <Loading message="공고 불러오는 중..." />;
+  if (status === 'error') return <Empty message="데이터를 불러오는 데 실패했습니다." />;
 
   return (
     <S.ListContainer>
@@ -40,7 +42,7 @@ export const JobPostInfiniteList = ({ filterParams }: { filterParams: GetJobPost
 
       {/* 4. 리스트 끝 관찰용 타겟 */}
       <S.ObserverTarget ref={ref}>
-        {isFetchingNextPage && <p>더 많은 공고 로딩 중...</p>}
+        {isFetchingNextPage && <Loading message="더 많은 공고 로딩 중..." />}
       </S.ObserverTarget>
     </S.ListContainer>
   );

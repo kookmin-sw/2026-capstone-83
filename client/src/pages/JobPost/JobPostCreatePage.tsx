@@ -6,7 +6,7 @@ import { JobPostCreateForm } from 'widgets/jobPost/jobPostForm/JobPostCreateForm
 const JobPostCreatePage = () => {
   return (
     <JobPostCreatePageStyle>
-      <h1>JobPostCreatePage</h1>
+
       <JobPostCreateForm />
     </JobPostCreatePageStyle>
   )

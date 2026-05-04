@@ -4,6 +4,7 @@ import { JobPostCard } from 'entities/jobPost/ui/JobPostCard';
 import * as S from './JobPostList.styled';
 import type { JobPost } from 'entities/jobPost/model/types/jobPost.type';
 import { fetchMockJobPosts } from 'entities/jobPost/api/jobPost.api';
+import Loading from 'shared/ui/Loading/Loading';
 
 export const JobPostList = () => {
   // data fetch
@@ -19,7 +20,7 @@ export const JobPostList = () => {
     });
   }, []);
 
-  if (isLoading) return <div>공고 불러오는 중...</div>;
+  if (isLoading) return <Loading message="공고 불러오는 중..." />;
 
   return (
     <S.ListContainer>

@@ -1,14 +1,7 @@
-
-import styled from 'styled-components'
+import SignupForm from 'features/auth/ui/SignupForm';
 
 const SignupPage = () => {
-  return (
-    <SignupPageStyle>
-      <h1>SignupPage</h1>
-    </SignupPageStyle>
-  )
-}
+  return <SignupForm />;
+};
 
-const SignupPageStyle = styled.div``;
-
-export default SignupPage
+export default SignupPage;
