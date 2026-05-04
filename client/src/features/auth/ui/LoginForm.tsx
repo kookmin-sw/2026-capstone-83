@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { LoginRequest } from 'entities/auth/model/types/auth.type';
 import type { UserType } from 'entities/user/model/types/user.type';
 import { useLogin } from 'entities/auth/model/hooks/useAuth';
@@ -33,7 +33,9 @@ const LoginForm = () => {
 
   return (
     <AuthCard>
-      <LogoImage src={FullLogo} alt="잇다 로고" />
+      <Link to={'/'}>
+        <LogoImage src={FullLogo} alt="잇다 로고" />
+      </Link>
 
       <RoleTabs selectedRole={role} onRoleChange={setRole} />
 

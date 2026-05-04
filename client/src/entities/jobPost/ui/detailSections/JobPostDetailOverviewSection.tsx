@@ -5,6 +5,7 @@ import { Calendar, Clock } from 'lucide-react';
 import Section from 'shared/ui/Layout/Section';
 import { calculateDDay } from 'shared/lib/calculateDDay';
 import type { JobPostOverviewProps } from '../../model/types/jobPost.type';
+import Loading from 'shared/ui/Loading/Loading';
 
 
 interface Props {
@@ -15,7 +16,7 @@ interface Props {
 export const JobPostDetailOverviewSection = ({ data, actions }: Props) => {
 
   if (!data) {
-    return <div>로딩 중...</div>; // 또는 null
+    return <Loading message="공고 개요를 불러오는 중..." />;
   }
 
   const {

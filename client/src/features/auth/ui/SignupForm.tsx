@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import type { SignupRequest } from 'entities/auth/model/types/auth.type';
 import type { UserType } from 'entities/user/model/types/user.type';
 import { useSignup } from 'entities/auth/model/hooks/useAuth';
@@ -15,6 +15,7 @@ import {
   AuthFooter,
   AuthLink,
   LogoImage,
+  RowGrid,
 } from './Auth.styled';
 import { ButtonGroup } from 'shared/ui/Input/InputStyle';
 
@@ -54,7 +55,9 @@ const SignupForm = () => {
 
   return (
     <AuthCard>
-      <LogoImage src={FullLogo} alt="잇다 로고" />
+      <Link to={'/'}>
+        <LogoImage src={FullLogo} alt="잇다 로고" />
+      </Link>
 
       <RoleTabs selectedRole={role} onRoleChange={handleRoleChange} />
 
@@ -129,6 +132,7 @@ const SignupForm = () => {
                 type="button"
                 scheme={selectedGender === value ? 'optionActive' : 'option'}
                 buttonSize="small"
+                fontSize='small'
                 borderRadius="round"
                 onClick={() => setValue('gender', value)}
               >
@@ -139,7 +143,7 @@ const SignupForm = () => {
         </div>
 
         {/* 주소 */}
-        <div>
+        <RowGrid $cols="3fr 1fr">
           <InputText
             label="주소"
             labelSize="xsmall"
@@ -154,9 +158,13 @@ const SignupForm = () => {
           <ButtonGroup>
             <AddressSearchButton
               onAddressSelect={(address) => setValue('location', address)}
+              buttonSize='small'
+              fontSize='small'
             />
           </ButtonGroup>
-        </div>
+        </RowGrid>
+
+
 
         {/* 고용주일 때만 사업자번호 노출 */}
         {role === 'EMPLOYER' && (

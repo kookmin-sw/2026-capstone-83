@@ -7,6 +7,8 @@ import { JobPostWorkContentSection } from 'entities/jobPost/ui/detailSections/Jo
 //import { ApplyButton, LikeButton } from 'features/jobApply'; // 지원 관련 기능
 import Article from 'shared/ui/Layout/Article';
 import Main from 'shared/ui/Layout/Main';
+import Loading from 'shared/ui/Loading/Loading';
+import Empty from 'shared/ui/Empty/Empty';
 
 
 interface Props {
@@ -20,8 +22,8 @@ export const JobPostDetailContent = ({ postId }: Props) => {
 
   const { data: post, isLoading, isError } = useJobPost(postId);
 
-  if (isLoading) return <div>공고 내용을 불러오는 중입니다...</div>;
-  if (isError || !post) return <div>공고를 찾을 수 없습니다.</div>;
+  if (isLoading) return <Loading message="공고 내용을 불러오는 중입니다..." />;
+  if (isError || !post) return <Empty message="공고를 찾을 수 없습니다." />;
 
 
 

@@ -1,12 +1,7 @@
 import SignupForm from 'features/auth/ui/SignupForm';
-import { AuthPageBackground } from 'features/auth/ui/Auth.styled';
 
 const SignupPage = () => {
-  return (
-    <AuthPageBackground>
-      <SignupForm />
-    </AuthPageBackground>
-  );
+  return <SignupForm />;
 };
 
 export default SignupPage;

@@ -3,25 +3,24 @@ import { AppThemeProvider } from "./AppThemeProvider"
 import Routers from "./Routers"
 import { queryClient } from "./queryClient"
 import { useAuthInit } from "features/auth/model/hooks/useAuthInit"
+import Loading from "shared/ui/Loading/Loading"
 
 function AppInner() {
   const { isInitializing } = useAuthInit();
 
   if (isInitializing) {
-    return <div>로딩 중</div>
+    return <Loading message="앱을 준비하는 중..." />
   }
 
-  return (
-    <AppThemeProvider>
-      <Routers />
-    </AppThemeProvider>
-  )
+  return <Routers />;
 }
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <AppInner />
+      <AppThemeProvider>
+        <AppInner />
+      </AppThemeProvider>
     </QueryClientProvider>
   )
 }

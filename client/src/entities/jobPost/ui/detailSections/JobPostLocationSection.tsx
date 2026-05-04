@@ -1,11 +1,12 @@
 
 import Section from 'shared/ui/Layout/Section';
 import styled from 'styled-components'
+import Loading from 'shared/ui/Loading/Loading';
 
 export const JobPostLocationSection = ({ address }: { address: string }) => {
 
   if (!address) {
-    return <div>로딩 중...</div>; // 또는 null
+    return <Loading message="근무지 정보를 불러오는 중..." />;
   }
 
   return (

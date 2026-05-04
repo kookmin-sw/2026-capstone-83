@@ -2,11 +2,12 @@
 import Section from 'shared/ui/Layout/Section';
 import styled from 'styled-components'
 import type { JobPostDescriptionProps } from '../../model/types/jobPost.type';
+import Loading from 'shared/ui/Loading/Loading';
 
 export const JobPostDescriptionSection = ({ data }: { data: JobPostDescriptionProps }) => {
 
   if (!data) {
-    return <div>로딩 중...</div>; // 또는 null
+    return <Loading message="상세 정보를 불러오는 중..." />;
   }
 
   const { description, descriptionUrl } = data;

@@ -89,3 +89,11 @@ export const AuthLink = styled.span`
     text-decoration: underline;
   }
 `;
+
+export const RowGrid = styled.div<{ $cols: string }>`
+  display: grid;
+  grid-template-columns: ${({ $cols }) => $cols};
+  align-items: flex-end;
+  gap: 12px;
+`;
+
