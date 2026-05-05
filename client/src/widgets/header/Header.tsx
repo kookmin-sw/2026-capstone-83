@@ -9,6 +9,8 @@ import * as S from './Header.styled';
 
 const NAV_ITEMS = [
   { label: '공고', path: '/jobposts' },
+  { label: '인재 찾기', path: '/test' },
+  { label: '작업 관리', path: '/test' }
 ];
 
 const Header = () => {
