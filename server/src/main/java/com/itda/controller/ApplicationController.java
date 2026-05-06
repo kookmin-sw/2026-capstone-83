@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -66,14 +66,11 @@ public class ApplicationController {
     // 근무 일정 조회
     @GetMapping("/api/v1/worker/schedule")
     public ResponseEntity<List<ScheduleResponse>> getMySchedule(
-            @RequestParam int year,
-            @RequestParam int month,
+            @RequestParam LocalDate fromDate,
+            @RequestParam LocalDate toDate,
             @AuthenticationPrincipal User user) {
         List<ScheduleResponse> result = applicationService
-                .getMySchedule(user.getId(), year, month)
-                .stream()
-                .map(ScheduleResponse::from)
-                .toList();
+                .getMySchedule(user.getId(), fromDate, toDate);
         return ResponseEntity.ok(result);
     }
 

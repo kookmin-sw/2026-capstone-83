@@ -9,10 +9,14 @@ import com.itda.repository.ApplicationRepository;
 import com.itda.repository.JobPostRepository;
 import com.itda.exception.DuplicateException;
 import com.itda.exception.NotFoundException;
+import com.itda.dto.response.ScheduleResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.Map;
+import java.time.LocalDate;
 
 
 @Service
@@ -130,17 +134,12 @@ public class ApplicationService {
         return applicationRepository.findByJobPostId(jobPostId);
     }
 
-    // 내 지원 목록 (지원자)
-    public List<Application> getMyApplications(Long applicantUserId) {
-        return applicationRepository.findByApplicantUserId(applicantUserId);
-    }
     // 지원 여부 확인 (구직자)
     public boolean hasApplied(Long jobPostId, Long applicantUserId) {
         return applicationRepository
                 .findByJobPostIdAndApplicantUserId(jobPostId, applicantUserId)
                 .isPresent();
     }
-
     // 내 지원 목록 (지원자) - status 필터 선택적
     public List<Application> getMyApplications(Long applicantUserId, ApplicationStatus status) {
         if (status != null) {
@@ -148,14 +147,23 @@ public class ApplicationService {
         }
         return applicationRepository.findByApplicantUserId(applicantUserId);
     }
-    // 근무 일정 조회 (HIRED 상태 + 연월 필터)
-    public List<Application> getMySchedule(Long applicantUserId, int year, int month) {
-        return applicationRepository.findByApplicantUserIdAndStatus(applicantUserId, ApplicationStatus.HIRED)
-                .stream()
-                .filter(a -> {
-                    var date = a.getJobPost().getWorkDate();
-                    return date.getYear() == year && date.getMonthValue() == month;
-                })
+
+    // 내 지원 목록 (지원자) - status 필터 선택적
+    public List<ScheduleResponse> getMySchedule(Long applicantUserId, LocalDate fromDate, LocalDate toDate) {
+        List<Application> applications = applicationRepository
+                .findByApplicantUserIdAndStatusAndJobPost_WorkDateBetween(
+                        applicantUserId, ApplicationStatus.HIRED, fromDate, toDate);
+
+        return applications.stream()
+                .collect(Collectors.groupingBy(a -> a.getJobPost().getWorkDate()))
+                .entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
+                .map(entry -> ScheduleResponse.builder()
+                        .date(entry.getKey().toString())
+                        .schedules(entry.getValue().stream()
+                                .map(ScheduleResponse.ScheduleItemResponse::from)
+                                .toList())
+                        .build())
                 .toList();
     }
 }

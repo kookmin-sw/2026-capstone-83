@@ -5,6 +5,7 @@ import com.itda.enums.ApplicationStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Repository
@@ -24,4 +25,8 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     // 지원자별 특정 상태 목록
     List<Application> findByApplicantUserIdAndStatus(Long applicantUserId, ApplicationStatus status);
+
+    List<Application> findByApplicantUserIdAndStatusAndJobPost_WorkDateBetween(
+            Long applicantUserId, ApplicationStatus status, LocalDate from, LocalDate to
+    );
 }
