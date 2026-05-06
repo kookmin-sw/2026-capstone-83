@@ -99,6 +99,7 @@ const Content = styled.div`
   flex: 1;
   overflow-y: auto;
   padding: 48px 32px 24px;
+
 `;
 
 const Actions = styled.div`
@@ -108,6 +109,28 @@ const Actions = styled.div`
 
   & > * {
     flex: 1;
+  }
+`;
+
+
+
+export const ModalContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 36px;
+  padding: 40px 0;
+
+  h2 {
+    font-size: ${({ theme }) => theme.fontSize.large};
+    font-weight: ${({ theme }) => theme.fontWeight.semibold};
+  }
+
+  p {
+    font-size: ${({ theme }) => theme.fontSize.small};
+    color: ${({ theme }) => theme.color.subText};
   }
 `;
 

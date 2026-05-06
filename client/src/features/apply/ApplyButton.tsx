@@ -4,8 +4,8 @@ import { UserRoundPlus } from 'lucide-react';
 import { useApply } from 'entities/application/model/hooks/useApply';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import Button from 'shared/ui/Button/Button';
-import Modal from 'shared/ui/Modal/Modal';
-import styled from 'styled-components';
+import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
+
 
 interface Props {
   jobPostId: number;
@@ -122,24 +122,5 @@ const ApplyButton = ({ jobPostId }: Props) => {
   );
 };
 
-const ModalContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 12px;
-  padding: 40px 0;
-
-  h2 {
-    font-size: ${({ theme }) => theme.fontSize.large};
-    font-weight: ${({ theme }) => theme.fontWeight.semibold};
-  }
-
-  p {
-    font-size: ${({ theme }) => theme.fontSize.small};
-    color: ${({ theme }) => theme.color.subText};
-  }
-`;
 
 export default ApplyButton;

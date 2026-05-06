@@ -4,10 +4,10 @@ import { Bell, User } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import { useLogout } from 'entities/auth/model/hooks/useAuth';
 import Button from 'shared/ui/Button/Button';
-import Modal from 'shared/ui/Modal/Modal';
+import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
 import KoreanIconLogo from 'shared/assets/KoreanIconLogo.svg';
 import * as S from './Header.styled';
-import styled from 'styled-components';
+
 
 const NAV_ITEMS = [
   { label: '공고', path: '/jobposts' },
@@ -181,25 +181,5 @@ const Header = () => {
   );
 };
 
-const ModalContent = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: 12px;
-  padding: 40px 0;
-
-  h2 {
-    font-size: ${({ theme }) => theme.fontSize.large};
-    font-weight: ${({ theme }) => theme.fontWeight.semibold};
-  }
-
-  p {
-    font-size: ${({ theme }) => theme.fontSize.small};
-    color: ${({ theme }) => theme.color.subText};
-    line-height: 1.6;
-  }
-`;
 
 export default Header;

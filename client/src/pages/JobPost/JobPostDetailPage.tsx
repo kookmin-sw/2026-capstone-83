@@ -12,6 +12,9 @@ const JobPostDetailPage = () => {
   );
 };
 
-const JobPostDetailPageStyle = styled.div``;
+const JobPostDetailPageStyle = styled.div`
+
+
+`;
 
 export default JobPostDetailPage;
