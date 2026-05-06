@@ -4,11 +4,12 @@ import { JobPostDescriptionSection } from 'entities/jobPost/ui/detailSections/Jo
 import { JobPostDetailOverviewSection } from 'entities/jobPost/ui/detailSections/JobPostDetailOverviewSection';
 import { JobPostLocationSection } from 'entities/jobPost/ui/detailSections/JobPostLocationSection';
 import { JobPostWorkContentSection } from 'entities/jobPost/ui/detailSections/JobPostWorkContentSection';
-//import { ApplyButton, LikeButton } from 'features/jobApply'; // 지원 관련 기능
+import ApplyButton from 'features/apply/ApplyButton';
 import Article from 'shared/ui/Layout/Article';
 import Main from 'shared/ui/Layout/Main';
 import Loading from 'shared/ui/Loading/Loading';
 import Empty from 'shared/ui/Empty/Empty';
+import StickyBar from 'shared/ui/StickyBar/StickyBar';
 
 
 interface Props {
@@ -17,8 +18,6 @@ interface Props {
 
 
 export const JobPostDetailContent = ({ postId }: Props) => {
-
-
 
   const { data: post, isLoading, isError } = useJobPost(postId);
 
@@ -35,7 +34,12 @@ export const JobPostDetailContent = ({ postId }: Props) => {
         {/* 1. 상단 개요 섹션 (비즈니스 로직인 버튼 포함) */}
         <JobPostDetailOverviewSection
           data={post}
-        //actions={<><LikeButton id={detailData.id} /><ApplyButton id={detailData.id} /></>}
+          actions={
+            <>
+              {/* 추후 LikeButton 추가 위치 */}
+              <ApplyButton jobPostId={post.id} />
+            </>
+          }
         />
 
         {/* 2. 근무 내용 섹션 */}
@@ -44,10 +48,15 @@ export const JobPostDetailContent = ({ postId }: Props) => {
         {/* 3. 근무지 섹션 (지도 포함) */}
         <JobPostLocationSection address={location} />
 
-
         {/* 4. 상세 정보 섹션 */}
         <JobPostDescriptionSection data={post} />
       </Article>
+
+      {/* 하단 Sticky 지원 바 */}
+      <StickyBar>
+        {/* 추후 LikeButton 추가 위치 */}
+        <ApplyButton jobPostId={post.id} />
+      </StickyBar>
     </Main>
   );
 };

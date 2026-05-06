@@ -25,7 +25,11 @@ const LoginForm = () => {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<LoginRequest>();
+  } = useForm<LoginRequest>({
+    // defaultValues: {
+    //   role: 'APPLICANT',
+    // },
+  });
 
   const onSubmit = (data: LoginRequest) => {
     mutate(data);
