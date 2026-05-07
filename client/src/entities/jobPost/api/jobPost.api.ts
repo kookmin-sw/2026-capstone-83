@@ -1,5 +1,5 @@
 import { authClient, httpClient } from "shared/api/httpClient";
-import type { GetJobPostsParams, JobPost, JobPostCreate, JobPostDetail, JobPostListCursor } from "../model/types/jobPost.type";
+import type { GetJobPostsParams, JobPost, JobPostCreate, JobPostDetail, JobPostListCursor, JobPostUpdate } from "../model/types/jobPost.type";
 import mockJobPostData from "shared/mocks/data/mockJobPostData.json";
 import { toFormData } from "shared/lib/toFormData";
 
@@ -41,16 +41,34 @@ export const createJobPost = async (data: JobPostCreate) => {
   return response.data;
 };
 
+//공고 수정
+export const updateJobPost = async (data: JobPostUpdate) => {
+  const { id, ...updateFields } = data;
+
+  const formData = toFormData(updateFields);
+
+  const response = await authClient.put(`/api/v1/job-posts/${id}`, formData);
+  return response.data;
+}
+
+
+//공고 삭제
+export const deleteJobPost = async (id: number) => {
+  const response = await authClient.delete(`/api/v1/job-posts/${id}`);
+  return response.data;
+}
+
 
 //고용주 공고 목록 조회
-// const fetchJobPostsByEmployer = async (data: GetJobPostsParams): Promise<JobPostListCursor> => {
-//   const response = await authClient.get<JobPostListCursor>('/api/vi/job-posts/employer',
-//     {
-//       params: data,
-//     }
-//   );
-//   return response.data;
-// }
+export const fetchJobPostsByEmployer = async (data: GetJobPostsParams): Promise<JobPostListCursor> => {
+  const response = await authClient.get<JobPostListCursor>('/api/vi/job-posts/employer',
+    {
+      params: data,
+    }
+  );
+  return response.data;
+}
+
 
 
 

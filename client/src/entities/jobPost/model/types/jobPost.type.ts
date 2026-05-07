@@ -90,9 +90,37 @@ export interface JobPostCreate {
   items?: string[];
 }
 
+
 export interface JobPostCreateResponse {
   newPost: JobPostDetail;
 }
+
+
+export interface JobPostUpdate {
+  id: number;
+  workplaceId?: number;
+  title: string;
+  company: string;
+  companyLogoImage?: File | null;
+  location: string;
+  wage: number;
+  wageType: WageType;
+  totalSlots: number;
+  filledSlots: number;
+  workDate: string;
+  workStart: string;
+  workEnd: string;
+  deadline: string;
+  description?: string;
+  descriptionImage?: File | null;
+  requirements?: string[];
+  benefits?: string[];
+  tasks: string[];
+  items?: string[];
+}
+
+
+
 
 
 //공고 목록 조회 할 때, 페이지네이션 어떻게 할 지 생각해주세요!
