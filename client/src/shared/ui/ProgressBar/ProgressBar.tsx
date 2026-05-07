@@ -1,4 +1,4 @@
-import React from 'react';
+
 import { BarContainer, Filler, Label, Wrapper } from './ProgressBarStyle';
 
 

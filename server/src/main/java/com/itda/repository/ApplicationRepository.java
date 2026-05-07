@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.time.LocalDate;
 import java.util.Optional;
 
 @Repository
@@ -44,6 +45,11 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     // 지원자별 특정 상태 목록
     List<Application> findByApplicantUserIdAndStatus(Long applicantUserId, ApplicationStatus status);
+
+    // 구직자 근무 일정 조회 (HIRED 상태 + 기간 필터)
+    List<Application> findByApplicantUserIdAndStatusAndJobPost_WorkDateBetween(
+            Long applicantUserId, ApplicationStatus status, LocalDate from, LocalDate to
+    );
 
     // 유저의 매칭 횟수 (HIRED + COMPLETED 건수)
     long countByApplicantUserIdAndStatusIn(Long applicantUserId, List<ApplicationStatus> statuses);

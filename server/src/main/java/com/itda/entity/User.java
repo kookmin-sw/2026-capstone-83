@@ -40,27 +40,27 @@ public class User {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @Column(nullable = false, length = 100)
+    @Column(unique = true, nullable = false, length = 100)
     private String email;
 
     @Column(nullable = false, length = 20)
     private String phone;
 
-    @Column(name = "profile_image_url", length = 500)
-    private String profileImageUrl;
-
-    // 생년월일 (나이 계산용)
     @Column(name = "birth_date")
     private LocalDate birthDate;
 
-    // 성별
     @Enumerated(EnumType.STRING)
-    @Column(length = 10)
+    @Column(name = "gender", length = 10)
     private Gender gender;
 
-    // 거주 지역
+    @Column(name = "location", length = 255)
+    private String location;
+
     @Column(length = 255)
     private String address;
+
+    @Column(name = "profile_image_url", length = 500)
+    private String profileImageUrl;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 10)

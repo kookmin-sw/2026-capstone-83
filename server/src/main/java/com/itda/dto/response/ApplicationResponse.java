@@ -9,9 +9,9 @@ import com.itda.entity.Application;
 public record ApplicationResponse(
         Long applicationId,
         Long jobPostId,
-        String title,       // 공고 제목
-        String company,     // 회사명
-        String status,      // APPLIED / HIRED / REJECTED / OFFERED / PENDING / COMPLETED
+        String title,
+        String company,
+        String status,
         String appliedAt
 ) {
     public static ApplicationResponse from(Application application) {

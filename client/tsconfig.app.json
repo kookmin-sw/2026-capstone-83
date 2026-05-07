@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".", // 기준 경로를 프로젝트 루트로 설정[cite: 5]
     "paths": {
       "app/*": [

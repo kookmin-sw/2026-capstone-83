@@ -8,14 +8,14 @@ import java.util.Map;
  * 고용자 캘린더 응답 DTO
  */
 public record EmployerScheduleResponse(
-        LocalDate startDate,
-        LocalDate endDate,
+        LocalDate fromDate,
+        LocalDate toDate,
         Map<LocalDate, List<EmployerScheduleItem>> schedules
 ) {
     public static EmployerScheduleResponse of(
-            LocalDate startDate,
-            LocalDate endDate,
+            LocalDate fromDate,
+            LocalDate toDate,
             Map<LocalDate, List<EmployerScheduleItem>> schedules) {
-        return new EmployerScheduleResponse(startDate, endDate, schedules);
+        return new EmployerScheduleResponse(fromDate, toDate, schedules);
     }
 }

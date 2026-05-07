@@ -7,7 +7,6 @@ import type { JobPostCreate } from 'entities/jobPost/model/types/jobPost.type';
 import Main from 'shared/ui/Layout/Main';
 import Article from 'shared/ui/Layout/Article';
 import { JobPostBasicInfoFields } from 'entities/jobPost/ui/InputFields/JobPostBasicInfoFields';
-import { createMockJobPost } from 'entities/jobPost/api/jobPost.api';
 import { JobPostLocationField } from 'entities/jobPost/ui/InputFields/JobPostLocationField';
 import { JobPostDescriptionField } from 'entities/jobPost/ui/InputFields/JobPostDescriptionField';
 import { JobPostWorkContentFields } from 'entities/jobPost/ui/InputFields/JobPostWorkContentFields';
@@ -17,10 +16,12 @@ import { ImageUploadButton } from 'features/control-Image/UploadButton';
 import { ImageRemoveButton } from 'features/control-Image/RemoveButton';
 import { AddressSearchButton } from 'features/search-address/AddressSearchButton';
 import { splitByComma } from 'shared/lib/transformString';
-import Button from 'shared/ui/Button/Button';
+import { useCreateJobPost } from 'features/jobPost/hooks/useCreateJobPost';
+import CreateJobPostButton from 'features/jobPost/create-jobPost/CreateJobPostButton';
 
 export const JobPostCreateForm = () => {
   const { handleSubmit, register, setValue, formState } = useForm<JobPostCreate>(); // 폼 상태 관리
+  const { mutate } = useCreateJobPost();
 
 
   const onSubmit = (data: JobPostCreate) => {
@@ -35,10 +36,15 @@ export const JobPostCreateForm = () => {
     };
 
     console.log('가공된 데이터:', requestBody);
-    createMockJobPost(requestBody)
-      .then((response) => {
+    mutate(requestBody, {
+      onSuccess: (response) => {
         console.log('Job post created successfully:', response);
-      });
+        // 페이지 이동 등
+      },
+      onError: (error) => {
+        console.error('Error creating job post:', error);
+      }
+    });
   };
 
   const {
@@ -102,9 +108,7 @@ export const JobPostCreateForm = () => {
               }
             />
             <SubmitBlockSection>
-              <Button type="submit" scheme="primary" buttonSize="smallMedium" style={{ width: '100%' }}>
-                공고 등록
-              </Button>
+              <CreateJobPostButton />
             </SubmitBlockSection>
           </FieldsSection>
 
@@ -114,9 +118,7 @@ export const JobPostCreateForm = () => {
               onSave={methods.handleSubmit(onSave)}
               onTemporarySave={onTemporarySave}
             /> */}
-            <Button type="submit" scheme="primary" buttonSize="smallMedium" style={{ width: '100%' }}>
-              공고 등록
-            </Button>
+            <CreateJobPostButton />
           </StickySection>
 
         </FormContainer>

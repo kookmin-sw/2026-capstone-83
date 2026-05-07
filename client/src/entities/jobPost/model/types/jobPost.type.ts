@@ -69,6 +69,7 @@ export type JobPostDescriptionProps = Pick<
 // 회사 이미지와 상세 정보 이미지는 일단 File 타입으로 정의, 
 // 프론트에서 s3 업로드 후 URL로 변환해서 백엔드에 전달할 지, 아니면 백엔드에서 직접 s3 업로드할 지 논의 필요
 export interface JobPostCreate {
+  workplaceId?: number;
   title: string;
   company: string;
   companyLogoImage?: File | null;
@@ -88,6 +89,38 @@ export interface JobPostCreate {
   tasks: string[];
   items?: string[];
 }
+
+
+export interface JobPostCreateResponse {
+  newPost: JobPostDetail;
+}
+
+
+export interface JobPostUpdate {
+  id: number;
+  workplaceId?: number;
+  title: string;
+  company: string;
+  companyLogoImage?: File | null;
+  location: string;
+  wage: number;
+  wageType: WageType;
+  totalSlots: number;
+  filledSlots: number;
+  workDate: string;
+  workStart: string;
+  workEnd: string;
+  deadline: string;
+  description?: string;
+  descriptionImage?: File | null;
+  requirements?: string[];
+  benefits?: string[];
+  tasks: string[];
+  items?: string[];
+}
+
+
+
 
 
 //공고 목록 조회 할 때, 페이지네이션 어떻게 할 지 생각해주세요!
@@ -115,6 +148,8 @@ export interface GetJobPostsParams {
   sortType?: 'WAGE' | 'LOCATION' | 'WORK_DATE'; // 정렬 기준 필터
 }
 
+// 목록 조회 응답
+// offset 응답
 export interface JobPostListOffset {
   jobPosts: JobPost[]; // 공고 목록
   totalElements: number; // 전체 공고 개수
@@ -124,10 +159,10 @@ export interface JobPostListOffset {
   isLast: boolean;       // 마지막 페이지 여부 
 }
 
+//커서 응답
 export interface JobPostListCursor {
   jobPosts: JobPost[]; // 공고 목록
   nextCursor: number | string | null; // 다음 요청 시 사용할 기준 ID (더 이상 없으면 null)
   hasNext: boolean;                   // 다음 페이지가 있는지 여부
 }
-
 

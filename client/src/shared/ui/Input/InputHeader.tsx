@@ -1,4 +1,4 @@
-import React from 'react'
+
 import styled from 'styled-components'
 import Title from '../Title/Title';
 import type { FontSizeKey } from 'shared/types/theme';

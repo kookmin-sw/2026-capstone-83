@@ -1,48 +1,98 @@
 package com.itda.controller;
 
-import com.itda.entity.User;
-import com.itda.enums.UserRole;
-import com.itda.repository.UserRepository;
+import com.itda.dto.request.LoginRequest;
+import com.itda.dto.request.SignupRequest;
+import com.itda.dto.response.AuthResponse;
+import com.itda.dto.response.LoginResponse;
+import com.itda.service.AuthService;
+import com.itda.service.AuthService.AuthTokens;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final AuthService authService;
 
-    // 테스트용 회원가입
-    @PostMapping("/register")
-    public ResponseEntity<User> register(@RequestBody RegisterRequest request) {
-        User user = User.builder()
-                .loginId(request.loginId())
-                .password(passwordEncoder.encode(request.password()))
-                .name(request.name())
-                .email(request.email())
-                .phone(request.phone())
-                .role(UserRole.valueOf(request.role()))
-                .build();
-        return ResponseEntity.ok(userRepository.save(user));
+    @Value("${jwt.refresh-token-expiry}")
+    private long refreshTokenExpiry;
+
+    @PostMapping("/signup")
+    public ResponseEntity<Void> signup(@RequestBody SignupRequest request) {
+        authService.signup(request);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 
-    // 테스트용 로그인
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody LoginRequest request) {
-        User user = userRepository.findByLoginId(request.loginId())
-                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
+    public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request,
+                                              HttpServletResponse response) {
+        AuthTokens tokens = authService.login(request);
+        addRefreshTokenCookie(response, tokens.refreshToken());
 
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-            return ResponseEntity.status(401).body("비밀번호가 틀렸습니다.");
+        return ResponseEntity.ok(AuthResponse.builder()
+                .accessToken(tokens.accessToken())
+                .role(tokens.role())
+                .build());
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refresh(HttpServletRequest request,
+                                                HttpServletResponse response) {
+        String refreshToken = extractRefreshTokenFromCookie(request);
+        if (refreshToken == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        return ResponseEntity.ok("로그인 성공! userId: " + user.getId() + ", role: " + user.getRole());
+        AuthTokens tokens = authService.refresh(refreshToken);
+        addRefreshTokenCookie(response, tokens.refreshToken());
+
+        return ResponseEntity.ok(AuthResponse.builder()
+                .accessToken(tokens.accessToken())
+                .role(tokens.role())
+                .build());
     }
 
-    record RegisterRequest(String loginId, String password, String name, String email, String phone, String role) {}
-    record LoginRequest(String loginId, String password) {}
+    @PostMapping("/logout")
+    public ResponseEntity<Void> logout(HttpServletResponse response) {
+        Cookie cookie = new Cookie("refreshToken", null);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/");
+        cookie.setMaxAge(0);
+        response.addCookie(cookie);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/auth/kakao")
+    public ResponseEntity<LoginResponse> kakaoLogin(@RequestParam String code) {
+        return ResponseEntity.ok(authService.kakaoLogin(code));
+    }
+
+    private void addRefreshTokenCookie(HttpServletResponse response, String refreshToken) {
+        Cookie cookie = new Cookie("refreshToken", refreshToken);
+        cookie.setHttpOnly(true);
+        cookie.setSecure(false);
+        cookie.setPath("/");
+        cookie.setMaxAge((int) (refreshTokenExpiry / 1000));
+        response.addCookie(cookie);
+    }
+
+    private String extractRefreshTokenFromCookie(HttpServletRequest request) {
+        if (request.getCookies() == null) return null;
+        for (Cookie cookie : request.getCookies()) {
+            if ("refreshToken".equals(cookie.getName())) {
+                return cookie.getValue();
+            }
+        }
+        return null;
+    }
 }

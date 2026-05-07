@@ -1,13 +1,14 @@
-import React from 'react'
+
 import styled from 'styled-components'
-import type { JobPostDetail, JobPostWorkContentProps } from '../../model/types/jobPost.type';
+import type { JobPostWorkContentProps } from '../../model/types/jobPost.type';
 import Section from 'shared/ui/Layout/Section';
+import Loading from 'shared/ui/Loading/Loading';
 
 
 export const JobPostWorkContentSection = ({ data }: { data: JobPostWorkContentProps }) => {
 
   if (!data) {
-    return <div>로딩 중...</div>; // 또는 null
+    return <Loading message="근무 내용을 불러오는 중..." />;
   }
 
   const { requirements, tasks, benefits, items } = data;

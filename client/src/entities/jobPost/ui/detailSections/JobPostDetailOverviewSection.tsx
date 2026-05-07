@@ -1,21 +1,22 @@
 import styled from 'styled-components';
 import ProgressBar from 'shared/ui/ProgressBar/ProgressBar';
-import { Banknote, Calendar, Clock, MapPin } from 'lucide-react';
+import { Calendar, Clock } from 'lucide-react';
 
 import Section from 'shared/ui/Layout/Section';
 import { calculateDDay } from 'shared/lib/calculateDDay';
 import type { JobPostOverviewProps } from '../../model/types/jobPost.type';
-import { Header } from '../JobPost.styled';
+import Loading from 'shared/ui/Loading/Loading';
+
 
 interface Props {
-  data: JobPostOverviewProps | null; // 공고 개요 정보 (로딩 상태를 위해 null 허용)
-  actions?: React.ReactNode; // 하단 지원하기/좋아요 버튼 슬롯
+  data: JobPostOverviewProps | null;
+  actions?: React.ReactNode;
 }
 
 export const JobPostDetailOverviewSection = ({ data, actions }: Props) => {
 
   if (!data) {
-    return <div>로딩 중...</div>; // 또는 null
+    return <Loading message="공고 개요를 불러오는 중..." />;
   }
 
   const {
@@ -35,78 +36,83 @@ export const JobPostDetailOverviewSection = ({ data, actions }: Props) => {
 
   return (
     <Section>
-      <S.OverviewLayout>
-        <S.TextContent>
+      <S.Container>
+        {/* 상단 영역: 텍스트 + 이미지 */}
+        <S.TopRow>
+          <S.TextContent>
+            <S.Header>
+              <S.MainTitle>{title}</S.MainTitle>
+              <S.CompanyInfo>
+                <span className="name">{company}</span>
+                <span className="date">{createdAt}</span>
+              </S.CompanyInfo>
+            </S.Header>
 
-          <S.Header>
-            <S.MainTitle>{title}</S.MainTitle>
+            <S.InfoList>
+              <S.InfoRow>
+                <S.Label>급여</S.Label>
+                <S.Value>
+                  <S.Badge>{wageType === 'DAILY' ? '일급' : '시급'}</S.Badge>
+                  <strong>{wage.toLocaleString()}원</strong>
+                </S.Value>
+                <S.Label>공고 마감</S.Label>
+                <S.Value>{deadline} <span className="dday">{calculateDDay(deadline)}</span></S.Value>
+              </S.InfoRow>
 
-            <S.CompanyInfo>
-              <span className="name">{company}</span>
-              <span className="date">{createdAt}</span>
-            </S.CompanyInfo>
-          </S.Header>
+              <S.InfoRow>
+                <S.Label>근무 일시</S.Label>
+                <S.Value><Calendar size={18} />{workDate}</S.Value>
+                <S.Value><Clock size={18} />{workStart} ~ {workEnd}</S.Value>
+              </S.InfoRow>
+            </S.InfoList>
+          </S.TextContent>
 
+          <S.ImageWrapper>
+            <img src={companyLogoUrl || "https://picsum.photos/400/300"} alt="공고 이미지" />
+          </S.ImageWrapper>
+        </S.TopRow>
 
-
-          <S.InfoList>
-            <S.InfoRow>
-              <S.Label>급여</S.Label>
-              <S.Value>
-                <S.Badge>{wageType === 'DAILY' ? '일급' : '시급'}</S.Badge>
-                <strong>{wage.toLocaleString()}원</strong>
-              </S.Value>
-              <S.Label>공고 마감</S.Label>
-              <S.Value>{deadline} <span className="dday">{calculateDDay(deadline)}</span></S.Value>
-            </S.InfoRow>
-
-            <S.InfoRow>
-              <S.Label>근무 일시</S.Label>
-              <S.Value><Calendar size={18} />{workDate}</S.Value>
-              <S.Value><Clock size={18} />{workStart} ~ {workEnd}</S.Value>
-            </S.InfoRow>
-          </S.InfoList>
-
+        {/* 하단 영역: 프로그레스바 + 액션 버튼 */}
+        <S.FooterRow>
           <S.ProgressWrapper>
-            <div className="status">
-              지원 현황
-            </div>
+            <div className="status">지원 현황</div>
             <ProgressBar total={totalSlots} current={filledSlots} />
           </S.ProgressWrapper>
-        </S.TextContent>
 
-        <S.ImageWrapper>
-          <img src={companyLogoUrl || "https://picsum.photos/400/300"} alt="공고 이미지" />
-        </S.ImageWrapper>
-      </S.OverviewLayout>
-
-      {actions && <S.ActionWrapper>{actions}</S.ActionWrapper>}
+          {actions && <S.ActionWrapper>{actions}</S.ActionWrapper>}
+        </S.FooterRow>
+      </S.Container>
     </Section>
   );
 };
 
 const S = {
-  OverviewLayout: styled.div`
+  Container: styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  `,
+  TopRow: styled.div`
     display: flex;
     justify-content: space-between;
     gap: 40px;
     @media (max-width: 768px) { flex-direction: column-reverse; }
   `,
-  TextContent: styled.div` flex: 1; `,
+  TextContent: styled.div`
+    flex: 1;
+  `,
   CompanyInfo: styled.div`
     display: flex;
     gap: 12px;
     font-size: ${({ theme }) => theme.fontSize.small};
     color: ${({ theme }) => theme.color.subText};
   `,
-
   Header: styled.div`
     display: flex;
     flex-direction: column;
     margin-bottom: 32px;
     gap: 8px;
   `,
-
   MainTitle: styled.h1`
     font-size: ${({ theme }) => theme.fontSize.xlarge};
     font-weight: ${({ theme }) => theme.fontWeight.bold};
@@ -116,7 +122,6 @@ const S = {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    margin-bottom: 32px;
   `,
   InfoRow: styled.div`
     display: flex;
@@ -144,20 +149,43 @@ const S = {
     border-radius: 4px;
     font-size: 12px;
   `,
-  ProgressWrapper: styled.div`
-    .status { margin-bottom: 8px; font-size: 14px; strong { color: ${({ theme }) => theme.color.primary}; } }
-  `,
   ImageWrapper: styled.div`
     width: 300px;
+    min-width: 300px;
     height: 200px;
     border-radius: ${({ theme }) => theme.borderRadius.medium};
     overflow: hidden;
     img { width: 100%; height: 100%; object-fit: cover; }
+
+    @media (max-width: 768px) {
+      width: 100%;
+      min-width: unset;
+    }
+  `,
+  FooterRow: styled.div`
+    display: flex;
+    align-items: center;
+    gap: 24px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: stretch;
+    }
+  `,
+  ProgressWrapper: styled.div`
+    flex: 1;
+    .status { margin-bottom: 8px; font-size: 14px; }
   `,
   ActionWrapper: styled.div`
-    margin-top: 32px;
+    width: 300px;
+    min-width: 300px;
     display: flex;
     justify-content: flex-end;
     gap: 12px;
-  `
+
+    @media (max-width: 768px) {
+      width: 100%;
+      min-width: unset;
+    }
+  `,
 };

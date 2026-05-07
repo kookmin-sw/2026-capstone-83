@@ -51,7 +51,7 @@ const ButtonStyle = styled.button.withConfig({
       'borderRadius',
     ].includes(prop),
 }) <Omit<Props, 'children'>>`
-  font-size: ${({ theme, buttonSize, fontSize }) => (theme.buttonSize[buttonSize].fontSize ? theme.buttonSize[buttonSize].fontSize : theme.fontSize[fontSize])};
+  font-size: ${({ theme, buttonSize, fontSize }) => (theme.buttonSize[buttonSize].fontSize ? theme.buttonSize[buttonSize].fontSize : theme.fontSize[fontSize ?? 'medium'])};
   padding: ${({ theme, buttonSize }) => theme.buttonSize[buttonSize].padding};
   width: ${({ theme, buttonSize }) => (theme.buttonSize[buttonSize].width ? theme.buttonSize[buttonSize].width : 'auto')};
   color: ${({ theme, scheme }) => theme.buttonScheme[scheme].color};

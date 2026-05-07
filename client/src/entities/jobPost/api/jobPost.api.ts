@@ -1,7 +1,80 @@
-import type { JobPost, JobPostCreate, JobPostDetail } from "../model/types/jobPost.type";
+import { authClient, httpClient } from "shared/api/httpClient";
+import type { GetJobPostsParams, JobPost, JobPostCreate, JobPostDetail, JobPostListCursor, JobPostUpdate } from "../model/types/jobPost.type";
 import mockJobPostData from "shared/mocks/data/mockJobPostData.json";
+import { toFormData } from "shared/lib/toFormData";
 
-//mock API 함수 -
+
+//공고 목록 조회
+export const fetchJobPosts = async (data: GetJobPostsParams): Promise<JobPostListCursor> => {
+  const response = await httpClient.get<JobPostListCursor>('/api/v1/job-posts', {
+    params: data,
+  });
+  return response.data;
+};
+
+// body 버전
+// export const fetchJobPosts = async (data: GetJobPostsParams): Promise<JobPostListCursor> => {
+//   // 기존 GET + params 방식에서 POST + body 방식으로 변경
+//   const response = await httpClient.post<JobPostListCursor>('/api/v1/job-posts', data);
+//   return response.data;
+// };
+
+
+//공고 상세 조회
+export const fetchJobPost = async (id: number): Promise<JobPostDetail> => {
+  const response = await httpClient.get<JobPostDetail>(`/api/v1/job-posts/${id}`);
+  return response.data;
+};
+
+//공고 생성
+export const createJobPost = async (data: JobPostCreate) => {
+  // form data 변환 유틸함수
+  const formData = toFormData(data);
+
+  const response = await authClient.post('/api/v1/job-posts', formData,
+    {
+      params: {
+        workplaceId: 1, // 나중에 작업장 받아서 넣기
+      },
+    }
+  );
+  return response.data;
+};
+
+//공고 수정
+export const updateJobPost = async (data: JobPostUpdate) => {
+  const { id, ...updateFields } = data;
+
+  const formData = toFormData(updateFields);
+
+  const response = await authClient.put(`/api/v1/job-posts/${id}`, formData);
+  return response.data;
+}
+
+
+//공고 삭제
+export const deleteJobPost = async (id: number) => {
+  const response = await authClient.delete(`/api/v1/job-posts/${id}`);
+  return response.data;
+}
+
+
+//고용주 공고 목록 조회
+export const fetchJobPostsByEmployer = async (data: GetJobPostsParams): Promise<JobPostListCursor> => {
+  const response = await authClient.get<JobPostListCursor>('/api/vi/job-posts/employer',
+    {
+      params: data,
+    }
+  );
+  return response.data;
+}
+
+
+
+
+
+
+//=========================mock API 함수 ======================================
 export const fetchMockJobPosts = (): Promise<JobPost[]> => {
   return new Promise((resolve) => {
 

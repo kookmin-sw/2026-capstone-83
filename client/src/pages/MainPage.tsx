@@ -1,10 +1,16 @@
-import React from 'react'
+
+import { useAuthStore } from 'entities/auth/model/store/authStore';
 import styled from 'styled-components'
+import { JobPostList } from 'widgets/jobPost/jobpost-list/ui/JobPostList';
 
 const MainPage = () => {
+  const { role } = useAuthStore();
+
   return (
     <MainPageStyle>
-      <h1>MainPage</h1>
+      {role}
+
+      <JobPostList />
     </MainPageStyle>
   )
 }

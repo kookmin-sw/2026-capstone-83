@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -70,16 +72,20 @@ public class JobPostController {
 
     /**
      * 공고 등록
-     * POST /api/v1/job-posts
+     * POST /api/v1/job-posts?workplaceId=1
+     * multipart/form-data 각 필드를 JobPostCreateRequest DTO에 자동 매핑
      */
-    @PostMapping
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<JobPostDetailResponse> createJobPost(
-            @RequestBody JobPostCreateRequest request) {
-        Workplace workplace = workplaceRepository.findById(request.workplaceId())
+            @RequestParam Long workplaceId,
+            @ModelAttribute JobPostCreateRequest request,
+            @RequestPart(value = "companyLogoImage", required = false) MultipartFile companyLogoImage,
+            @RequestPart(value = "descriptionImage", required = false) MultipartFile descriptionImage) {
+        Workplace workplace = workplaceRepository.findById(workplaceId)
                 .orElseThrow(() -> new RuntimeException("사업장을 찾을 수 없습니다."));
         return ResponseEntity
                 .status(HttpStatus.CREATED)
-                .body(jobPostService.createJobPost(request, workplace));
+                .body(jobPostService.createJobPost(request, workplace, companyLogoImage, descriptionImage));
     }
 
     /**

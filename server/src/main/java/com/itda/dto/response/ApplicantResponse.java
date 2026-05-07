@@ -12,13 +12,13 @@ import java.time.Period;
 public record ApplicantResponse(
         Long userId,
         String name,
-        String phone,             // 전화번호
-        String profileImageUrl,   // 프로필 사진 S3 URL
-        String gender,            // MALE / FEMALE
-        int age,                  // 생년월일 기반 계산
-        String address,           // 사는 지역
-        long matchCount,          // 앱 매칭 횟수
-        String status,            // 지원 상태
+        String phone,
+        String profileImageUrl,
+        String gender,
+        int age,
+        String address,
+        long matchCount,
+        String status,
         String appliedAt
 ) {
     public static ApplicantResponse from(Application application, long matchCount) {

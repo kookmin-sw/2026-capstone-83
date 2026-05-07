@@ -1,4 +1,4 @@
-import React, { type ReactNode } from 'react'
+import { type ReactNode } from 'react'
 import styled from 'styled-components';
 import type { ColorKey, FontSizeKey } from 'shared/types/theme';
 

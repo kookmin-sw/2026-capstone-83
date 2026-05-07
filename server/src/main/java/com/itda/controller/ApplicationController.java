@@ -3,82 +3,118 @@ package com.itda.controller;
 import com.itda.dto.response.ApplicantResponse;
 import com.itda.dto.response.ApplicationResponse;
 import com.itda.dto.response.CursorPageResponse;
+import com.itda.dto.response.calendar.EmployeeScheduleResponse;
 import com.itda.entity.Application;
 import com.itda.entity.User;
-import com.itda.repository.UserRepository;
+import com.itda.enums.ApplicationStatus;
 import com.itda.service.ApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
-@RequestMapping("/api/applications")
 @RequiredArgsConstructor
 public class ApplicationController {
 
     private final ApplicationService applicationService;
-    private final UserRepository userRepository;
 
-    // 지원자 → 공고 지원
-    @PostMapping("/apply")
-    public ResponseEntity<Application> apply(
-            @RequestParam Long jobPostId,
-            @RequestParam Long applicantUserId) {
-        User applicant = userRepository.findById(applicantUserId)
-                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
-        return ResponseEntity.ok(applicationService.apply(jobPostId, applicant));
+    // ─── 구직자 API ───────────────────────────────────────────
+
+    // 공고 지원
+    @PostMapping("/api/v1/job-posts/{id}/apply")
+    public ResponseEntity<Map<String, Long>> apply(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        Application application = applicationService.apply(id, user);
+        return ResponseEntity.status(201).body(Map.of("applicationId", application.getId()));
     }
 
-    // 고용주 → 지원자에게 제안
-    @PostMapping("/offer")
-    public ResponseEntity<Application> offer(
-            @RequestParam Long jobPostId,
-            @RequestParam Long applicantUserId) {
-        User applicant = userRepository.findById(applicantUserId)
-                .orElseThrow(() -> new RuntimeException("유저를 찾을 수 없습니다."));
-        return ResponseEntity.ok(applicationService.offer(jobPostId, applicant));
+    // 지원 여부 확인
+    @GetMapping("/api/v1/job-posts/{id}/applied")
+    public ResponseEntity<Map<String, Boolean>> checkApplied(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        boolean applied = applicationService.hasApplied(id, user.getId());
+        return ResponseEntity.ok(Map.of("applied", applied));
     }
 
-    // 고용주 → 채용 확정
-    @PatchMapping("/{applicationId}/hire")
-    public ResponseEntity<ApplicantResponse> hire(@PathVariable Long applicationId) {
-        return ResponseEntity.ok(applicationService.hire(applicationId));
+    // 지원자 → 제안 수락 (OFFERED → PENDING)
+    @PostMapping("/api/v1/applications/{id}/accept-offer")
+    public ResponseEntity<Void> acceptOffer(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        applicationService.acceptOffer(id);
+        return ResponseEntity.ok().build();
     }
 
-    // 고용주 → 거절
-    @PatchMapping("/{applicationId}/reject")
-    public ResponseEntity<ApplicantResponse> reject(@PathVariable Long applicationId) {
-        return ResponseEntity.ok(applicationService.reject(applicationId));
-    }
-
-    // 공고별 지원자 목록 (고용주) - 커서 페이지네이션
-    @GetMapping("/job-post/{jobPostId}")
-    public ResponseEntity<CursorPageResponse<ApplicantResponse>> getApplicationsByJobPost(
-            @PathVariable Long jobPostId,
-            @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(applicationService.getApplicationsByJobPost(jobPostId, cursor, size));
-    }
-
-    // 공고별 근무자 목록 (고용주) - HIRED 상태인 지원자만
-    @GetMapping("/job-post/{jobPostId}/workers")
-    public ResponseEntity<List<ApplicantResponse>> getWorkersByJobPost(@PathVariable Long jobPostId) {
-        return ResponseEntity.ok(applicationService.getWorkersByJobPost(jobPostId));
-    }
-
-    // 근무 완료 처리 (고용주)
-    @PostMapping("/{applicationId}/complete")
-    public ResponseEntity<ApplicantResponse> complete(@PathVariable Long applicationId) {
-        return ResponseEntity.ok(applicationService.complete(applicationId));
-    }
-
-    // 내 지원 목록 (지원자) - 커서 페이지네이션
-    @GetMapping("/applicant/{applicantUserId}")
+    // 내 지원 내역 (커서 페이지네이션)
+    @GetMapping("/api/v1/worker/applications")
     public ResponseEntity<CursorPageResponse<ApplicationResponse>> getMyApplications(
-            @PathVariable Long applicantUserId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(applicationService.getMyApplications(user.getId(), cursor, size));
+    }
+
+    // 내 지원 내역 (status 필터)
+    @GetMapping("/api/v1/worker/applications/filter")
+    public ResponseEntity<List<ApplicationResponse>> getMyApplicationsByStatus(
+            @RequestParam(required = false) String status,
+            @AuthenticationPrincipal User user) {
+        ApplicationStatus statusEnum = (status != null) ? ApplicationStatus.valueOf(status) : null;
+        List<ApplicationResponse> result = applicationService
+                .getMyApplicationsByStatus(user.getId(), statusEnum)
+                .stream()
+                .map(ApplicationResponse::from)
+                .toList();
+        return ResponseEntity.ok(result);
+    }
+
+    // 근무 일정 조회
+    @GetMapping("/api/v1/worker/schedule")
+    public ResponseEntity<Map<String, List<EmployeeScheduleResponse>>> getMySchedule(
+            @RequestParam LocalDate fromDate,
+            @RequestParam LocalDate toDate,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(applicationService.getEmployeeSchedules(user.getId(), fromDate, toDate));
+    }
+
+    // ─── 고용주 API ───────────────────────────────────────────
+
+    // 지원자 목록 조회 (커서 페이지네이션)
+    @GetMapping("/api/v1/job-posts/{id}/applicants")
+    public ResponseEntity<CursorPageResponse<ApplicantResponse>> getApplicants(
+            @PathVariable Long id,
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(applicationService.getMyApplications(applicantUserId, cursor, size));
+        return ResponseEntity.ok(applicationService.getApplicationsByJobPost(id, cursor, size));
+    }
+
+    // 공고별 근무자 목록 (HIRED 상태)
+    @GetMapping("/api/v1/job-posts/{id}/workers")
+    public ResponseEntity<List<ApplicantResponse>> getWorkers(@PathVariable Long id) {
+        return ResponseEntity.ok(applicationService.getWorkersByJobPost(id));
+    }
+
+    // 지원자 승인 (채용 확정)
+    @PostMapping("/api/v1/applications/{id}/accept")
+    public ResponseEntity<ApplicantResponse> accept(@PathVariable Long id) {
+        return ResponseEntity.ok(applicationService.hire(id));
+    }
+
+    // 지원자 거절
+    @PostMapping("/api/v1/applications/{id}/reject")
+    public ResponseEntity<ApplicantResponse> reject(@PathVariable Long id) {
+        return ResponseEntity.ok(applicationService.reject(id));
+    }
+
+    // 근무 완료 처리
+    @PostMapping("/api/v1/applications/{id}/complete")
+    public ResponseEntity<ApplicantResponse> complete(@PathVariable Long id) {
+        return ResponseEntity.ok(applicationService.complete(id));
     }
 }

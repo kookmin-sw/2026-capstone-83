@@ -1,8 +1,12 @@
 package com.itda.service;
 
+import com.itda.dto.request.ScheduleRequest;
 import com.itda.dto.response.ApplicantResponse;
 import com.itda.dto.response.ApplicationResponse;
 import com.itda.dto.response.CursorPageResponse;
+import com.itda.dto.response.calendar.EmployeeScheduleResponse;
+import com.itda.dto.response.calendar.EmployerScheduleItem;
+import com.itda.dto.response.calendar.EmployerScheduleResponse;
 import com.itda.entity.Application;
 import com.itda.entity.JobPost;
 import com.itda.entity.User;
@@ -16,7 +20,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -26,6 +35,8 @@ public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
     private final JobPostRepository jobPostRepository;
+
+    // ─── 구직자 API ───────────────────────────────────────────
 
     // 지원자 → 공고 지원
     @Transactional
@@ -45,6 +56,76 @@ public class ApplicationService {
 
         return applicationRepository.save(application);
     }
+
+    // 지원 여부 확인 (구직자)
+    public boolean hasApplied(Long jobPostId, Long applicantUserId) {
+        return applicationRepository
+                .findByJobPostIdAndApplicantUserId(jobPostId, applicantUserId)
+                .isPresent();
+    }
+
+    // 지원자 → 제안 수락 (OFFERED → PENDING)
+    @Transactional
+    public Application acceptOffer(Long applicationId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new NotFoundException("지원 내역을 찾을 수 없습니다."));
+
+        if (application.getStatus() != ApplicationStatus.OFFERED) {
+            throw new IllegalStateException("제안 상태가 아닙니다.");
+        }
+
+        return applicationRepository.save(Application.builder()
+                .id(application.getId())
+                .jobPost(application.getJobPost())
+                .applicantUser(application.getApplicantUser())
+                .status(ApplicationStatus.PENDING)
+                .initiatedBy(application.getInitiatedBy())
+                .appliedAt(application.getAppliedAt())
+                .build());
+    }
+
+    // 내 지원 목록 (지원자) - 커서 페이지네이션 + ApplicationResponse DTO
+    public CursorPageResponse<ApplicationResponse> getMyApplications(Long applicantUserId, Long cursor, int size) {
+        int fetchSize = size + 1;
+        List<Application> applications = applicationRepository.findByApplicantUserIdWithCursor(
+                applicantUserId, cursor, PageRequest.of(0, fetchSize));
+
+        boolean hasNext = applications.size() > size;
+        if (hasNext) {
+            applications = applications.subList(0, size);
+        }
+
+        List<ApplicationResponse> content = applications.stream()
+                .map(ApplicationResponse::from)
+                .toList();
+
+        Long nextCursor = hasNext ? content.get(content.size() - 1).applicationId() : null;
+        return CursorPageResponse.of(content, nextCursor, hasNext);
+    }
+
+    // 내 지원 목록 (지원자) - status 필터 선택적
+    public List<Application> getMyApplicationsByStatus(Long applicantUserId, ApplicationStatus status) {
+        if (status != null) {
+            return applicationRepository.findByApplicantUserIdAndStatus(applicantUserId, status);
+        }
+        return applicationRepository.findByApplicantUserId(applicantUserId);
+    }
+
+    // 구직자 근무 일정 조회
+    public Map<String, List<EmployeeScheduleResponse>> getEmployeeSchedules(Long applicantUserId, LocalDate fromDate, LocalDate toDate) {
+        List<Application> applications = applicationRepository
+                .findByApplicantUserIdAndStatusAndJobPost_WorkDateBetween(
+                        applicantUserId, ApplicationStatus.HIRED, fromDate, toDate);
+
+        return applications.stream()
+                .collect(Collectors.groupingBy(
+                        a -> a.getJobPost().getWorkDate().toString(),
+                        TreeMap::new,
+                        Collectors.mapping(EmployeeScheduleResponse::from, Collectors.toList())
+                ));
+    }
+
+    // ─── 고용주 API ───────────────────────────────────────────
 
     // 고용주 → 지원자에게 제안
     @Transactional
@@ -115,6 +196,24 @@ public class ApplicationService {
         return toApplicantResponse(saved);
     }
 
+    // 근무 완료 처리 (고용주)
+    @Transactional
+    public ApplicantResponse complete(Long applicationId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new NotFoundException("지원 내역을 찾을 수 없습니다."));
+
+        Application saved = applicationRepository.save(Application.builder()
+                .id(application.getId())
+                .jobPost(application.getJobPost())
+                .applicantUser(application.getApplicantUser())
+                .status(ApplicationStatus.COMPLETED)
+                .initiatedBy(application.getInitiatedBy())
+                .appliedAt(application.getAppliedAt())
+                .build());
+
+        return toApplicantResponse(saved);
+    }
+
     // 공고별 지원자 목록 (고용주) - 커서 페이지네이션
     public CursorPageResponse<ApplicantResponse> getApplicationsByJobPost(Long jobPostId, Long cursor, int size) {
         int fetchSize = size + 1;
@@ -142,48 +241,35 @@ public class ApplicationService {
                 .toList();
     }
 
+    // ─── 캘린더 API ───────────────────────────────────────────
+
+    // 고용자 캘린더 일정 조회
+    public EmployerScheduleResponse getEmployerSchedules(Long employerId, ScheduleRequest request) {
+        List<JobPost> jobPosts = jobPostRepository.findByEmployerIdAndWorkDateBetween(
+                employerId, request.getFromDate(), request.getToDate());
+
+        Map<LocalDate, List<EmployerScheduleItem>> schedules = jobPosts.stream()
+                .collect(Collectors.groupingBy(
+                        JobPost::getWorkDate,
+                        Collectors.mapping(
+                                jobPost -> {
+                                    int applicantCount = applicationRepository.findByJobPostId(jobPost.getId()).size();
+                                    return EmployerScheduleItem.from(jobPost, applicantCount);
+                                },
+                                Collectors.toList()
+                        )
+                ));
+
+        return EmployerScheduleResponse.of(request.getFromDate(), request.getToDate(), schedules);
+    }
+
+    // ─── 내부 헬퍼 ───────────────────────────────────────────
+
     // Application → ApplicantResponse 변환 (매칭 횟수 포함)
     private ApplicantResponse toApplicantResponse(Application application) {
         Long userId = application.getApplicantUser().getId();
         long matchCount = applicationRepository.countByApplicantUserIdAndStatusIn(
                 userId, List.of(ApplicationStatus.HIRED, ApplicationStatus.COMPLETED));
         return ApplicantResponse.from(application, matchCount);
-    }
-
-    // 근무 완료 처리 (고용주)
-    @Transactional
-    public ApplicantResponse complete(Long applicationId) {
-        Application application = applicationRepository.findById(applicationId)
-                .orElseThrow(() -> new NotFoundException("지원 내역을 찾을 수 없습니다."));
-
-        Application saved = applicationRepository.save(Application.builder()
-                .id(application.getId())
-                .jobPost(application.getJobPost())
-                .applicantUser(application.getApplicantUser())
-                .status(ApplicationStatus.COMPLETED)
-                .initiatedBy(application.getInitiatedBy())
-                .appliedAt(application.getAppliedAt())
-                .build());
-
-        return toApplicantResponse(saved);
-    }
-
-    // 내 지원 목록 (지원자) - 커서 페이지네이션 + ApplicationResponse DTO
-    public CursorPageResponse<ApplicationResponse> getMyApplications(Long applicantUserId, Long cursor, int size) {
-        int fetchSize = size + 1;
-        List<Application> applications = applicationRepository.findByApplicantUserIdWithCursor(
-                applicantUserId, cursor, PageRequest.of(0, fetchSize));
-
-        boolean hasNext = applications.size() > size;
-        if (hasNext) {
-            applications = applications.subList(0, size);
-        }
-
-        List<ApplicationResponse> content = applications.stream()
-                .map(ApplicationResponse::from)
-                .toList();
-
-        Long nextCursor = hasNext ? content.get(content.size() - 1).applicationId() : null;
-        return CursorPageResponse.of(content, nextCursor, hasNext);
     }
 }

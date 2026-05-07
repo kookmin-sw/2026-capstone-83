@@ -51,8 +51,8 @@ const baseStyle = css<{ $hasError: boolean }>`
   line-height: 1.5;
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   border: ${({ $hasError, theme }) =>
-    $hasError ? `1px solid ${theme.color.error}` : 'none'};
-  box-shadow: ${({ theme }) => theme.shadow.default};
+    $hasError ? `1px solid ${theme.color.error}` : `1px solid ${theme.color.border}`};
+  /* box-shadow: ${({ theme }) => theme.shadow.default}; */
   font-family: inherit;
 
   &::placeholder {

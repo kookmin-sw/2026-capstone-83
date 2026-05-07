@@ -37,7 +37,9 @@ public class JobPost {
     private String title;
 
     // 업종 대분류 (건설·건축 / 물류·운송 / 식당·서빙 등) - 공고 목록 필터에 사용
-    @Column(name = "job_category", nullable = false, length = 50)
+    //@Column(name = "job_category", nullable = false, length = 50)
+    //private String jobCategory;
+    @Column(name = "job_category", length = 50)
     private String jobCategory;
 
     // 업종 소분류 (지게차 / 배달·운전 등) - 공고 목록 필터에 사용

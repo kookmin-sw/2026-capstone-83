@@ -15,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
@@ -52,14 +53,13 @@ public class JobPostService {
         }
 
         // Entity -> DTO 변환
-        List<JobPostCardResponse> content = posts.stream()
+        List<JobPostCardResponse> jobPosts = posts.stream()
                 .map(JobPostCardResponse::from)
                 .toList();
 
-        // 다음 커서 = 마지막 공고의 ID
-        Long nextCursor = hasNext ? content.get(content.size() - 1).id() : null;
+        Long nextCursor = hasNext ? jobPosts.get(jobPosts.size() - 1).id() : null;
 
-        return CursorPageResponse.of(content, nextCursor, hasNext);
+        return CursorPageResponse.of(jobPosts, nextCursor, hasNext);
     }
 
     /**
@@ -101,10 +101,16 @@ public class JobPostService {
 
     /**
      * 공고 등록
-     * JobPostCreateRequest DTO로 받아서 Entity 변환 후 저장
+     * 이미지 파일은 추후 S3 연동 시 업로드 처리 예정
+     * 현재는 이미지 URL 없이 저장
      */
     @Transactional
-    public JobPostDetailResponse createJobPost(JobPostCreateRequest request, Workplace workplace) {
+    public JobPostDetailResponse createJobPost(
+            JobPostCreateRequest request,
+            Workplace workplace,
+            MultipartFile companyLogoImage,
+            MultipartFile descriptionImage) {
+        // TODO: S3 업로드 연동 시 이미지 URL 처리 추가
         JobPost saved = jobPostRepository.save(request.toEntity(workplace));
         return JobPostDetailResponse.from(saved);
     }
@@ -121,24 +127,24 @@ public class JobPostService {
         JobPost updated = JobPost.builder()
                 .id(existing.getId())
                 .workplace(existing.getWorkplace())
-                .title(request.title())
-                .jobCategory(request.jobCategory())
-                .jobSubcategory(request.jobSubcategory())
-                .wage(request.wage())
-                .wageType(WageType.valueOf(request.wageType()))
-                .workDate(LocalDate.parse(request.workDate()))
-                .workStart(LocalTime.parse(request.workStart()))
-                .workEnd(LocalTime.parse(request.workEnd()))
-                .totalSlots(request.totalSlots())
+                .title(request.getTitle())
+                .jobCategory(request.getJobCategory())
+                .jobSubcategory(request.getJobSubcategory())
+                .wage(request.getWage())
+                .wageType(WageType.valueOf(request.getWageType()))
+                .workDate(LocalDate.parse(request.getWorkDate()))
+                .workStart(LocalTime.parse(request.getWorkStart()))
+                .workEnd(LocalTime.parse(request.getWorkEnd()))
+                .totalSlots(request.getTotalSlots())
                 .filledSlots(existing.getFilledSlots())
                 .status(existing.getStatus())
-                .deadline(LocalDate.parse(request.deadline()))
-                .description(request.description())
-                .s3ContentUrl(request.s3ContentUrl())
-                .requirements(request.requirements())
-                .benefits(request.benefits())
-                .tasks(request.tasks())
-                .items(request.items())
+                .deadline(LocalDate.parse(request.getDeadline()))
+                .description(request.getDescription())
+                .s3ContentUrl(request.getS3ContentUrl())
+                .requirements(request.getRequirements())
+                .benefits(request.getBenefits())
+                .tasks(request.getTasks())
+                .items(request.getItems())
                 .build();
 
         return JobPostDetailResponse.from(jobPostRepository.save(updated));

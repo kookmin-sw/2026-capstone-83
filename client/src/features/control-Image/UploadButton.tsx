@@ -2,7 +2,7 @@ import { Upload } from 'lucide-react';
 import Button from 'shared/ui/Button/Button';
 
 interface Props {
-  fileInputRef: React.RefObject<HTMLInputElement>;
+  fileInputRef: React.RefObject<HTMLInputElement | null>;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   triggerUpload: () => void;
 }
