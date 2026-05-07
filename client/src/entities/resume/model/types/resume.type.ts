@@ -1,19 +1,21 @@
-import type { User } from "entities/user/model/types/user.type";
+
 
 
 export type EducationLevel =
-  | 'ELEMENTARY'    // 초등학교
-  | 'MIDDLE'        // 중학교
+  // | 'ELEMENTARY'    // 초등학교
+  // | 'MIDDLE'        // 중학교
   | 'HIGH'          // 고등학교
-  | 'COLLEGE_2_3'   // 대학(2,3년제)
-  | 'UNIVERSITY_4'; // 대학(4년제)
+  | 'COLLEGE'   // 대학(2,3년제)
+  | 'UNIVERSITY' // 대학(4년제)
+  | 'GRADUATE'; // 대학원
 
 // 2. 학적 상태 타입
 export type SchoolStatus =
   | 'GRADUATED'       // 졸업
   | 'ENROLLED'        // 재학중
-  | 'LEAVE_OF_ABSENCE' // 휴학중
-  | 'DROPOUT';        // 중퇴
+  | 'EXPECTED'
+  | 'LEAVE' // 휴학중
+  | 'DROPPED';        // 중퇴
 
 
 export interface AcademicBackground {
@@ -23,19 +25,47 @@ export interface AcademicBackground {
 
 }
 
-export interface CareerItem {
-  task: string;
+export interface CareerRequest {
+  jobTitle: string;
   years?: number;
   months?: number;
 }
 
+// export interface Career {
+//   academicBackground?: AcademicBackground;
+//   matchCount: number; // 앱 매칭 횟수
+//   careers?: CareerItem[];
+// }
+
+// export interface Resume extends User {
+//   career: Career;
+// }
+
+export interface ResumeRequest {
+  education: EducationLevel;
+  educationStatus: SchoolStatus;
+  major: string;
+}
+
 export interface Career {
-  academicBackground?: AcademicBackground;
-  matchCount: number; // 앱 매칭 횟수
-  careers?: CareerItem[];
+  id: number;
+  jobTitle: string;
+  years: number;
+  months: number;
 }
 
-export interface Resume extends User {
-  career: Career;
+export interface ResumeResponse {
+  id: number;
+  name: string;
+  gender: string;
+  birthDate: string;
+  address: string;
+  phone: string;
+  email: string;
+  profileUrl: string;
+  education: EducationLevel;
+  educationStatus: SchoolStatus;
+  major: string;
+  totalHired: number;
+  careers: Career[];
 }
-

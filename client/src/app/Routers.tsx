@@ -9,7 +9,11 @@ import { Route, Routes } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
 import AuthLayout from './layouts/AuthLayout';
 import ApplicantListPage from 'pages/Applicant/ApplicantListPage';
-import WorkDashBoardPage from 'pages/dashboard/WorkDashBoardPage';
+import DashBoardPage from 'pages/dashboard/DashBoardPage';
+import ResumeListPage from 'pages/Resume/ResumeListPage';
+import ResumeDetailPage from 'pages/Resume/ResumeDetailPage';
+import ResumeFormPage from 'pages/Resume/ResumeFormPage';
+
 
 const Routers = () => {
   return (
@@ -23,7 +27,12 @@ const Routers = () => {
         <Route path="/jobpost/create" element={<JobPostCreatePage />} />
 
         <Route path='/applicants' element={<ApplicantListPage />} />
-        <Route path='/work/dashboard' element={<WorkDashBoardPage />} />
+
+        <Route path="/resumes" element={<ResumeListPage />} />
+        <Route path="/resume/:id" element={<ResumeDetailPage />} />
+        <Route path="/resume/edit" element={<ResumeFormPage />} />
+
+        <Route path='/dashboard' element={<DashBoardPage />} />
       </Route>
 
       {/* 인증 전용 레이아웃 (헤더 없음, 배경색 + 중앙 정렬) */}
