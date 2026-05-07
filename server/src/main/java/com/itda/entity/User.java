@@ -2,6 +2,7 @@ package com.itda.entity;
 
 import com.itda.enums.OAuthProvider;
 import com.itda.enums.UserRole;
+import com.itda.enums.Gender;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -48,8 +49,9 @@ public class User {
     @Column(name = "birth")
     private LocalDate birth;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "gender")
-    private Integer gender;
+    private Gender gender;
 
     @Column(name = "location", length = 255)
     private String location;
