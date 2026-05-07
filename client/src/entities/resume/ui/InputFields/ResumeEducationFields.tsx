@@ -1,5 +1,5 @@
-import type { UseFormRegister, UseFormSetValue } from 'react-hook-form';
-import type { ResumeRequest, EducationLevel, SchoolStatus } from '../../model/types/resume.type';
+import type { UseFormRegister } from 'react-hook-form';
+import type { ResumeRequest } from '../../model/types/resume.type';
 import { InputSelect, type SelectOption } from 'shared/ui/Input/InputSelect';
 import { InputText } from 'shared/ui/Input/InputText';
 import styled from 'styled-components';
