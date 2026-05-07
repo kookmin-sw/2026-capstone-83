@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.Map;
+import java.util.TreeMap;
 import java.time.LocalDate;
 
 
@@ -149,21 +150,16 @@ public class ApplicationService {
     }
 
     // 내 지원 목록 (지원자) - status 필터 선택적
-    public List<ScheduleResponse> getMySchedule(Long applicantUserId, LocalDate fromDate, LocalDate toDate) {
+    public Map<String, List<ScheduleResponse>> getMySchedule(Long applicantUserId, LocalDate fromDate, LocalDate toDate) {
         List<Application> applications = applicationRepository
                 .findByApplicantUserIdAndStatusAndJobPost_WorkDateBetween(
                         applicantUserId, ApplicationStatus.HIRED, fromDate, toDate);
 
         return applications.stream()
-                .collect(Collectors.groupingBy(a -> a.getJobPost().getWorkDate()))
-                .entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
-                .map(entry -> ScheduleResponse.builder()
-                        .date(entry.getKey().toString())
-                        .schedules(entry.getValue().stream()
-                                .map(ScheduleResponse.ScheduleItemResponse::from)
-                                .toList())
-                        .build())
-                .toList();
+                .collect(Collectors.groupingBy(
+                        a -> a.getJobPost().getWorkDate().toString(),
+                        TreeMap::new,
+                        Collectors.mapping(ScheduleResponse::from, Collectors.toList())
+                ));
     }
 }

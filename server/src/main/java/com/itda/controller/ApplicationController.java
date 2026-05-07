@@ -65,13 +65,11 @@ public class ApplicationController {
 
     // 근무 일정 조회
     @GetMapping("/api/v1/worker/schedule")
-    public ResponseEntity<List<ScheduleResponse>> getMySchedule(
+    public ResponseEntity<Map<String, List<ScheduleResponse>>> getMySchedule(
             @RequestParam LocalDate fromDate,
             @RequestParam LocalDate toDate,
             @AuthenticationPrincipal User user) {
-        List<ScheduleResponse> result = applicationService
-                .getMySchedule(user.getId(), fromDate, toDate);
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(applicationService.getMySchedule(user.getId(), fromDate, toDate));
     }
 
     // ─── 고용주 API ───────────────────────────────────────────
