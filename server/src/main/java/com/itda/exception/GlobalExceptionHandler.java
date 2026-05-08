@@ -26,6 +26,14 @@ public class GlobalExceptionHandler {
                 .body(new ErrorResponse(409, e.getMessage()));
     }
 
+    // 권한/소유권 위반 403
+    @ExceptionHandler(SecurityException.class)
+    public ResponseEntity<ErrorResponse> handleSecurityException(SecurityException e) {
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(new ErrorResponse(403, e.getMessage()));
+    }
+
     // 그 외 500 - 로그 추가
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleException(Exception e) {

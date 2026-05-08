@@ -4,6 +4,7 @@ import com.itda.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -14,6 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.List;
 
 @Configuration
@@ -38,9 +40,40 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .userDetailsService(customUserDetailsService)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/signup", "/api/v1/login", "/api/v1/refresh",
-                                "/api/v1/logout", "/api/v1/auth/**").permitAll()
-                        .anyRequest().permitAll()
+                        // ── 공개 엔드포인트 ──────────────────────────
+                        .requestMatchers(
+                                "/api/v1/signup",
+                                "/api/v1/login",
+                                "/api/v1/refresh",
+                                "/api/v1/logout",
+                                "/api/v1/auth/**"
+                        ).permitAll()
+
+                        // 공고 목록/상세 조회는 비로그인도 허용
+                        .requestMatchers(HttpMethod.GET, "/api/v1/job-posts").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/job-posts/*").permitAll()
+
+                        // CORS preflight
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // ── 고용주 전용 ─────────────────────────────
+                        .requestMatchers(HttpMethod.POST, "/api/v1/job-posts").hasRole("EMPLOYER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/job-posts/*/close").hasRole("EMPLOYER")
+                        .requestMatchers("/api/v1/job-posts/employer/**").hasRole("EMPLOYER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/job-posts/*/applicants").hasRole("EMPLOYER")
+                        .requestMatchers("/api/v1/applications/*/accept").hasRole("EMPLOYER")
+                        .requestMatchers("/api/v1/applications/*/reject").hasRole("EMPLOYER")
+                        .requestMatchers("/api/v1/workplaces/**").hasRole("EMPLOYER")
+
+                        // ── 구직자 전용 ─────────────────────────────
+                        .requestMatchers(HttpMethod.POST, "/api/v1/job-posts/*/apply").hasRole("APPLICANT")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/job-posts/*/applied").hasRole("APPLICANT")
+                        .requestMatchers("/api/v1/applications/*/accept-offer").hasRole("APPLICANT")
+                        .requestMatchers("/api/v1/worker/**").hasRole("APPLICANT")
+                        .requestMatchers("/api/v1/resume/**").hasRole("APPLICANT")
+
+                        // ── 그 외는 인증 필요 ────────────────────────
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

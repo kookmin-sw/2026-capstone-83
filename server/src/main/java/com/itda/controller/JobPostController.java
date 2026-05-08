@@ -6,14 +6,16 @@ import com.itda.dto.response.CursorPageResponse;
 import com.itda.dto.response.JobPostCardResponse;
 import com.itda.dto.response.JobPostDetailResponse;
 import com.itda.entity.JobPost;
+import com.itda.entity.User;
 import com.itda.entity.Workplace;
-import com.itda.repository.WorkplaceRepository;
 import com.itda.service.JobPostService;
+import com.itda.service.WorkplaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
@@ -25,7 +27,7 @@ import java.util.List;
 public class JobPostController {
 
     private final JobPostService jobPostService;
-    private final WorkplaceRepository workplaceRepository;
+    private final WorkplaceService workplaceService;
 
     /**
      * 공고 목록 통합 조회 (필터 + 커서 페이지네이션)
@@ -71,15 +73,20 @@ public class JobPostController {
      * 공고 등록
      * POST /api/v1/job-posts?workplaceId=1
      * multipart/form-data 각 필드를 JobPostCreateRequest DTO에 자동 매핑
+     *
+     * 권한: EMPLOYER만 호출 가능 (SecurityConfig).
+     * 소유권: 전달된 workplaceId가 로그인 사용자의 사업장인지 WorkplaceService에서 검증.
      */
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<JobPostDetailResponse> createJobPost(
+            @AuthenticationPrincipal User user,
             @RequestParam Long workplaceId,
             @ModelAttribute JobPostCreateRequest request,
             @RequestPart(value = "companyLogoImage", required = false) MultipartFile companyLogoImage,
             @RequestPart(value = "descriptionImage", required = false) MultipartFile descriptionImage) {
-        Workplace workplace = workplaceRepository.findById(workplaceId)
-                .orElseThrow(() -> new RuntimeException("사업장을 찾을 수 없습니다."));
+        // 본인 소유 사업장인지 검증 후 엔티티 반환 (소유 아니면 SecurityException)
+        Workplace workplace = workplaceService.getOwnedWorkplace(user, workplaceId);
+
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(jobPostService.createJobPost(request, workplace, companyLogoImage, descriptionImage));

@@ -29,4 +29,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     List<Application> findByApplicantUserIdAndStatusAndJobPost_WorkDateBetween(
             Long applicantUserId, ApplicationStatus status, LocalDate from, LocalDate to
     );
+
+    // 누적 채용 횟수 (이력서 totalHired 산출용)
+    long countByApplicantUserIdAndStatus(Long applicantUserId, ApplicationStatus status);
 }
