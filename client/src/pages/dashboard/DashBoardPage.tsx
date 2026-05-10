@@ -1,8 +1,9 @@
 
 // import { useSearchParams } from 'react-router-dom';
-import WorkerDashBoardPage from './WorkerDashBoardPage';
-import EmployerDashboardPage from './EmployerDashBoardPage';
+
 import { useAuthStore } from 'entities/auth/model/store/authStore';
+import WorkerDashBoardPage from './applicant/WorkerDashBoardPage';
+import EmployerDashboardPage from './employer/EmployerDashBoardPage';
 
 const DashBoardPage = () => {
   const { role } = useAuthStore();
