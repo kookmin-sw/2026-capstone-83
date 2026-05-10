@@ -3,7 +3,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Building2, CalendarDays, Users, Settings, FileText, UserRoundPlus, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import styled from 'styled-components';
-import { hoverOverlay } from 'shared/styles/hoverOverlay';
 
 interface NavItem {
   label: string;
@@ -15,7 +14,7 @@ const EMPLOYER_NAV: NavItem[] = [
   { label: '대시보드', path: '/dashboard', icon: <Home size={20} /> },
   { label: '작업장 관리', path: '/dashboard/workplace', icon: <Building2 size={20} /> },
   { label: '캘린더', path: '/dashboard/calendar', icon: <CalendarDays size={20} /> },
-  { label: '인재풀', path: '/dashboard/talent', icon: <Users size={20} /> },
+  { label: '인재풀', path: '/dashboard/workers', icon: <Users size={20} /> },
   { label: '설정', path: '/dashboard/settings', icon: <Settings size={20} /> },
 ];
 
@@ -90,7 +89,7 @@ const S = {
     gap: 32px;
     flex-shrink: 0;
     transition: width 0.2s ease;
-    overflow: visible;
+    overflow: hidden;
   `,
   ProfileArea: styled.div<{ $collapsed: boolean }>`
     display: flex;
@@ -150,25 +149,17 @@ const S = {
       align-items: center;
       flex-shrink: 0;
       color: ${({ theme, $active }) =>
-      $active ? theme.color.tertiary : theme.color.subText};
-
-      svg {
-        color: ${({ theme, $active }) =>
-      $active ? theme.color.tertiary : theme.color.subText};
-      }
+      $active ? theme.color.primary : theme.color.subText};
     }
 
-    .label {
-      color: ${({ theme, $active }) =>
-      $active ? theme.color.tertiary : theme.color.text};
+    &:hover {
+      background-color: ${({ theme }) => theme.color.background};
     }
-
 
     /* 접힌 상태에서 호버 시 툴팁 표시 */
     &:hover > span:last-child {
       ${({ $collapsed }) => $collapsed && 'opacity: 1; visibility: visible;'}
     }
-    ${hoverOverlay}
   `,
   Tooltip: styled.span`
     position: absolute;
