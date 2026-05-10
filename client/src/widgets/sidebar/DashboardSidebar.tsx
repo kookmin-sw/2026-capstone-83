@@ -82,6 +82,9 @@ const S = {
   Sidebar: styled.aside<{ $collapsed: boolean }>`
     width: ${({ $collapsed }) => ($collapsed ? '72px' : '240px')};
     min-height: calc(100vh - 60px);
+    height: calc(100vh - 60px);
+    position: sticky;
+    top: 60px;
     background-color: ${({ theme }) => theme.color.white};
     border-right: 1px solid ${({ theme }) => theme.color.border};
     padding: ${({ $collapsed }) => ($collapsed ? '24px 12px' : '24px 16px')};
@@ -90,7 +93,8 @@ const S = {
     gap: 32px;
     flex-shrink: 0;
     transition: width 0.2s ease;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
   `,
   ProfileArea: styled.div<{ $collapsed: boolean }>`
     display: flex;
@@ -187,18 +191,21 @@ const S = {
     pointer-events: none;
   `,
   ToggleButton: styled.button`
+    position: sticky;
+    bottom: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
     padding: 10px;
     border: none;
-    background: transparent;
+    background: ${({ theme }) => theme.color.white};
     color: ${({ theme }) => theme.color.subText};
     font-size: ${({ theme }) => theme.fontSize.xsmall};
     cursor: pointer;
     border-radius: ${({ theme }) => theme.borderRadius.medium};
     transition: all 0.15s ease;
+    margin-top: auto;
 
     &:hover {
       background-color: ${({ theme }) => theme.color.background};
