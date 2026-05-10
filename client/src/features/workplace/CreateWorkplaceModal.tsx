@@ -29,7 +29,9 @@ export const CreateWorkplaceModal = ({ isOpen, onClose }: Props) => {
     triggerUpload,
   } = useImageUpload((file) => {
     // 실제로는 S3 업로드 후 URL을 setValue하겠지만, 지금은 로컬 프리뷰만
-    setValue('companyLogoUrl', URL.createObjectURL(file));
+    if (file) {
+      setValue('companyLogoUrl', URL.createObjectURL(file));
+    }
   });
 
   const onSubmit = (data: WorkplaceCreate) => {
