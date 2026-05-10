@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Building2, CalendarDays, Users, Settings, FileText, UserRoundPlus, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import styled from 'styled-components';
+import { hoverOverlay } from 'shared/styles/hoverOverlay';
 
 interface NavItem {
   label: string;
@@ -14,7 +15,7 @@ const EMPLOYER_NAV: NavItem[] = [
   { label: '대시보드', path: '/dashboard', icon: <Home size={20} /> },
   { label: '작업장 관리', path: '/dashboard/workplace', icon: <Building2 size={20} /> },
   { label: '캘린더', path: '/dashboard/calendar', icon: <CalendarDays size={20} /> },
-  { label: '인재풀', path: '/dashboard/workers', icon: <Users size={20} /> },
+  { label: '인재풀', path: '/dashboard/talent', icon: <Users size={20} /> },
   { label: '설정', path: '/dashboard/settings', icon: <Settings size={20} /> },
 ];
 
@@ -40,7 +41,7 @@ const DashboardSidebar = () => {
       <S.ProfileArea $collapsed={isCollapsed}>
         <S.Avatar>
           <img
-            src="https://api.dicebear.com/7.x/identicon/svg?seed=user"
+            src="https://api.dicebear.com/7.x/identicon/svg?seed=user1"
             alt="프로필"
           />
         </S.Avatar>
@@ -152,9 +153,15 @@ const S = {
       $active ? theme.color.primary : theme.color.subText};
     }
 
-    &:hover {
-      background-color: ${({ theme }) => theme.color.background};
+    .label {
+          color: ${({ theme, $active }) =>
+      $active ? theme.color.tertiary : theme.color.text};
     }
+
+    /* &:hover {
+      background-color: ${({ theme }) => theme.color.background};
+    } */
+    ${hoverOverlay}
 
     /* 접힌 상태에서 호버 시 툴팁 표시 */
     &:hover > span:last-child {

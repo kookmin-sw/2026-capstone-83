@@ -1,0 +1,40 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { createWorkplace, fetchUserWorkplaces, fetchWorkplaceById } from 'entities/workplace/api/workplace.api';
+import type { Workplace } from '../types/workplace.type';
+
+/**
+ * 내 작업장 목록 조회
+ */
+export const useWorkplaces = () => {
+  return useQuery<Workplace[]>({
+    queryKey: ['workplaces'],
+    queryFn: fetchUserWorkplaces,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+/**
+ * 작업장 상세 조회
+ */
+export const useWorkplace = (id: number) => {
+  return useQuery<Workplace>({
+    queryKey: ['workplace', id],
+    queryFn: () => fetchWorkplaceById(id),
+    enabled: !!id,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+/**
+ * 작업장 생성
+ */
+export const useCreateWorkplace = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: Workplace) => createWorkplace(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workplaces'] });
+    },
+  });
+};

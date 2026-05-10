@@ -1,0 +1,50 @@
+[
+  {
+    "id": 1,
+    "name": "물류 센터",
+    "companyName": "워크브릿지 건설",
+    "businessNumber": "120-81-12345",
+    "address": "경기 의정부시 체육로 250-34 (녹양동) 노브랜드 의정부녹양점",
+    "companyLogoUrl": "https://picsum.photos/seed/wp1/400/300"
+  },
+  {
+    "id": 2,
+    "name": "oo 호텔",
+    "companyName": "워크브릿지 건설",
+    "businessNumber": "120-81-12345",
+    "address": "서울시 강남구 테헤란로 152 강남파이낸스센터",
+    "companyLogoUrl": "https://picsum.photos/seed/wp2/400/300"
+  },
+  {
+    "id": 3,
+    "name": "ee 건설",
+    "companyName": "워크브릿지 건설",
+    "businessNumber": "120-81-12345",
+    "address": "서울시 성동구 성수이로 51 한라시그마밸리",
+    "companyLogoUrl": "https://picsum.photos/seed/wp3/400/300"
+  },
+  {
+    "id": 4,
+    "name": "강남 지점",
+    "companyName": "워크브릿지 건설",
+    "businessNumber": "120-81-67890",
+    "address": "서울시 강남구 역삼동 823-4",
+    "companyLogoUrl": "https://picsum.photos/seed/wp4/400/300"
+  },
+  {
+    "id": 5,
+    "name": "수원 공장",
+    "companyName": "워크브릿지 건설",
+    "businessNumber": "120-81-11111",
+    "address": "경기도 수원시 영통구 광교로 145",
+    "companyLogoUrl": "https://picsum.photos/seed/wp5/400/300"
+  },
+  {
+    "id": 6,
+    "name": "인천 물류",
+    "companyName": "워크브릿지 건설",
+    "businessNumber": "120-81-22222",
+    "address": "인천시 남동구 남동대로 215번길 30",
+    "companyLogoUrl": "https://picsum.photos/seed/wp6/400/300"
+  }
+]

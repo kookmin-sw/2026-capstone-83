@@ -1,24 +1,53 @@
+import { useState } from 'react';
 import styled from 'styled-components';
+import { WorkplaceList } from 'widgets/workplace/WorkplaceList/ui/WorkplaceList';
+import { CreateWorkplaceModal } from 'features/workplace/CreateWorkplaceModal';
+import Button from 'shared/ui/Button/Button';
 
 const WorkplacePage = () => {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
   return (
-    <WorkplacePageStyle>
-      <h1>작업장 관리</h1>
-      <p>등록된 작업장을 관리할 수 있습니다.</p>
-    </WorkplacePageStyle>
+    <S.PageWrapper>
+      <S.PageHeader>
+        <h1>작업장 목록</h1>
+        <Button
+          scheme="primary"
+          buttonSize="small"
+          fontSize="xsmall"
+          borderRadius="medium"
+          onClick={() => setIsCreateModalOpen(true)}
+        >
+          + 작업장 추가
+        </Button>
+      </S.PageHeader>
+
+      <WorkplaceList />
+
+      <CreateWorkplaceModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
+    </S.PageWrapper>
   );
 };
 
-const WorkplacePageStyle = styled.div`
-  h1 {
-    font-size: ${({ theme }) => theme.fontSize.xlarge};
-    font-weight: ${({ theme }) => theme.fontWeight.bold};
-    margin-bottom: 8px;
-  }
-  p {
-    color: ${({ theme }) => theme.color.subText};
-    font-size: ${({ theme }) => theme.fontSize.small};
-  }
-`;
+const S = {
+  PageWrapper: styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  `,
+  PageHeader: styled.div`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h1 {
+      font-size: ${({ theme }) => theme.fontSize.xlarge};
+      font-weight: ${({ theme }) => theme.fontWeight.bold};
+    }
+  `,
+};
 
 export default WorkplacePage;
