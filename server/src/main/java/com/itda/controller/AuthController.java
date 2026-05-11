@@ -4,6 +4,7 @@ import com.itda.dto.request.LoginRequest;
 import com.itda.dto.request.SignupRequest;
 import com.itda.dto.response.AuthResponse;
 import com.itda.dto.response.LoginResponse;
+import com.itda.dto.response.RefreshResponse;
 import com.itda.service.AuthService;
 import com.itda.service.AuthService.AuthTokens;
 import jakarta.servlet.http.Cookie;
@@ -44,8 +45,8 @@ public class AuthController {
     }
 
     @PostMapping("/refresh")
-    public ResponseEntity<AuthResponse> refresh(HttpServletRequest request,
-                                                HttpServletResponse response) {
+    public ResponseEntity<RefreshResponse> refresh(HttpServletRequest request,
+                                                   HttpServletResponse response) {
         String refreshToken = extractRefreshTokenFromCookie(request);
         if (refreshToken == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
@@ -54,9 +55,10 @@ public class AuthController {
         AuthTokens tokens = authService.refresh(refreshToken);
         addRefreshTokenCookie(response, tokens.refreshToken());
 
-        return ResponseEntity.ok(AuthResponse.builder()
+        // role은 로그인 시 이미 클라이언트가 받아 보관 중이므로
+        // refresh 응답에는 새 accessToken만 내려준다.
+        return ResponseEntity.ok(RefreshResponse.builder()
                 .accessToken(tokens.accessToken())
-                .role(tokens.role())
                 .build());
     }
 

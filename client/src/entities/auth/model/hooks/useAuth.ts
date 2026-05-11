@@ -46,8 +46,11 @@ export const useRefresh = () => {
   return useMutation({
     mutationFn: refresh,
     onSuccess: (data) => {
-      // 새로운 액세스 토큰으로 갱신
-      setAuth(data.accessToken, data.role);
+      // role은 로그인 시 받아 store에 보관 중인 값을 그대로 사용
+      const currentRole = useAuthStore.getState().role;
+      if (currentRole) {
+        setAuth(data.accessToken, currentRole);
+      }
     },
     onError: () => {
       // 리프레시 실패 시 (세션 만료 등) 전역 상태 비우기

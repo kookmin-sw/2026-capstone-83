@@ -32,7 +32,8 @@ const LoginForm = () => {
   });
 
   const onSubmit = (data: LoginRequest) => {
-    mutate(data);
+    // role은 폼이 아닌 상단 RoleTabs 상태에서 가져와 합쳐 전송
+    mutate({ ...data, role });
   };
 
   return (
