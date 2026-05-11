@@ -1,0 +1,105 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  acceptApplicant,
+  rejectApplicant,
+  fetchApplicants,
+  fetchWorkers,
+  completeWork,
+  fetchApplications,
+  acceptOffer,
+} from 'entities/application/api/application.api';
+import type { ApplicantResponse, ApplicationResponse } from '../types/application.type';
+
+/**
+ * 지원자 목록 조회 (고용주용)
+ */
+export const useApplicants = (jobPostId: number) => {
+  return useQuery<ApplicantResponse[]>({
+    queryKey: ['applicants', jobPostId],
+    queryFn: () => fetchApplicants(jobPostId),
+    enabled: !!jobPostId,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+/**
+ * 근무자 목록 조회 (고용주용)
+ */
+export const useWorkers = (jobPostId: number) => {
+  return useQuery<ApplicantResponse[]>({
+    queryKey: ['workers', jobPostId],
+    queryFn: () => fetchWorkers(jobPostId),
+    enabled: !!jobPostId,
+    staleTime: 1000 * 60 * 5,
+  });
+};
+
+/**
+ * 지원 내역 조회 (구직자용)
+ */
+export const useApplications = () => {
+  return useQuery<ApplicationResponse[]>({
+    queryKey: ['applications'],
+    staleTime: 1000 * 60 * 5,
+    queryFn: fetchApplications,
+  });
+};
+
+/**
+ * 지원자 승인 (고용주용)
+ */
+export const useAcceptApplicant = (jobPostId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number) => acceptApplicant(applicationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applicants', jobPostId] });
+      queryClient.invalidateQueries({ queryKey: ['workers', jobPostId] });
+      queryClient.invalidateQueries({ queryKey: ['jobPost', jobPostId] });
+    },
+  });
+};
+
+/**
+ * 지원자 거절 (고용주용)
+ */
+export const useRejectApplicant = (jobPostId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number) => rejectApplicant(applicationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applicants', jobPostId] });
+    },
+  });
+};
+
+/**
+ * 근무 완료 처리 (고용주용)
+ */
+export const useCompleteWork = (jobPostId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number) => completeWork(applicationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['workers', jobPostId] });
+      queryClient.invalidateQueries({ queryKey: ['jobPost', jobPostId] });
+    },
+  });
+};
+
+/**
+ * 채용 제안 수락 (구직자용)
+ */
+export const useAcceptOffer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number) => acceptOffer(applicationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applications'] });
+    },
+  });
+};

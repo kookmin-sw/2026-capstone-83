@@ -19,7 +19,7 @@ const MainStyle = styled.main`
   margin: 0 auto;
   
   /* 2. 본문 기본 여백 */
-  padding: 40px 20px;
+  padding: 20px 20px;
   width: 100%;
   
   /* 3. 최소 높이 설정 (푸터가 바닥에 붙도록) */
