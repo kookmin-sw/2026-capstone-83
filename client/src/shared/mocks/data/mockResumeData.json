@@ -1,0 +1,416 @@
+[
+  {
+    "id": 1,
+    "name": "김철수",
+    "gender": "MALE",
+    "birthDate": "1991-03-15",
+    "address": "서울시 성북구",
+    "phone": "010-1234-1234",
+    "email": "chulsoo@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=chulsoo1",
+    "education": "UNIVERSITY",
+    "educationStatus": "GRADUATED",
+    "major": "사회복지학과",
+    "totalHired": 210,
+    "careers": [
+      {
+        "id": 1,
+        "jobTitle": "물류 센터 하차",
+        "years": 5,
+        "months": 0
+      },
+      {
+        "id": 2,
+        "jobTitle": "건설 현장 보조",
+        "years": 3,
+        "months": 0
+      },
+      {
+        "id": 3,
+        "jobTitle": "호텔 연회장 서빙",
+        "years": 0,
+        "months": 3
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "name": "이영희",
+    "gender": "FEMALE",
+    "birthDate": "1988-07-22",
+    "address": "서울시 강남구",
+    "phone": "010-2345-6789",
+    "email": "younghee@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=younghee2",
+    "education": "COLLEGE",
+    "educationStatus": "GRADUATED",
+    "major": "호텔조리학과",
+    "totalHired": 185,
+    "careers": [
+      {
+        "id": 4,
+        "jobTitle": "식당 주방 보조",
+        "years": 4,
+        "months": 6
+      },
+      {
+        "id": 5,
+        "jobTitle": "카페 바리스타",
+        "years": 2,
+        "months": 0
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "name": "박민수",
+    "gender": "MALE",
+    "birthDate": "1995-11-03",
+    "address": "경기도 수원시",
+    "phone": "010-3456-7890",
+    "email": "minsoo@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=minsoo3",
+    "education": "HIGH",
+    "educationStatus": "GRADUATED",
+    "major": "",
+    "totalHired": 320,
+    "careers": [
+      {
+        "id": 6,
+        "jobTitle": "택배 분류",
+        "years": 6,
+        "months": 2
+      },
+      {
+        "id": 7,
+        "jobTitle": "이사 보조",
+        "years": 1,
+        "months": 8
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "name": "정수진",
+    "gender": "FEMALE",
+    "birthDate": "1993-01-28",
+    "address": "서울시 마포구",
+    "phone": "010-4567-8901",
+    "email": "sujin@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=sujin4",
+    "education": "UNIVERSITY",
+    "educationStatus": "GRADUATED",
+    "major": "경영학과",
+    "totalHired": 95,
+    "careers": [
+      {
+        "id": 8,
+        "jobTitle": "행사 스태프",
+        "years": 2,
+        "months": 4
+      },
+      {
+        "id": 9,
+        "jobTitle": "전시회 안내",
+        "years": 1,
+        "months": 6
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "name": "최동현",
+    "gender": "MALE",
+    "birthDate": "1985-09-10",
+    "address": "인천시 남동구",
+    "phone": "010-5678-9012",
+    "email": "donghyun@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=donghyun5",
+    "education": "HIGH",
+    "educationStatus": "GRADUATED",
+    "major": "",
+    "totalHired": 450,
+    "careers": [
+      {
+        "id": 10,
+        "jobTitle": "건설 현장 인부",
+        "years": 10,
+        "months": 0
+      },
+      {
+        "id": 11,
+        "jobTitle": "도배 보조",
+        "years": 3,
+        "months": 5
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "name": "한지은",
+    "gender": "FEMALE",
+    "birthDate": "1997-04-18",
+    "address": "서울시 송파구",
+    "phone": "010-6789-0123",
+    "email": "jieun@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=jieun6",
+    "education": "UNIVERSITY",
+    "educationStatus": "ENROLLED",
+    "major": "식품영양학과",
+    "totalHired": 42,
+    "careers": [
+      {
+        "id": 12,
+        "jobTitle": "편의점 알바",
+        "years": 1,
+        "months": 3
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "name": "오승환",
+    "gender": "MALE",
+    "birthDate": "1990-12-05",
+    "address": "경기도 성남시",
+    "phone": "010-7890-1234",
+    "email": "seunghwan@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=seunghwan7",
+    "education": "COLLEGE",
+    "educationStatus": "GRADUATED",
+    "major": "자동차정비학과",
+    "totalHired": 278,
+    "careers": [
+      {
+        "id": 13,
+        "jobTitle": "자동차 세차",
+        "years": 3,
+        "months": 0
+      },
+      {
+        "id": 14,
+        "jobTitle": "물류 센터 상차",
+        "years": 4,
+        "months": 7
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "name": "윤서연",
+    "gender": "FEMALE",
+    "birthDate": "1994-06-30",
+    "address": "서울시 영등포구",
+    "phone": "010-8901-2345",
+    "email": "seoyeon@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=seoyeon8",
+    "education": "UNIVERSITY",
+    "educationStatus": "GRADUATED",
+    "major": "간호학과",
+    "totalHired": 156,
+    "careers": [
+      {
+        "id": 15,
+        "jobTitle": "요양원 보조",
+        "years": 2,
+        "months": 8
+      },
+      {
+        "id": 16,
+        "jobTitle": "병원 간병",
+        "years": 3,
+        "months": 2
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "name": "장현우",
+    "gender": "MALE",
+    "birthDate": "1987-02-14",
+    "address": "부산시 해운대구",
+    "phone": "010-9012-3456",
+    "email": "hyunwoo@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=hyunwoo9",
+    "education": "HIGH",
+    "educationStatus": "GRADUATED",
+    "major": "",
+    "totalHired": 380,
+    "careers": [
+      {
+        "id": 17,
+        "jobTitle": "항만 하역",
+        "years": 8,
+        "months": 0
+      },
+      {
+        "id": 18,
+        "jobTitle": "수산물 경매 보조",
+        "years": 2,
+        "months": 4
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "name": "송미래",
+    "gender": "FEMALE",
+    "birthDate": "1996-08-25",
+    "address": "서울시 관악구",
+    "phone": "010-0123-4567",
+    "email": "mirae@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=mirae10",
+    "education": "UNIVERSITY",
+    "educationStatus": "GRADUATED",
+    "major": "디자인학과",
+    "totalHired": 67,
+    "careers": [
+      {
+        "id": 19,
+        "jobTitle": "전시 설치 보조",
+        "years": 1,
+        "months": 5
+      },
+      {
+        "id": 20,
+        "jobTitle": "촬영 스태프",
+        "years": 0,
+        "months": 10
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "name": "임태호",
+    "gender": "MALE",
+    "birthDate": "1983-05-07",
+    "address": "경기도 안양시",
+    "phone": "010-1111-2222",
+    "email": "taeho@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=taeho11",
+    "education": "HIGH",
+    "educationStatus": "GRADUATED",
+    "major": "",
+    "totalHired": 520,
+    "careers": [
+      {
+        "id": 21,
+        "jobTitle": "공장 조립",
+        "years": 12,
+        "months": 0
+      },
+      {
+        "id": 22,
+        "jobTitle": "용접 보조",
+        "years": 3,
+        "months": 6
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "name": "강예린",
+    "gender": "FEMALE",
+    "birthDate": "1999-10-12",
+    "address": "서울시 노원구",
+    "phone": "010-2222-3333",
+    "email": "yerin@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=yerin12",
+    "education": "COLLEGE",
+    "educationStatus": "ENROLLED",
+    "major": "유아교육과",
+    "totalHired": 28,
+    "careers": [
+      {
+        "id": 23,
+        "jobTitle": "어린이집 보조교사",
+        "years": 0,
+        "months": 8
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "name": "배준혁",
+    "gender": "MALE",
+    "birthDate": "1992-03-20",
+    "address": "대전시 유성구",
+    "phone": "010-3333-4444",
+    "email": "junhyuk@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=junhyuk13",
+    "education": "UNIVERSITY",
+    "educationStatus": "GRADUATED",
+    "major": "체육학과",
+    "totalHired": 198,
+    "careers": [
+      {
+        "id": 24,
+        "jobTitle": "헬스장 트레이너 보조",
+        "years": 2,
+        "months": 0
+      },
+      {
+        "id": 25,
+        "jobTitle": "이사 보조",
+        "years": 4,
+        "months": 3
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "name": "노하영",
+    "gender": "FEMALE",
+    "birthDate": "1991-11-08",
+    "address": "서울시 종로구",
+    "phone": "010-4444-5555",
+    "email": "hayoung@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=hayoung14",
+    "education": "GRADUATE",
+    "educationStatus": "GRADUATED",
+    "major": "사회학과",
+    "totalHired": 112,
+    "careers": [
+      {
+        "id": 26,
+        "jobTitle": "설문조사 진행",
+        "years": 3,
+        "months": 0
+      },
+      {
+        "id": 27,
+        "jobTitle": "행사 진행 보조",
+        "years": 1,
+        "months": 9
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "name": "유재민",
+    "gender": "MALE",
+    "birthDate": "1986-07-01",
+    "address": "경기도 용인시",
+    "phone": "010-5555-6666",
+    "email": "jaemin@mail.com",
+    "profileUrl": "https://api.dicebear.com/7.x/personas/svg?seed=jaemin15",
+    "education": "HIGH",
+    "educationStatus": "GRADUATED",
+    "major": "",
+    "totalHired": 410,
+    "careers": [
+      {
+        "id": 28,
+        "jobTitle": "농장 일손",
+        "years": 7,
+        "months": 0
+      },
+      {
+        "id": 29,
+        "jobTitle": "과수원 수확",
+        "years": 5,
+        "months": 2
+      }
+    ]
+  }
+]

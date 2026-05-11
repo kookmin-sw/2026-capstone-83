@@ -51,13 +51,17 @@ authClient.interceptors.response.use(
 
       try {
         // refresh 함수는 인터셉터가 없는 httpClient를 사용해야 무결성이 유지
-        const { accessToken, role } = await refresh();
+        const { accessToken } = await refresh();
 
-        useAuthStore.getState().setAuth(accessToken, role);
+        // role은 로그인 시 받아 store에 보관된 값을 그대로 유지
+        const currentRole = useAuthStore.getState().role;
+        if (currentRole) {
+          useAuthStore.getState().setAuth(accessToken, currentRole);
+        }
 
         originalRequest.headers.Authorization = `Bearer ${accessToken}`;
 
-        // 주의: 여기서 authClient(originalRequest)를 호출해야 새 토큰이 적용된 
+        // 주의: 여기서 authClient(originalRequest)를 호출해야 새 토큰이 적용된
         // 요청 인터셉터를 거치거나 직접 헤더가 박힌 채로 재전송
         return authClient(originalRequest);
       } catch (refreshError) {

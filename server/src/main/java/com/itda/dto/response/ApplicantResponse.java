@@ -16,7 +16,7 @@ public record ApplicantResponse(
         String profileImageUrl,
         String gender,
         int age,
-        String address,
+        String location,
         long matchCount,
         String status,
         String appliedAt
@@ -24,8 +24,8 @@ public record ApplicantResponse(
     public static ApplicantResponse from(Application application, long matchCount) {
         User user = application.getApplicantUser();
         int age = 0;
-        if (user.getBirthDate() != null) {
-            age = Period.between(user.getBirthDate(), LocalDate.now()).getYears();
+        if (user.getBirth() != null) {
+            age = Period.between(user.getBirth(), LocalDate.now()).getYears();
         }
 
         return new ApplicantResponse(
@@ -35,7 +35,7 @@ public record ApplicantResponse(
                 user.getProfileImageUrl(),
                 user.getGender() != null ? user.getGender().name() : null,
                 age,
-                user.getAddress(),
+                user.getLocation(),
                 matchCount,
                 application.getStatus().name(),
                 application.getAppliedAt() != null ? application.getAppliedAt().toString() : null

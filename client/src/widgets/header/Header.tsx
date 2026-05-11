@@ -11,8 +11,8 @@ import * as S from './Header.styled';
 
 const NAV_ITEMS = [
   { label: '공고', path: '/jobposts' },
-  { label: '인재 찾기', path: '/applicants' },
-  { label: '작업 관리', path: '/work/dashboard' }
+  { label: '인재 찾기', path: '/resumes' },
+  { label: '작업 관리', path: '/dashboard' }
 ];
 
 const Header = () => {
@@ -25,6 +25,7 @@ const Header = () => {
   const [isNotiOpen, setIsNotiOpen] = useState(false);
   const [isUserOpen, setIsUserOpen] = useState(false);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const notiRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
@@ -58,7 +59,13 @@ const Header = () => {
                 <S.NavItem
                   key={path}
                   $active={location.pathname.startsWith(path)}
-                  onClick={() => navigate(path)}
+                  onClick={() => {
+                    if (path === '/dashboard' && !isLoggedIn) {
+                      setIsLoginModalOpen(true);
+                      return;
+                    }
+                    navigate(path);
+                  }}
                 >
                   {label}
                 </S.NavItem>
@@ -175,6 +182,40 @@ const Header = () => {
         <ModalContent>
           <h2>권한이 필요합니다</h2>
           <p>공고 등록은 고용주 회원만 가능합니다.<br />고용주 계정으로 로그인해주세요.</p>
+        </ModalContent>
+      </Modal>
+
+      {/* 로그인 유도 모달 (작업 관리) */}
+      <Modal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        actions={
+          <>
+            <Button
+              scheme="secondary"
+              buttonSize="large"
+              borderRadius="medium"
+              onClick={() => setIsLoginModalOpen(false)}
+            >
+              취소
+            </Button>
+            <Button
+              scheme="primary"
+              buttonSize="large"
+              borderRadius="medium"
+              onClick={() => {
+                setIsLoginModalOpen(false);
+                navigate('/login');
+              }}
+            >
+              로그인하기
+            </Button>
+          </>
+        }
+      >
+        <ModalContent>
+          <h2>로그인이 필요합니다</h2>
+          <p>작업 관리는 로그인 후 이용할 수 있습니다.</p>
         </ModalContent>
       </Modal>
     </>

@@ -1,8 +1,8 @@
 package com.itda.entity;
 
-import com.itda.enums.Gender;
 import com.itda.enums.OAuthProvider;
 import com.itda.enums.UserRole;
+import com.itda.enums.Gender;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,18 +46,15 @@ public class User {
     @Column(nullable = false, length = 20)
     private String phone;
 
-    @Column(name = "birth_date")
-    private LocalDate birthDate;
+    @Column(name = "birth")
+    private LocalDate birth;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "gender", length = 10)
+    @Column(name = "gender")
     private Gender gender;
 
     @Column(name = "location", length = 255)
     private String location;
-
-    @Column(length = 255)
-    private String address;
 
     @Column(name = "profile_image_url", length = 500)
     private String profileImageUrl;
