@@ -3,6 +3,8 @@ package com.itda.controller;
 import com.itda.dto.request.CareerRequest;
 import com.itda.dto.request.ResumeRequest;
 import com.itda.dto.response.ResumeResponse;
+import com.itda.dto.response.ResumeCardResponse;
+import com.itda.dto.response.CursorPageResponse;
 import com.itda.entity.User;
 import com.itda.service.ResumeService;
 import lombok.RequiredArgsConstructor;
@@ -56,5 +58,13 @@ public class ResumeController {
     public ResponseEntity<Void> deleteCareer(@PathVariable Long id) {
         resumeService.deleteCareer(id);
         return ResponseEntity.ok().build();
+    }
+
+    // 인재 목록 조회
+    @GetMapping("/api/v1/resumes")
+    public ResponseEntity<CursorPageResponse<ResumeCardResponse>> getResumeList(
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(resumeService.getResumeList(cursor, size));
     }
 }

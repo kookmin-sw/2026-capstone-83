@@ -4,6 +4,8 @@ import com.itda.dto.request.CareerRequest;
 import com.itda.dto.request.ResumeRequest;
 import com.itda.dto.response.CareerResponse;
 import com.itda.dto.response.ResumeResponse;
+import com.itda.dto.response.ResumeCardResponse;
+import com.itda.dto.response.CursorPageResponse;
 import com.itda.entity.Career;
 import com.itda.entity.Resume;
 import com.itda.entity.User;
@@ -15,6 +17,8 @@ import com.itda.repository.ResumeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import java.util.List;
 
 @Service
@@ -93,5 +97,30 @@ public class ResumeService {
                 .orElseThrow(() -> new NotFoundException("경력을 찾을 수 없습니다."));
 
         careerRepository.delete(career);
+    }
+
+    // 인재 목록 조회 (커서 페이지네이션)
+    public CursorPageResponse<ResumeCardResponse> getResumeList(Long cursor, int size) {
+        Pageable pageable = PageRequest.of(0, size + 1);
+
+        List<Resume> resumes = (cursor == null)
+                ? resumeRepository.findAllByOrderByIdAsc(pageable)
+                : resumeRepository.findByIdGreaterThanOrderByIdAsc(cursor, pageable);
+
+        boolean hasNext = resumes.size() > size;
+        if (hasNext) resumes = resumes.subList(0, size);
+
+        List<ResumeCardResponse> result = resumes.stream().map(resume -> {
+            User user = resume.getUser();
+            List<CareerResponse> careers = careerRepository.findByResumeId(resume.getId())
+                    .stream().map(CareerResponse::from).toList();
+            int totalHired = applicationRepository
+                    .findByApplicantUserIdAndStatus(user.getId(), ApplicationStatus.HIRED).size();
+            return ResumeCardResponse.of(user, resume, careers, totalHired);
+        }).toList();
+
+        Long nextCursor = hasNext ? resumes.get(resumes.size() - 1).getId() : null;
+
+        return new CursorPageResponse<>(result, nextCursor, hasNext);
     }
 }
