@@ -1,5 +1,7 @@
 package com.itda.config;
 
+import com.itda.entity.User;
+import com.itda.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +21,7 @@ import java.util.List;
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -30,12 +33,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Long userId = jwtTokenProvider.getUserId(token);
             String role = jwtTokenProvider.getRole(token);
 
-            UsernamePasswordAuthenticationToken authentication =
-                    new UsernamePasswordAuthenticationToken(
-                            userId, null,
-                            List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+            User user = userRepository.findById(userId).orElse(null);
 
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+            if (user != null) {
+                UsernamePasswordAuthenticationToken authentication =
+                        new UsernamePasswordAuthenticationToken(
+                                user, null,
+                                List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
         }
 
         filterChain.doFilter(request, response);
