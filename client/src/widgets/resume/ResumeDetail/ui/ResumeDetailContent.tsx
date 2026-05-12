@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ResumeProfileSection } from 'entities/resume/ui/detailSections/ResumeProfileSection';
-import { ResumeCareerSection } from 'entities/resume/ui/detailSections/ResumeCareerSection';
+import { ResumeDetailView } from 'entities/resume/ui/ResumeDetailView';
 import { fetchMockResume } from 'entities/resume/api/resume.api';
 import type { ResumeResponse } from 'entities/resume/model/types/resume.type';
-import Article from 'shared/ui/Layout/Article';
 import Main from 'shared/ui/Layout/Main';
 import Loading from 'shared/ui/Loading/Loading';
 import Empty from 'shared/ui/Empty/Empty';
@@ -12,6 +10,10 @@ interface Props {
   resumeId: number;
 }
 
+/**
+ * 이력서 상세 페이지 위젯 (id 기반 조회)
+ * 고용주가 지원자의 이력서를 조회할 때 사용합니다.
+ */
 export const ResumeDetailContent = ({ resumeId }: Props) => {
   const [resume, setResume] = useState<ResumeResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -34,16 +36,7 @@ export const ResumeDetailContent = ({ resumeId }: Props) => {
 
   return (
     <Main>
-      <Article>
-        {/* 1. 프로필 섹션 */}
-        <ResumeProfileSection
-          data={resume}
-          actions={null /* 추후 회원정보 수정 버튼 슬롯 */}
-        />
-
-        {/* 2. 경력 섹션 */}
-        <ResumeCareerSection data={resume} />
-      </Article>
+      <ResumeDetailView data={resume} />
     </Main>
   );
 };

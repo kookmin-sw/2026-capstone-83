@@ -5,7 +5,7 @@ export type UserType = 'APPLICANT' | 'EMPLOYER' | 'MANAGER';
 export interface User {
   role: UserType;
   name: string;
-  gender: number;
+  gender: 'MALE' | 'FEMALE';
   email: string;
   password: string;
   profileImageUrl?: string;

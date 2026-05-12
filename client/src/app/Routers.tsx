@@ -47,6 +47,7 @@ const Routers = () => {
         <Route path="/dashboard/calendar" element={<CalendarPage />} />
         <Route path="/dashboard/talent" element={<TalentPoolPage />} />
         <Route path="/dashboard/resume" element={<ResumeManagePage />} />
+        <Route path="/dashboard/resume/edit" element={<ResumeFormPage />} />
         <Route path="/dashboard/applications" element={<ApplicationsPage />} />
         <Route path="/dashboard/settings" element={<SettingsPage />} />
       </Route>

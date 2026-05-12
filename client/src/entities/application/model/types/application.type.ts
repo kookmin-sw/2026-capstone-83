@@ -14,7 +14,7 @@ export interface ApplicantResponse {
   userId: number;
   name: string;
   profileImageUrl: string;
-  gender: number;
+  gender: 'MALE' | 'FEMALE';
   age: number;
   address: string;
   matchCount: number;

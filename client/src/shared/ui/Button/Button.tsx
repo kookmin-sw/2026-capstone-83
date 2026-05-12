@@ -66,6 +66,10 @@ const ButtonStyle = styled.button.withConfig({
       ? `1px solid ${theme.buttonScheme[scheme].border}`
       : 'none'};
   line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   box-shadow: ${({ theme, scheme }) =>
     theme.buttonScheme[scheme].boxShadow
       ? theme.buttonScheme[scheme].boxShadow

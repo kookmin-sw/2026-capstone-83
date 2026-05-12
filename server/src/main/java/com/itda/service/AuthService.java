@@ -70,6 +70,20 @@ public class AuthService {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
+        // 사용자가 선택한 회원 유형과 실제 가입된 role 일치 검증
+        // (프론트가 role을 보내지 않을 경우 검증 생략 — 하위 호환)
+        if (request.role() != null && !request.role().isBlank()) {
+            UserRole requestedRole;
+            try {
+                requestedRole = UserRole.valueOf(request.role());
+            } catch (IllegalArgumentException e) {
+                throw new IllegalArgumentException("유효하지 않은 회원 유형입니다.");
+            }
+            if (user.getRole() != requestedRole) {
+                throw new IllegalArgumentException("선택한 회원 유형으로 가입된 계정이 아닙니다.");
+            }
+        }
+
         String accessToken = jwtTokenProvider.createAccessToken(user.getId(), user.getRole().name());
         String refreshToken = jwtTokenProvider.createRefreshToken(user.getId(), user.getRole().name());
 
