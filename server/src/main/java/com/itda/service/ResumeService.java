@@ -1,5 +1,4 @@
 package com.itda.service;
-
 import com.itda.dto.request.CareerRequest;
 import com.itda.dto.request.ResumeRequest;
 import com.itda.dto.response.CareerResponse;
@@ -29,6 +28,7 @@ public class ResumeService {
     private final ResumeRepository resumeRepository;
     private final CareerRepository careerRepository;
     private final ApplicationRepository applicationRepository;
+    private final LikeService likeService;
 
     // 이력서 조회
     public ResumeResponse getResume(User user) {
@@ -99,8 +99,8 @@ public class ResumeService {
         careerRepository.delete(career);
     }
 
-    // 인재 목록 조회 (커서 페이지네이션)
-    public CursorPageResponse<ResumeCardResponse> getResumeList(Long cursor, int size) {
+    // 인재 목록 조회 (커서 페이지네이션 + liked 상단 노출)
+    public CursorPageResponse<ResumeCardResponse> getResumeList(Long cursor, int size, User user) {
         Pageable pageable = PageRequest.of(0, size + 1);
 
         List<Resume> resumes = (cursor == null)
@@ -110,14 +110,27 @@ public class ResumeService {
         boolean hasNext = resumes.size() > size;
         if (hasNext) resumes = resumes.subList(0, size);
 
-        List<ResumeCardResponse> result = resumes.stream().map(resume -> {
-            User user = resume.getUser();
-            List<CareerResponse> careers = careerRepository.findByResumeId(resume.getId())
-                    .stream().map(CareerResponse::from).toList();
-            int totalHired = applicationRepository
-                    .findByApplicantUserIdAndStatus(user.getId(), ApplicationStatus.HIRED).size();
-            return ResumeCardResponse.of(user, resume, careers, totalHired);
-        }).toList();
+        // liked 이력서 ID 목록
+        List<Long> likedIds = (user != null)
+                ? likeService.getLikedResumeIds(user.getId())
+                : List.of();
+
+        List<ResumeCardResponse> result = resumes.stream()
+                .sorted((a, b) -> {
+                    boolean aLiked = likedIds.contains(a.getId());
+                    boolean bLiked = likedIds.contains(b.getId());
+                    if (aLiked == bLiked) return 0;
+                    return aLiked ? -1 : 1;
+                })
+                .map(resume -> {
+                    User resumeUser = resume.getUser();
+                    List<CareerResponse> careers = careerRepository.findByResumeId(resume.getId())
+                            .stream().map(CareerResponse::from).toList();
+                    int totalHired = applicationRepository
+                            .findByApplicantUserIdAndStatus(resumeUser.getId(), ApplicationStatus.HIRED).size();
+                    return ResumeCardResponse.of(resumeUser, resume, careers, totalHired, likedIds.contains(resume.getId()));
+                })
+                .toList();
 
         Long nextCursor = hasNext ? resumes.get(resumes.size() - 1).getId() : null;
 

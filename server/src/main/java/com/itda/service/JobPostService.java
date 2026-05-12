@@ -1,15 +1,17 @@
 package com.itda.service;
 
+import com.itda.dto.request.JobPostCreateRequest;
 import com.itda.dto.request.JobPostFilterRequest;
 import com.itda.dto.response.CursorPageResponse;
 import com.itda.dto.response.JobPostCardResponse;
-import com.itda.entity.Workplace;
+import com.itda.dto.response.JobPostDetailResponse;
 import com.itda.entity.JobPost;
+import com.itda.entity.User;
+import com.itda.entity.Workplace;
 import com.itda.enums.JobPostStatus;
 import com.itda.exception.NotFoundException;
+import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
-import com.itda.dto.request.JobPostCreateRequest;
-import com.itda.dto.response.JobPostDetailResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -24,13 +26,12 @@ import java.util.List;
 public class JobPostService {
 
     private final JobPostRepository jobPostRepository;
+    private final JobPostLikeRepository jobPostLikeRepository;
+    private final LikeService likeService;
 
-    /**
-     * 공고 목록 통합 조회 (필터 + 커서 페이지네이션)
-     * 지원자/고용주 공통 사용 - 모든 필터를 JobPostFilterRequest 하나로 처리
-     */
-    public CursorPageResponse<JobPostCardResponse> getJobPosts(JobPostFilterRequest filter) {
-        // size + 1개 조회해서 다음 페이지 존재 여부 확인
+    // 공고 목록 통합 조회 (필터 + 커서 페이지네이션)
+    // 지원자/고용주 공통 사용 - 모든 필터를 JobPostFilterRequest 하나로 처리
+    public CursorPageResponse<JobPostCardResponse> getJobPosts(JobPostFilterRequest filter, User user) {
         int fetchSize = filter.getSize() + 1;
 
         List<JobPost> posts = jobPostRepository.findByFilter(
@@ -44,15 +45,25 @@ public class JobPostService {
                 PageRequest.of(0, fetchSize)
         );
 
-        // 다음 페이지 존재 여부 확인
         boolean hasNext = posts.size() > filter.getSize();
         if (hasNext) {
             posts = posts.subList(0, filter.getSize());
         }
 
-        // Entity -> DTO 변환
+        // liked 공고 ID 목록
+        List<Long> likedIds = (user != null)
+                ? likeService.getLikedJobPostIds(user.getId())
+                : List.of();
+
+        // liked 상단 정렬 후 DTO 변환
         List<JobPostCardResponse> jobPosts = posts.stream()
-                .map(JobPostCardResponse::from)
+                .sorted((a, b) -> {
+                    boolean aLiked = likedIds.contains(a.getId());
+                    boolean bLiked = likedIds.contains(b.getId());
+                    if (aLiked == bLiked) return 0;
+                    return aLiked ? -1 : 1;
+                })
+                .map(j -> JobPostCardResponse.from(j, likedIds.contains(j.getId())))
                 .toList();
 
         Long nextCursor = hasNext ? jobPosts.get(jobPosts.size() - 1).id() : null;
@@ -60,34 +71,24 @@ public class JobPostService {
         return CursorPageResponse.of(jobPosts, nextCursor, hasNext);
     }
 
-    /**
-     * 공고 상세 조회
-     * 공고 카드 클릭 시 상세 페이지에서 사용
-     */
+    // 공고 상세 조회
     public JobPostDetailResponse getJobPost(Long id) {
         JobPost post = jobPostRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
         return JobPostDetailResponse.from(post);
     }
-    /**
-     * 고용주 본인 공고 목록 조회
-     */
+
+    // 고용주 본인 공고 목록 조회
     public List<JobPost> getJobPostsByEmployer(Long employerId) {
         return jobPostRepository.findByEmployerId(employerId);
     }
 
-    /**
-     * 캘린더용 날짜 범위 공고 조회
-     */
+    // 캘린더용 날짜 범위 공고 조회
     public List<JobPost> getJobPostsByDateRange(Long employerId, LocalDate start, LocalDate end) {
         return jobPostRepository.findByEmployerIdAndWorkDateBetween(employerId, start, end);
     }
 
-    /**
-     * 공고 등록
-     * 이미지 파일은 추후 S3 연동 시 업로드 처리 예정
-     * 현재는 이미지 URL 없이 저장
-     */
+    // 공고 등록 - 이미지 파일은 추후 S3 연동 시 업로드 처리 예정
     @Transactional
     public JobPostDetailResponse createJobPost(
             JobPostCreateRequest request,
@@ -99,9 +100,7 @@ public class JobPostService {
         return JobPostDetailResponse.from(saved);
     }
 
-    /**
-     * 공고 마감 처리
-     */
+    // 공고 마감 처리
     @Transactional
     public void closeJobPost(Long id) {
         JobPost jobPost = jobPostRepository.findById(id)

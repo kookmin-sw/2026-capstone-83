@@ -4,11 +4,9 @@ import com.itda.entity.JobPost;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
-/**
- * 공고 목록 카드 응답 DTO
- * 공고 목록 화면에서 카드 하나에 필요한 필드만 포함
- * 지원자/고용주 공통 사용 (버튼은 프론트에서 role 기준으로 처리)
- */
+// 공고 목록 카드 응답 DTO
+// 공고 목록 화면에서 카드 하나에 필요한 필드만 포함
+// 지원자/고용주 공통 사용 (버튼은 프론트에서 role 기준으로 처리)
 public record JobPostCardResponse(
 
         Long id,
@@ -38,10 +36,18 @@ public record JobPostCardResponse(
         String status,
         String deadline,
         String jobCategory,
-        String jobSubcategory
+        String jobSubcategory,
+
+        // 좋아요 여부
+        boolean liked
 ) {
-    // JobPost Entity -> JobPostCardResponse 변환
+    // liked 없는 기본 변환 (비로그인 or liked 불필요한 경우)
     public static JobPostCardResponse from(JobPost post) {
+        return from(post, false);
+    }
+
+    // liked 포함 변환
+    public static JobPostCardResponse from(JobPost post, boolean liked) {
         long leftDays = ChronoUnit.DAYS.between(LocalDate.now(), post.getDeadline());
         return new JobPostCardResponse(
                 post.getId(),
@@ -60,7 +66,8 @@ public record JobPostCardResponse(
                 post.getStatus().name(),
                 post.getDeadline().toString(),
                 post.getJobCategory(),
-                post.getJobSubcategory()
+                post.getJobSubcategory(),
+                liked
         );
     }
 }

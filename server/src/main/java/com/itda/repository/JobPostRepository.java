@@ -27,6 +27,9 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long> {
             @Param("employerId") Long employerId,
             @Param("start") LocalDate start,
             @Param("end") LocalDate end);
+    // liked 공고 ID 목록 기준 조회
+    @Query("SELECT j FROM JobPost j WHERE j.id IN :ids ORDER BY j.id DESC")
+    List<JobPost> findByIdIn(@Param("ids") List<Long> ids);
 
     /**
      * 공고 목록 통합 필터 조회 (커서 방식 페이지네이션)

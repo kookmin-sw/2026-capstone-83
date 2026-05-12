@@ -64,7 +64,8 @@ public class ResumeController {
     @GetMapping("/api/v1/resumes")
     public ResponseEntity<CursorPageResponse<ResumeCardResponse>> getResumeList(
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(resumeService.getResumeList(cursor, size));
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(resumeService.getResumeList(cursor, size, user));
     }
 }

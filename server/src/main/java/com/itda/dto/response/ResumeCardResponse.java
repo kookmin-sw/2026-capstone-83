@@ -17,6 +17,7 @@ public class ResumeCardResponse {
     private String name;
     private String gender;
     private int age;
+    private boolean liked;
 
     // 첫 번째 경력
     private String firstCareerTitle;
@@ -26,7 +27,7 @@ public class ResumeCardResponse {
     private String location;
     private int totalHired;
 
-    public static ResumeCardResponse of(User user, Resume resume, List<CareerResponse> careers, int totalHired) {
+    public static ResumeCardResponse of(User user, Resume resume, List<CareerResponse> careers, int totalHired, boolean liked) {
         // 나이 계산
         int age = LocalDate.now().getYear() - user.getBirth().getYear() + 1;
 
@@ -44,6 +45,7 @@ public class ResumeCardResponse {
                 .firstCareerMonths(firstCareer != null ? firstCareer.getMonths() : 0)
                 .location(user.getLocation())
                 .totalHired(totalHired)
+                .liked(liked)
                 .build();
     }
 }
