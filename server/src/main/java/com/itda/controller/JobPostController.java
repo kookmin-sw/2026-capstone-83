@@ -6,6 +6,7 @@ import com.itda.dto.response.CursorPageResponse;
 import com.itda.dto.response.JobPostCardResponse;
 import com.itda.dto.response.JobPostDetailResponse;
 import com.itda.entity.JobPost;
+import com.itda.entity.User;
 import com.itda.entity.Workplace;
 import com.itda.repository.WorkplaceRepository;
 import com.itda.service.JobPostService;
@@ -16,6 +17,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -34,8 +36,9 @@ public class JobPostController {
      */
     @GetMapping
     public ResponseEntity<CursorPageResponse<JobPostCardResponse>> getJobPosts(
-            @ModelAttribute JobPostFilterRequest filter) {
-        return ResponseEntity.ok(jobPostService.getJobPosts(filter));
+            @ModelAttribute JobPostFilterRequest filter,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(jobPostService.getJobPosts(filter, user));
     }
 
     /**
@@ -46,25 +49,24 @@ public class JobPostController {
     public ResponseEntity<JobPostDetailResponse> getJobPost(@PathVariable Long id) {
         return ResponseEntity.ok(jobPostService.getJobPost(id));
     }
-    /**
-     * 고용주 본인 공고 목록 조회
-     * GET /api/v1/job-posts/employer/{employerId}
-     */
-    @GetMapping("/employer/{employerId}")
-    public ResponseEntity<List<JobPost>> getJobPostsByEmployer(@PathVariable Long employerId) {
-        return ResponseEntity.ok(jobPostService.getJobPostsByEmployer(employerId));
-    }
 
-    /**
-     * 캘린더용 날짜 범위 공고 조회
-     * GET /api/v1/job-posts/employer/{employerId}/calendar?start=&end=
-     */
-    @GetMapping("/employer/{employerId}/calendar")
+     // 고용주 본인 공고 목록 조회
+     // GET /api/v1/job-posts/employer
+
+     @GetMapping("/employer")
+     public ResponseEntity<List<JobPost>> getJobPostsByEmployer(
+     @AuthenticationPrincipal User user) {
+     return ResponseEntity.ok(jobPostService.getJobPostsByEmployer(user.getId()));
+     }
+
+    // 캘린더용 날짜 범위 공고 조회
+    // GET /api/v1/job-posts/employer/calendar?start=&end=
+    @GetMapping("/employer/calendar")
     public ResponseEntity<List<JobPost>> getJobPostsByDateRange(
-            @PathVariable Long employerId,
+            @AuthenticationPrincipal User user,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate start,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate end) {
-        return ResponseEntity.ok(jobPostService.getJobPostsByDateRange(employerId, start, end));
+        return ResponseEntity.ok(jobPostService.getJobPostsByDateRange(user.getId(), start, end));
     }
 
     /**

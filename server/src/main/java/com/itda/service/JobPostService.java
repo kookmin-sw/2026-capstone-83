@@ -79,13 +79,13 @@ public class JobPostService {
     }
 
     // 고용주 본인 공고 목록 조회
-    public List<JobPost> getJobPostsByEmployer(Long employerId) {
-        return jobPostRepository.findByEmployerId(employerId);
+    public List<JobPost> getJobPostsByEmployer(Long userId) {
+        return jobPostRepository.findByEmployerId(userId);
     }
 
     // 캘린더용 날짜 범위 공고 조회
-    public List<JobPost> getJobPostsByDateRange(Long employerId, LocalDate start, LocalDate end) {
-        return jobPostRepository.findByEmployerIdAndWorkDateBetween(employerId, start, end);
+    public List<JobPost> getJobPostsByDateRange(Long userId, LocalDate start, LocalDate end) {
+        return jobPostRepository.findByEmployerIdAndWorkDateBetween(userId, start, end);
     }
 
     // 공고 등록 - 이미지 파일은 추후 S3 연동 시 업로드 처리 예정
