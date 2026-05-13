@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { Clock, MapPin } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import type { Schedule } from '../model/types/schedule.type';
 import { useScheduleStore } from '../model/store/scheduleStore';
 import Badge from 'shared/ui/Badge/Badge';
