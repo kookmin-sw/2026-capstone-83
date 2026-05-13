@@ -78,9 +78,23 @@ public class JobPostService {
         return JobPostDetailResponse.from(post);
     }
 
-    // 고용주 본인 공고 목록 조회
-    public List<JobPost> getJobPostsByEmployer(Long userId) {
-        return jobPostRepository.findByEmployerId(userId);
+    // 고용주 본인 공고 목록 조회 (커서 페이지네이션)
+    public CursorPageResponse<JobPostCardResponse> getJobPostsByEmployer(Long userId, Long cursor, int size) {
+        int fetchSize = size + 1;
+        List<JobPost> posts = jobPostRepository.findByEmployerIdWithCursor(
+                userId, cursor, PageRequest.of(0, fetchSize));
+
+        boolean hasNext = posts.size() > size;
+        if (hasNext) {
+            posts = posts.subList(0, size);
+        }
+
+        List<JobPostCardResponse> content = posts.stream()
+                .map(j -> JobPostCardResponse.from(j, false))
+                .toList();
+
+        Long nextCursor = hasNext ? content.get(content.size() - 1).id() : null;
+        return CursorPageResponse.of(content, nextCursor, hasNext);
     }
 
     // 캘린더용 날짜 범위 공고 조회
