@@ -14,6 +14,7 @@ import com.itda.enums.ApplicationStatus;
 import com.itda.enums.InitiatedBy;
 import com.itda.repository.ApplicationRepository;
 import com.itda.repository.JobPostRepository;
+import com.itda.enums.NotificationType;
 import com.itda.exception.DuplicateException;
 import com.itda.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -35,6 +36,7 @@ public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
     private final JobPostRepository jobPostRepository;
+    private final NotificationService notificationService;
 
     // ─── 구직자 API ───────────────────────────────────────────
 
@@ -54,7 +56,18 @@ public class ApplicationService {
                 .initiatedBy(InitiatedBy.APPLICANT)
                 .build();
 
-        return applicationRepository.save(application);
+        Application saved = applicationRepository.save(application);
+
+        // 알림: 고용주에게 새 지원 알림
+        Long employerUserId = jobPost.getWorkplace().getEmployer().getUser().getId();
+        notificationService.notify(
+                employerUserId,
+                NotificationType.NEW_APPLICATION,
+                applicant.getName() + "님이 [" + jobPost.getTitle() + "]에 지원했습니다.",
+                saved.getId()
+        );
+
+        return saved;
     }
 
     // 지원 여부 확인 (구직자)
@@ -74,7 +87,7 @@ public class ApplicationService {
             throw new IllegalStateException("제안 상태가 아닙니다.");
         }
 
-        return applicationRepository.save(Application.builder()
+        Application saved = applicationRepository.save(Application.builder()
                 .id(application.getId())
                 .jobPost(application.getJobPost())
                 .applicantUser(application.getApplicantUser())
@@ -82,6 +95,18 @@ public class ApplicationService {
                 .initiatedBy(application.getInitiatedBy())
                 .appliedAt(application.getAppliedAt())
                 .build());
+
+        // 알림: 고용주에게 제안 수락 알림
+        JobPost jobPost = application.getJobPost();
+        Long employerUserId = jobPost.getWorkplace().getEmployer().getUser().getId();
+        notificationService.notify(
+                employerUserId,
+                NotificationType.OFFER_ACCEPTED,
+                application.getApplicantUser().getName() + "님이 [" + jobPost.getTitle() + "] 제안을 수락했습니다.",
+                saved.getId()
+        );
+
+        return saved;
     }
 
     // 내 지원 목록 (지원자) - 커서 페이지네이션 + ApplicationResponse DTO
@@ -140,7 +165,17 @@ public class ApplicationService {
                 .initiatedBy(InitiatedBy.EMPLOYER)
                 .build();
 
-        return applicationRepository.save(application);
+        Application saved = applicationRepository.save(application);
+
+        // 알림: 구직자에게 채용 제안 알림
+        notificationService.notify(
+                applicant.getId(),
+                NotificationType.OFFER_RECEIVED,
+                "[" + jobPost.getTitle() + "]에 채용 제안이 왔습니다.",
+                saved.getId()
+        );
+
+        return saved;
     }
 
     // 고용주 → 채용 확정
@@ -175,6 +210,14 @@ public class ApplicationService {
                 .appliedAt(application.getAppliedAt())
                 .build());
 
+        // 알림: 구직자에게 채용 확정 알림
+        notificationService.notify(
+                application.getApplicantUser().getId(),
+                NotificationType.HIRED,
+                "[" + jobPost.getTitle() + "] 채용이 확정되었습니다.",
+                saved.getId()
+        );
+
         return toApplicantResponse(saved);
     }
 
@@ -193,6 +236,15 @@ public class ApplicationService {
                 .appliedAt(application.getAppliedAt())
                 .build());
 
+        // 알림: 구직자에게 거절 알림
+        JobPost jobPost = application.getJobPost();
+        notificationService.notify(
+                application.getApplicantUser().getId(),
+                NotificationType.REJECTED,
+                "[" + jobPost.getTitle() + "] 지원이 거절되었습니다.",
+                saved.getId()
+        );
+
         return toApplicantResponse(saved);
     }
 
@@ -210,6 +262,15 @@ public class ApplicationService {
                 .initiatedBy(application.getInitiatedBy())
                 .appliedAt(application.getAppliedAt())
                 .build());
+
+        // 알림: 구직자에게 근무 완료 알림
+        JobPost jobPost = application.getJobPost();
+        notificationService.notify(
+                application.getApplicantUser().getId(),
+                NotificationType.WORK_COMPLETED,
+                "[" + jobPost.getTitle() + "] 근무가 완료 처리되었습니다.",
+                saved.getId()
+        );
 
         return toApplicantResponse(saved);
     }
