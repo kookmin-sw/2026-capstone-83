@@ -8,7 +8,7 @@ export interface Schedule {
   workEnd: string;
   filledSlots: number;
   totalSlots: number;
-  postStatus: PostStatus;
+  postStatus?: PostStatus;
 }
 
 export interface ScheduleRequest {

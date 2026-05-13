@@ -1,0 +1,166 @@
+{
+  "startDate": "2026-05-01",
+  "endDate": "2026-05-31",
+  "schedules": {
+    "2026-04-29": [
+      {
+        "date": "2026-04-29",
+        "jobPostId": 11,
+        "title": "야간 물류 분류",
+        "workStart": "22:00",
+        "workEnd": "06:00",
+        "filledSlots": 2,
+        "totalSlots": 8,
+        "postStatus": "OPEN"
+      },
+      {
+        "date": "2026-04-29",
+        "jobPostId": 12,
+        "title": "새벽 배송 상차",
+        "workStart": "04:00",
+        "workEnd": "08:00",
+        "filledSlots": 5,
+        "totalSlots": 5,
+        "postStatus": "CLOSED"
+      }
+    ],
+    "2026-05-01": [
+      {
+        "date": "2026-05-01",
+        "jobPostId": 1,
+        "title": "현장 보조원",
+        "workStart": "09:00",
+        "workEnd": "18:00",
+        "filledSlots": 3,
+        "totalSlots": 5,
+        "postStatus": "OPEN"
+      }
+    ],
+    "2026-05-03": [
+      {
+        "date": "2026-05-03",
+        "jobPostId": 2,
+        "title": "물류 상하차",
+        "workStart": "07:00",
+        "workEnd": "12:00",
+        "filledSlots": 5,
+        "totalSlots": 5,
+        "postStatus": "CLOSED"
+      }
+    ],
+    "2026-05-08": [
+      {
+        "date": "2026-05-08",
+        "jobPostId": 3,
+        "title": "창고 정리",
+        "workStart": "08:00",
+        "workEnd": "17:00",
+        "filledSlots": 2,
+        "totalSlots": 10,
+        "postStatus": "OPEN"
+      }
+    ],
+    "2026-05-13": [
+      {
+        "date": "2026-05-13",
+        "jobPostId": 4,
+        "title": "물류센터 하차 상시",
+        "workStart": "09:00",
+        "workEnd": "18:00",
+        "filledSlots": 3,
+        "totalSlots": 5,
+        "postStatus": "OPEN"
+      }
+    ],
+    "2026-05-14": [
+      {
+        "date": "2026-05-14",
+        "jobPostId": 5,
+        "title": "건설현장 보조 (오전)",
+        "workStart": "07:00",
+        "workEnd": "12:00",
+        "filledSlots": 2,
+        "totalSlots": 2,
+        "postStatus": "CLOSED"
+      },
+      {
+        "date": "2026-05-14",
+        "jobPostId": 14,
+        "title": "오후 청소 작업",
+        "workStart": "13:00",
+        "workEnd": "18:00",
+        "filledSlots": 1,
+        "totalSlots": 4,
+        "postStatus": "OPEN"
+      }
+    ],
+    "2026-05-15": [
+      {
+        "date": "2026-05-15",
+        "jobPostId": 6,
+        "title": "전문 미장공",
+        "workStart": "08:00",
+        "workEnd": "17:00",
+        "filledSlots": 4,
+        "totalSlots": 5,
+        "postStatus": "OPEN"
+      },
+      {
+        "date": "2026-05-15",
+        "jobPostId": 7,
+        "title": "타일 시공 보조",
+        "workStart": "09:00",
+        "workEnd": "18:00",
+        "filledSlots": 1,
+        "totalSlots": 3,
+        "postStatus": "OPEN"
+      },
+      {
+        "date": "2026-05-15",
+        "jobPostId": 13,
+        "title": "외벽 도장 작업",
+        "workStart": "07:00",
+        "workEnd": "16:00",
+        "filledSlots": 2,
+        "totalSlots": 6,
+        "postStatus": "OPEN"
+      }
+    ],
+    "2026-05-16": [
+      {
+        "date": "2026-05-16",
+        "jobPostId": 8,
+        "title": "자재 정리 및 운반",
+        "workStart": "08:30",
+        "workEnd": "17:30",
+        "filledSlots": 8,
+        "totalSlots": 12,
+        "postStatus": "OPEN"
+      }
+    ],
+    "2026-05-17": [
+      {
+        "date": "2026-05-17",
+        "jobPostId": 9,
+        "title": "포장 및 검수 작업",
+        "workStart": "13:00",
+        "workEnd": "22:00",
+        "filledSlots": 0,
+        "totalSlots": 4,
+        "postStatus": "OPEN"
+      }
+    ],
+    "2026-05-22": [
+      {
+        "date": "2026-05-22",
+        "jobPostId": 10,
+        "title": "인테리어 보조",
+        "workStart": "09:00",
+        "workEnd": "18:00",
+        "filledSlots": 6,
+        "totalSlots": 6,
+        "postStatus": "CLOSED"
+      }
+    ]
+  }
+}
