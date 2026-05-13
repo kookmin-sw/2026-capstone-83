@@ -29,11 +29,10 @@ public class JobPostController {
     private final JobPostService jobPostService;
     private final WorkplaceRepository workplaceRepository;
 
-    /**
-     * 공고 목록 통합 조회 (필터 + 커서 페이지네이션)
-     * 지원자/고용주 공통 사용 - 버튼은 프론트에서 role 기준으로 처리
-     * GET /api/v1/job-posts?cursor=&size=&keyword=&jobCategory=&location=&sortType=
-     */
+
+    //공고 목록 통합 조회 (필터 + 커서 페이지네이션)
+    //지원자/고용주 공통 사용 - 버튼은 프론트에서 role 기준으로 처리
+    //GET /api/v1/job-posts?cursor=&size=&keyword=&jobCategory=&location=&sortType=
     @GetMapping
     public ResponseEntity<CursorPageResponse<JobPostCardResponse>> getJobPosts(
             @ModelAttribute JobPostFilterRequest filter,
@@ -41,10 +40,9 @@ public class JobPostController {
         return ResponseEntity.ok(jobPostService.getJobPosts(filter, user));
     }
 
-    /**
-     * 공고 상세 조회
-     * GET /api/v1/job-posts/{id}
-     */
+
+    //공고 상세 조회
+    //GET /api/v1/job-posts/{id}
     @GetMapping("/{id}")
     public ResponseEntity<JobPostDetailResponse> getJobPost(@PathVariable Long id) {
         return ResponseEntity.ok(jobPostService.getJobPost(id));
@@ -69,11 +67,10 @@ public class JobPostController {
         return ResponseEntity.ok(jobPostService.getJobPostsByDateRange(user.getId(), start, end));
     }
 
-    /**
-     * 공고 등록
-     * POST /api/v1/job-posts?workplaceId=1
-     * multipart/form-data 각 필드를 JobPostCreateRequest DTO에 자동 매핑
-     */
+
+     //공고 등록 POST /api/v1/job-posts?workplaceId=1
+     //multipart/form-data 각 필드를 JobPostCreateRequest DTO에 자동 매핑
+
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<JobPostDetailResponse> createJobPost(
             @RequestParam Long workplaceId,
@@ -87,13 +84,12 @@ public class JobPostController {
                 .body(jobPostService.createJobPost(request, workplace, companyLogoImage, descriptionImage));
     }
 
-    /**
-     * 공고 마감 처리
-     * PATCH /api/v1/job-posts/{id}/close
-     */
+    // 공고 마감 처리
     @PatchMapping("/{id}/close")
-    public ResponseEntity<Void> closeJobPost(@PathVariable Long id) {
-        jobPostService.closeJobPost(id);
+    public ResponseEntity<Void> closeJobPost(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        jobPostService.closeJobPost(id, user.getId());
         return ResponseEntity.ok().build();
     }
 }

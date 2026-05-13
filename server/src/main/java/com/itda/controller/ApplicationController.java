@@ -76,21 +76,27 @@ public class ApplicationController {
 
     // 지원자 목록 조회
     @GetMapping("/api/v1/job-posts/{id}/applicants")
-    public ResponseEntity<List<Application>> getApplicants(@PathVariable Long id) {
-        return ResponseEntity.ok(applicationService.getApplicationsByJobPost(id));
+    public ResponseEntity<List<Application>> getApplicants(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(applicationService.getApplicationsByJobPost(id, user.getId()));
     }
 
     // 지원자 승인
     @PostMapping("/api/v1/applications/{id}/accept")
-    public ResponseEntity<Void> accept(@PathVariable Long id) {
-        applicationService.hire(id);
+    public ResponseEntity<Void> accept(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        applicationService.hire(id, user.getId());
         return ResponseEntity.ok().build();
     }
 
     // 지원자 거절
     @PostMapping("/api/v1/applications/{id}/reject")
-    public ResponseEntity<Void> reject(@PathVariable Long id) {
-        applicationService.reject(id);
+    public ResponseEntity<Void> reject(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        applicationService.reject(id, user.getId());
         return ResponseEntity.ok().build();
     }
 }

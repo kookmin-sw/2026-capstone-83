@@ -77,9 +77,14 @@ public class ResumeService {
 
     // 경력 수정
     @Transactional
-    public void updateCareer(Long careerId, CareerRequest request) {
+    public void updateCareer(Long careerId, User user, CareerRequest request) {
         Career career = careerRepository.findById(careerId)
                 .orElseThrow(() -> new NotFoundException("경력을 찾을 수 없습니다."));
+
+        // 본인 경력인지 검증
+        if (!career.getResume().getUser().getId().equals(user.getId())) {
+            throw new IllegalStateException("본인의 경력만 수정할 수 있습니다.");
+        }
 
         careerRepository.save(Career.builder()
                 .id(career.getId())
@@ -92,9 +97,14 @@ public class ResumeService {
 
     // 경력 삭제
     @Transactional
-    public void deleteCareer(Long careerId) {
+    public void deleteCareer(Long careerId, User user) {
         Career career = careerRepository.findById(careerId)
                 .orElseThrow(() -> new NotFoundException("경력을 찾을 수 없습니다."));
+
+        // 본인 경력인지 검증
+        if (!career.getResume().getUser().getId().equals(user.getId())) {
+            throw new IllegalStateException("본인의 경력만 삭제할 수 있습니다.");
+        }
 
         careerRepository.delete(career);
     }

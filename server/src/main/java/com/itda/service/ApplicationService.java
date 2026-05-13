@@ -64,11 +64,17 @@ public class ApplicationService {
     }
 
     // 고용주 → 채용 확정
+    // 채용 확정 - 소유권 검증
     @Transactional
-    public Application hire(Long applicationId) {
+    public Application hire(Long applicationId, Long userId) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new NotFoundException("지원 내역을 찾을 수 없습니다."));
 
+        if (!application.getJobPost().getWorkplace().getEmployer().getUser().getId().equals(userId)) {
+            throw new IllegalStateException("본인의 공고만 처리할 수 있습니다.");
+        }
+
+        // 기존 hire 로직 동일
         JobPost jobPost = application.getJobPost();
         jobPostRepository.save(JobPost.builder()
                 .id(jobPost.getId())
@@ -98,9 +104,13 @@ public class ApplicationService {
 
     // 고용주 → 거절
     @Transactional
-    public Application reject(Long applicationId) {
+    public Application reject(Long applicationId, Long userId) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new NotFoundException("지원 내역을 찾을 수 없습니다."));
+
+        if (!application.getJobPost().getWorkplace().getEmployer().getUser().getId().equals(userId)) {
+            throw new IllegalStateException("본인의 공고만 처리할 수 있습니다.");
+        }
 
         return applicationRepository.save(Application.builder()
                 .id(application.getId())
@@ -130,8 +140,15 @@ public class ApplicationService {
                 .build());
     }
 
-    // 공고별 지원자 목록 (고용주)
-    public List<Application> getApplicationsByJobPost(Long jobPostId) {
+    // 공고별 지원자 목록 (고용주) - 소유권 검증
+    public List<Application> getApplicationsByJobPost(Long jobPostId, Long userId) {
+        JobPost jobPost = jobPostRepository.findById(jobPostId)
+                .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
+
+        if (!jobPost.getWorkplace().getEmployer().getUser().getId().equals(userId)) {
+            throw new IllegalStateException("본인의 공고만 조회할 수 있습니다.");
+        }
+
         return applicationRepository.findByJobPostId(jobPostId);
     }
 

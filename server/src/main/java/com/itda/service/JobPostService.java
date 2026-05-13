@@ -100,11 +100,16 @@ public class JobPostService {
         return JobPostDetailResponse.from(saved);
     }
 
-    // 공고 마감 처리
+    // 공고 마감 처리 - 소유권 검증
     @Transactional
-    public void closeJobPost(Long id) {
+    public void closeJobPost(Long id, Long userId) {
         JobPost jobPost = jobPostRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
+
+        if (!jobPost.getWorkplace().getEmployer().getUser().getId().equals(userId)) {
+            throw new IllegalStateException("본인의 공고만 마감 처리할 수 있습니다.");
+        }
+
         jobPostRepository.save(JobPost.builder()
                 .id(jobPost.getId())
                 .workplace(jobPost.getWorkplace())
