@@ -16,6 +16,9 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long> {
     List<JobPost> findByStatusOrderByDeadlineAsc(JobPostStatus status);
     List<JobPost> findByStatusAndTitleContaining(JobPostStatus status, String keyword);
 
+    // 사업장 단위 공고 개수 — 사업장 삭제 가능 여부 판단에 사용
+    long countByWorkplaceId(Long workplaceId);
+
     // 고용주 공고 목록 조회
     @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.id = :employerId")
     List<JobPost> findByEmployerId(@Param("employerId") Long employerId);
@@ -36,6 +39,9 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long> {
             @Param("employerId") Long employerId,
             @Param("start") LocalDate start,
             @Param("end") LocalDate end);
+    // liked 공고 ID 목록 기준 조회
+    @Query("SELECT j FROM JobPost j WHERE j.id IN :ids ORDER BY j.id DESC")
+    List<JobPost> findByIdIn(@Param("ids") List<Long> ids);
 
     /**
      * 공고 목록 통합 필터 조회 (커서 방식 페이지네이션)

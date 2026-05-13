@@ -67,5 +67,6 @@ export interface ResumeResponse {
   educationStatus: SchoolStatus;
   major: string;
   totalHired: number;
+  liked: boolean;
   careers: Career[];
 }

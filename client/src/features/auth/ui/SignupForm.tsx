@@ -20,8 +20,8 @@ import {
 import { ButtonGroup } from 'shared/ui/Input/InputStyle';
 
 const GENDER_OPTIONS = [
-  { value: 0, label: '남성' },
-  { value: 1, label: '여성' },
+  { value: 'MALE' as const, label: '남성' },
+  { value: 'FEMALE' as const, label: '여성' },
 ];
 
 const SignupForm = () => {
@@ -38,7 +38,7 @@ const SignupForm = () => {
   } = useForm<SignupRequest>({
     defaultValues: {
       role: 'APPLICANT',
-      gender: 0,
+      gender: 'MALE',
     },
   });
 

@@ -15,6 +15,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -33,12 +34,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Long userId = jwtTokenProvider.getUserId(token);
             String role = jwtTokenProvider.getRole(token);
 
-            User user = userRepository.findById(userId).orElse(null);
-
-            if (user != null) {
+            // principal에는 실제 User 엔티티를 주입한다.
+            // 컨트롤러의 @AuthenticationPrincipal User user 가 정상 동작하려면 필요.
+            // 사용자가 DB에서 사라진 경우(탈퇴 등) 인증 컨텍스트를 세팅하지 않고 통과시킨다.
+            Optional<User> userOpt = userRepository.findById(userId);
+            if (userOpt.isPresent()) {
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                user, null,
+                                userOpt.get(), null,
                                 List.of(new SimpleGrantedAuthority("ROLE_" + role)));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);
@@ -49,18 +52,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String resolveToken(HttpServletRequest request) {
-        // 1. Authorization 헤더에서 토큰 추출
         String bearer = request.getHeader("Authorization");
         if (bearer != null && bearer.startsWith("Bearer ")) {
             return bearer.substring(7);
         }
-
-        // 2. SSE 연결용: 쿼리 파라미터에서 토큰 추출
-        String tokenParam = request.getParameter("token");
-        if (tokenParam != null && !tokenParam.isBlank()) {
-            return tokenParam;
-        }
-
         return null;
     }
 }

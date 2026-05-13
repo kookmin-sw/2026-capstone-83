@@ -12,9 +12,9 @@ import com.itda.entity.JobPost;
 import com.itda.entity.User;
 import com.itda.enums.ApplicationStatus;
 import com.itda.enums.InitiatedBy;
+import com.itda.enums.NotificationType;
 import com.itda.repository.ApplicationRepository;
 import com.itda.repository.JobPostRepository;
-import com.itda.enums.NotificationType;
 import com.itda.exception.DuplicateException;
 import com.itda.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -178,11 +178,13 @@ public class ApplicationService {
         return saved;
     }
 
-    // 고용주 → 채용 확정
+    // 고용주 → 채용 확정 (소유권 검증)
     @Transactional
-    public ApplicantResponse hire(Long applicationId) {
+    public ApplicantResponse hire(Long applicationId, Long userId) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new NotFoundException("지원 내역을 찾을 수 없습니다."));
+
+        verifyOwnership(application, userId);
 
         JobPost jobPost = application.getJobPost();
         jobPostRepository.save(JobPost.builder()
@@ -221,11 +223,13 @@ public class ApplicationService {
         return toApplicantResponse(saved);
     }
 
-    // 고용주 → 거절
+    // 고용주 → 거절 (소유권 검증)
     @Transactional
-    public ApplicantResponse reject(Long applicationId) {
+    public ApplicantResponse reject(Long applicationId, Long userId) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new NotFoundException("지원 내역을 찾을 수 없습니다."));
+
+        verifyOwnership(application, userId);
 
         Application saved = applicationRepository.save(Application.builder()
                 .id(application.getId())
@@ -248,11 +252,13 @@ public class ApplicationService {
         return toApplicantResponse(saved);
     }
 
-    // 근무 완료 처리 (고용주)
+    // 근무 완료 처리 (고용주, 소유권 검증)
     @Transactional
-    public ApplicantResponse complete(Long applicationId) {
+    public ApplicantResponse complete(Long applicationId, Long userId) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new NotFoundException("지원 내역을 찾을 수 없습니다."));
+
+        verifyOwnership(application, userId);
 
         Application saved = applicationRepository.save(Application.builder()
                 .id(application.getId())
@@ -275,8 +281,15 @@ public class ApplicationService {
         return toApplicantResponse(saved);
     }
 
-    // 공고별 지원자 목록 (고용주) - 커서 페이지네이션
-    public CursorPageResponse<ApplicantResponse> getApplicationsByJobPost(Long jobPostId, Long cursor, int size) {
+    // 공고별 지원자 목록 (고용주, 소유권 검증 + 커서 페이지네이션)
+    public CursorPageResponse<ApplicantResponse> getApplicationsByJobPost(Long jobPostId, Long userId, Long cursor, int size) {
+        JobPost jobPost = jobPostRepository.findById(jobPostId)
+                .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
+
+        if (!jobPost.getWorkplace().getEmployer().getUser().getId().equals(userId)) {
+            throw new IllegalStateException("본인의 공고만 조회할 수 있습니다.");
+        }
+
         int fetchSize = size + 1;
         List<Application> applications = applicationRepository.findByJobPostIdWithCursor(
                 jobPostId, cursor, PageRequest.of(0, fetchSize));
@@ -294,8 +307,15 @@ public class ApplicationService {
         return CursorPageResponse.of(content, nextCursor, hasNext);
     }
 
-    // 공고별 근무자 목록 (고용주) - HIRED 상태인 지원자만 조회
-    public List<ApplicantResponse> getWorkersByJobPost(Long jobPostId) {
+    // 공고별 근무자 목록 (고용주, 소유권 검증)
+    public List<ApplicantResponse> getWorkersByJobPost(Long jobPostId, Long userId) {
+        JobPost jobPost = jobPostRepository.findById(jobPostId)
+                .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
+
+        if (!jobPost.getWorkplace().getEmployer().getUser().getId().equals(userId)) {
+            throw new IllegalStateException("본인의 공고만 조회할 수 있습니다.");
+        }
+
         List<Application> applications = applicationRepository.findByJobPostIdAndStatus(jobPostId, ApplicationStatus.HIRED);
         return applications.stream()
                 .map(this::toApplicantResponse)
@@ -305,9 +325,9 @@ public class ApplicationService {
     // ─── 캘린더 API ───────────────────────────────────────────
 
     // 고용자 캘린더 일정 조회
-    public EmployerScheduleResponse getEmployerSchedules(Long employerId, ScheduleRequest request) {
+    public EmployerScheduleResponse getEmployerSchedules(Long userId, ScheduleRequest request) {
         List<JobPost> jobPosts = jobPostRepository.findByEmployerIdAndWorkDateBetween(
-                employerId, request.getFromDate(), request.getToDate());
+                userId, request.getFromDate(), request.getToDate());
 
         Map<LocalDate, List<EmployerScheduleItem>> schedules = jobPosts.stream()
                 .collect(Collectors.groupingBy(
@@ -325,6 +345,13 @@ public class ApplicationService {
     }
 
     // ─── 내부 헬퍼 ───────────────────────────────────────────
+
+    // 소유권 검증: 해당 공고의 고용주인지 확인
+    private void verifyOwnership(Application application, Long userId) {
+        if (!application.getJobPost().getWorkplace().getEmployer().getUser().getId().equals(userId)) {
+            throw new IllegalStateException("본인의 공고만 처리할 수 있습니다.");
+        }
+    }
 
     // Application → ApplicantResponse 변환 (매칭 횟수 포함)
     private ApplicantResponse toApplicantResponse(Application application) {

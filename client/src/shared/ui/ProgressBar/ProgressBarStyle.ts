@@ -7,9 +7,9 @@ export const Wrapper = styled.div`
   width: 100%;
 `;
 
-export const BarContainer = styled.div`
+export const BarContainer = styled.div<{ $height?: string }>`
   flex: 1;
-  height: 12px;
+  height: ${({ $height }) => $height || '12px'};
   background-color: ${({ theme }) => theme.color.subBackground};
   border-radius: 10px;
   overflow: hidden;
@@ -23,8 +23,8 @@ export const Filler = styled.div<{ $width: number }>`
   transition: width 0.5s ease-out; // 바가 스르륵 차오르는 효과
 `;
 
-export const Label = styled.div`
-  font-size: 18px;
+export const Label = styled.div<{ $fontSize?: string }>`
+  font-size: ${({ $fontSize }) => $fontSize || '18px'};
   font-weight: 600;
   display: flex;
   align-items: center;

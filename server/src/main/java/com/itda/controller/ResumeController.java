@@ -48,15 +48,18 @@ public class ResumeController {
     @PutMapping("/careers/{id}")
     public ResponseEntity<Void> updateCareer(
             @PathVariable Long id,
+            @AuthenticationPrincipal User user,
             @RequestBody CareerRequest request) {
-        resumeService.updateCareer(id, request);
+        resumeService.updateCareer(id, user, request);
         return ResponseEntity.ok().build();
     }
 
     // 경력 삭제
     @DeleteMapping("/careers/{id}")
-    public ResponseEntity<Void> deleteCareer(@PathVariable Long id) {
-        resumeService.deleteCareer(id);
+    public ResponseEntity<Void> deleteCareer(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        resumeService.deleteCareer(id, user);
         return ResponseEntity.ok().build();
     }
 
@@ -64,7 +67,8 @@ public class ResumeController {
     @GetMapping("/api/v1/resumes")
     public ResponseEntity<CursorPageResponse<ResumeCardResponse>> getResumeList(
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(resumeService.getResumeList(cursor, size));
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(resumeService.getResumeList(cursor, size, user));
     }
 }

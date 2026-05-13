@@ -4,6 +4,7 @@ import com.itda.service.CustomUserDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -38,9 +39,27 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .userDetailsService(customUserDetailsService)
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/signup", "/api/v1/login", "/api/v1/refresh",
-                                "/api/v1/logout", "/api/v1/auth/**").permitAll()
-                        .anyRequest().permitAll()
+                        // CORS 프리플라이트 통과
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
+                        // 인증 관련 공개 엔드포인트
+                        .requestMatchers(
+                                "/api/v1/signup",
+                                "/api/v1/login",
+                                "/api/v1/refresh",
+                                "/api/v1/logout",
+                                "/api/v1/auth/**"
+                        ).permitAll()
+
+                        // 공고 목록/상세 조회는 비로그인 허용
+                        // - GET /api/v1/job-posts
+                        // - GET /api/v1/job-posts/{id}
+                        // (/job-posts/{id}/apply, /applicants 같은 하위 경로는 별도 매칭이므로 인증 필요)
+                        .requestMatchers(HttpMethod.GET, "/api/v1/job-posts").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/job-posts/*").permitAll()
+
+                        // 그 외는 모두 인증 필요
+                        .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 

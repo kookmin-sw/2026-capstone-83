@@ -85,36 +85,45 @@ public class ApplicationController {
 
     // ─── 고용주 API ───────────────────────────────────────────
 
-    // 지원자 목록 조회 (커서 페이지네이션)
+    // 지원자 목록 조회 (소유권 검증 + 커서 페이지네이션)
     @GetMapping("/api/v1/job-posts/{id}/applicants")
     public ResponseEntity<CursorPageResponse<ApplicantResponse>> getApplicants(
             @PathVariable Long id,
             @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(applicationService.getApplicationsByJobPost(id, cursor, size));
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(applicationService.getApplicationsByJobPost(id, user.getId(), cursor, size));
     }
 
-    // 공고별 근무자 목록 (HIRED 상태)
+    // 공고별 근무자 목록 (소유권 검증)
     @GetMapping("/api/v1/job-posts/{id}/workers")
-    public ResponseEntity<List<ApplicantResponse>> getWorkers(@PathVariable Long id) {
-        return ResponseEntity.ok(applicationService.getWorkersByJobPost(id));
+    public ResponseEntity<List<ApplicantResponse>> getWorkers(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(applicationService.getWorkersByJobPost(id, user.getId()));
     }
 
-    // 지원자 승인 (채용 확정)
+    // 지원자 승인 (소유권 검증)
     @PostMapping("/api/v1/applications/{id}/accept")
-    public ResponseEntity<ApplicantResponse> accept(@PathVariable Long id) {
-        return ResponseEntity.ok(applicationService.hire(id));
+    public ResponseEntity<ApplicantResponse> accept(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(applicationService.hire(id, user.getId()));
     }
 
-    // 지원자 거절
+    // 지원자 거절 (소유권 검증)
     @PostMapping("/api/v1/applications/{id}/reject")
-    public ResponseEntity<ApplicantResponse> reject(@PathVariable Long id) {
-        return ResponseEntity.ok(applicationService.reject(id));
+    public ResponseEntity<ApplicantResponse> reject(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(applicationService.reject(id, user.getId()));
     }
 
-    // 근무 완료 처리
+    // 근무 완료 처리 (소유권 검증)
     @PostMapping("/api/v1/applications/{id}/complete")
-    public ResponseEntity<ApplicantResponse> complete(@PathVariable Long id) {
-        return ResponseEntity.ok(applicationService.complete(id));
+    public ResponseEntity<ApplicantResponse> complete(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(applicationService.complete(id, user.getId()));
     }
 }

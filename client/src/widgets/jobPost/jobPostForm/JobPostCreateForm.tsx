@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 // import { JobPostSubmitCard } from 'features/jobPost'; // 제출 버튼 기능이 담긴 카드
 import { useForm } from 'react-hook-form';
+import { useSearchParams } from 'react-router-dom';
 import type { JobPostCreate } from 'entities/jobPost/model/types/jobPost.type';
 import Main from 'shared/ui/Layout/Main';
 import Article from 'shared/ui/Layout/Article';
@@ -20,7 +21,14 @@ import { useCreateJobPost } from 'features/jobPost/hooks/useCreateJobPost';
 import CreateJobPostButton from 'features/jobPost/create-jobPost/CreateJobPostButton';
 
 export const JobPostCreateForm = () => {
-  const { handleSubmit, register, setValue, formState } = useForm<JobPostCreate>(); // 폼 상태 관리
+  const [searchParams] = useSearchParams();
+  const defaultWorkDate = searchParams.get('workDate') || '';
+
+  const { handleSubmit, register, setValue, formState } = useForm<JobPostCreate>({
+    defaultValues: {
+      workDate: defaultWorkDate,
+    },
+  });
   const { mutate } = useCreateJobPost();
 
 

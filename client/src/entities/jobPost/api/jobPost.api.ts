@@ -70,8 +70,17 @@ export const fetchJobPostsByEmployer = async (data: GetJobPostsParams): Promise<
 }
 
 
+// 공고 좋아요 토글
+export const likeJobPost = async (id: number) => {
+  const response = await authClient.post(`/api/v1/job-posts/${id}/like`);
+  return response.data;
+}
 
 
+// export const unlikeJobPost = async (id: number) => {
+//   const response = await authClient.post(`/api/v1/job-posts/${id}/unlike`);
+//   return response.data;
+// };
 
 
 //=========================mock API 함수 ======================================

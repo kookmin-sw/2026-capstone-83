@@ -45,7 +45,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(request.password()))
                 .name(request.name())
                 .birth(request.birth() != null ? LocalDate.parse(request.birth()) : null)
-                .gender(request.gender() != null ? Gender.valueOf(request.gender()) : null)
+                .gender(request.gender())
                 .phone(request.phone())
                 .location(request.location())
                 .role(role)

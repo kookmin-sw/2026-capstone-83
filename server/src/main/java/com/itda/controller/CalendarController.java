@@ -2,9 +2,11 @@ package com.itda.controller;
 
 import com.itda.dto.request.ScheduleRequest;
 import com.itda.dto.response.calendar.EmployerScheduleResponse;
+import com.itda.entity.User;
 import com.itda.service.ApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,8 +22,8 @@ public class CalendarController {
      */
     @GetMapping("/employer")
     public ResponseEntity<EmployerScheduleResponse> getEmployerSchedules(
-            @RequestParam Long employerId,
+            @AuthenticationPrincipal User user,
             @ModelAttribute ScheduleRequest request) {
-        return ResponseEntity.ok(applicationService.getEmployerSchedules(employerId, request));
+        return ResponseEntity.ok(applicationService.getEmployerSchedules(user.getId(), request));
     }
 }

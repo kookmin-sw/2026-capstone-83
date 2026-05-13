@@ -1,5 +1,5 @@
 import { authClient } from "shared/api/httpClient";
-import type { Workplace } from "../model/types/workplace.type";
+import type { Workplace, WorkplaceCreate } from "../model/types/workplace.type";
 import mockWorkplaceData from "shared/mocks/data/mockWorkplaceData.json";
 
 
@@ -13,8 +13,19 @@ export const fetchWorkplaceById = async (id: number): Promise<Workplace> => {
   return response.data;
 }
 
-export const createWorkplace = async (workplace: Workplace): Promise<Workplace> => {
-  const response = await authClient.post(`/api/v1/workplaces`, workplace);
+export const createWorkplace = async (data: WorkplaceCreate): Promise<Workplace> => {
+  const response = await authClient.post(`/api/v1/workplaces`, data);
+  return response.data;
+};
+
+export const updateWorkplace = async (data: Workplace): Promise<Workplace> => {
+  const { id } = data;
+  const response = await authClient.put(`/api/v1/workplaces/${id}`, data);
+  return response.data;
+};
+
+export const deleteWorkplace = async (id: number): Promise<void> => {
+  const response = await authClient.delete(`/api/v1/workplaces/${id}`);
   return response.data;
 };
 

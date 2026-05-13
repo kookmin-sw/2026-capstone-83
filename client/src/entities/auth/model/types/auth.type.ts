@@ -8,7 +8,7 @@ export interface SignupRequest {
   birth: string;
   location: string;
   phone: string;
-  gender: number;
+  gender: 'MALE' | 'FEMALE';
   businessNumber?: string;
 
 }

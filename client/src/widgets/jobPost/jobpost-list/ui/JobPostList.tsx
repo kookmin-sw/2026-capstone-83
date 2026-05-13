@@ -1,39 +1,43 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useInView } from 'react-intersection-observer';
 import { JobPostCard } from 'entities/jobPost/ui/JobPostCard';
 import * as S from './JobPostList.styled';
-import type { JobPost } from 'entities/jobPost/model/types/jobPost.type';
-import { fetchMockJobPosts } from 'entities/jobPost/api/jobPost.api';
+import { useJobPostsInfinite } from 'entities/jobPost/model/hooks/useJobPostsInfinite';
 import Loading from 'shared/ui/Loading/Loading';
+import Empty from 'shared/ui/Empty/Empty';
 
 export const JobPostList = () => {
-  // data fetch
-  //const posts = [dummyJobPost];
-  const [posts, setPosts] = useState<JobPost[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    status,
+  } = useJobPostsInfinite({});
 
+  const { ref, inView } = useInView();
 
   useEffect(() => {
-    fetchMockJobPosts().then((data) => {
-      setPosts(data);
-      setIsLoading(false);
-    });
-  }, []);
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      fetchNextPage();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
-  if (isLoading) return <Loading message="공고 불러오는 중..." />;
+  if (status === 'pending') return <Loading message="공고 불러오는 중..." />;
+  if (status === 'error') return <Empty message="데이터를 불러오는 데 실패했습니다." />;
 
   return (
     <S.ListContainer>
-      {posts.map((post) => (
-        <JobPostCard
-          key={post.id}
-          data={post}
+      {data?.pages.map((page) =>
+        page.jobPosts.map((post) => (
+          <JobPostCard key={post.id} data={post} />
+        ))
+      )}
 
-        />
-      ))}
-
-      {/* 무한 스크롤 구현 시 하단에 관찰용 센서(Ref)가 들어갈 자리 */}
-      <S.ObserverTarget />
+      <S.ObserverTarget ref={ref}>
+        {isFetchingNextPage && <Loading message="더 많은 공고 로딩 중..." />}
+      </S.ObserverTarget>
     </S.ListContainer>
   );
 };

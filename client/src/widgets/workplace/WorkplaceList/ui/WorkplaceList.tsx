@@ -1,30 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import styled from 'styled-components';
-import { fetchMockWorkplaces } from 'entities/workplace/api/workplace.api';
-import type { Workplace } from 'entities/workplace/model/types/workplace.type';
+import { useWorkplaces } from 'entities/workplace/model/hooks/useWorkplace';
 import { useWorkplaceStore } from 'entities/workplace/model/store/workplaceStore';
 import { WorkplaceCard } from 'entities/workplace/ui/WorkplaceCard';
 import { CreateWorkplaceModal } from 'features/workplace/CreateWorkplaceModal';
 import EditWorkplaceButton from 'features/workplace/EditWorkplaceButton';
 import DeleteWorkplaceButton from 'features/workplace/DeleteWorkplaceButton';
 import Loading from 'shared/ui/Loading/Loading';
+import Empty from 'shared/ui/Empty/Empty';
 
 export const WorkplaceList = () => {
-  const [workplaces, setWorkplaces] = useState<Workplace[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: workplaces, isLoading, isError } = useWorkplaces();
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
 
   const selectedId = useWorkplaceStore((s) => s.selectedWorkplaceId);
   const setSelectedId = useWorkplaceStore((s) => s.setSelectedWorkplaceId);
 
-  useEffect(() => {
-    fetchMockWorkplaces().then((data) => {
-      setWorkplaces(data);
-      setIsLoading(false);
-    });
-  }, []);
-
   if (isLoading) return <Loading message="작업장 목록을 불러오는 중..." />;
+  if (isError || !workplaces) return <Empty message="작업장을 불러올 수 없습니다." />;
 
   return (
     <>
@@ -37,7 +30,7 @@ export const WorkplaceList = () => {
             onClick={() => setSelectedId(selectedId === wp.id ? null : wp.id)}
             actions={
               <>
-                <EditWorkplaceButton />
+                <EditWorkplaceButton workplace={wp} />
                 <DeleteWorkplaceButton workplaceId={wp.id} />
               </>
             }
