@@ -1,10 +1,15 @@
 import { useState } from 'react';
 import { Pencil } from 'lucide-react';
 import styled from 'styled-components';
+import type { Workplace } from 'entities/workplace/model/types/workplace.type';
 import { CreateWorkplaceModal } from './CreateWorkplaceModal';
 import { hoverOverlay } from 'shared/styles/hoverOverlay';
 
-const EditWorkplaceButton = () => {
+interface Props {
+  workplace: Workplace;
+}
+
+const EditWorkplaceButton = ({ workplace }: Props) => {
   const [isOpen, setIsOpen] = useState(false);
 
   return (
@@ -17,6 +22,7 @@ const EditWorkplaceButton = () => {
       <CreateWorkplaceModal
         isOpen={isOpen}
         onClose={() => setIsOpen(false)}
+        initialData={workplace}
       />
     </>
   );

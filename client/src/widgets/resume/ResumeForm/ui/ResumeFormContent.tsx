@@ -1,12 +1,11 @@
-import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
-import { fetchMockResume } from 'entities/resume/api/resume.api';
+import { useResume } from 'entities/resume/model/hooks/useResume';
 import { useUpdateResume } from 'entities/resume/model/hooks/useResume';
 import { ResumeProfileSection } from 'entities/resume/ui/detailSections/ResumeProfileSection';
 import { ResumeEducationFields } from 'entities/resume/ui/InputFields/ResumeEducationFields';
 import { ResumeCareerFields } from 'entities/resume/ui/InputFields/ResumeCareerFields';
-import type { ResumeRequest, ResumeResponse } from 'entities/resume/model/types/resume.type';
+import type { ResumeRequest } from 'entities/resume/model/types/resume.type';
 import Button from 'shared/ui/Button/Button';
 import Main from 'shared/ui/Layout/Main';
 import Article from 'shared/ui/Layout/Article';
@@ -15,20 +14,8 @@ import Empty from 'shared/ui/Empty/Empty';
 import InputHeader from 'shared/ui/Input/InputHeader';
 
 export const ResumeFormContent = () => {
-  const [resume, setResume] = useState<ResumeResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { data: resume, isLoading, isError } = useResume();
   const { mutate: updateResume, isPending } = useUpdateResume();
-
-  useEffect(() => {
-    fetchMockResume(1)
-      .then((data) => {
-        setResume(data);
-        setIsLoading(false);
-      })
-      .catch(() => {
-        setIsLoading(false);
-      });
-  }, []);
 
   const { register, handleSubmit } = useForm<ResumeRequest>({
     values: resume ? {
@@ -50,7 +37,7 @@ export const ResumeFormContent = () => {
   };
 
   if (isLoading) return <Loading message="이력서를 불러오는 중입니다..." />;
-  if (!resume) return <Empty message="이력서를 불러올 수 없습니다." />;
+  if (isError || !resume) return <Empty message="이력서를 불러올 수 없습니다." />;
 
   return (
     <Main>

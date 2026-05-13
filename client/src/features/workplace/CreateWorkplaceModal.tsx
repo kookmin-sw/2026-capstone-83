@@ -1,7 +1,8 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
-import type { WorkplaceCreate } from 'entities/workplace/model/types/workplace.type';
-import { useCreateWorkplace } from 'entities/workplace/model/hooks/useWorkplace';
+import type { Workplace, WorkplaceCreate } from 'entities/workplace/model/types/workplace.type';
+import { useCreateWorkplace, useUpdateWorkplace } from 'entities/workplace/model/hooks/useWorkplace';
 import { useImageUpload } from 'features/control-Image/hooks/useImageUpload';
 import { ImageUploadButton } from 'features/control-Image/UploadButton';
 import { ImageRemoveButton } from 'features/control-Image/RemoveButton';
@@ -14,12 +15,29 @@ import { ButtonGroup } from 'shared/ui/Input/InputStyle';
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  initialData?: Workplace | null; // 수정 모드일 때 기존 데이터
 }
 
-export const CreateWorkplaceModal = ({ isOpen, onClose }: Props) => {
-  const { mutate, isPending } = useCreateWorkplace();
+export const CreateWorkplaceModal = ({ isOpen, onClose, initialData }: Props) => {
+  const isEditMode = !!initialData;
+  const { mutate: createMutate, isPending: isCreating } = useCreateWorkplace();
+  const { mutate: updateMutate, isPending: isUpdating } = useUpdateWorkplace();
+  const isPending = isCreating || isUpdating;
 
   const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<WorkplaceCreate>();
+
+  // 수정 모드일 때 초기값 세팅
+  useEffect(() => {
+    if (isOpen && initialData) {
+      setValue('name', initialData.name);
+      setValue('companyName', initialData.companyName);
+      setValue('businessNumber', initialData.businessNumber);
+      setValue('address', initialData.address);
+      setValue('companyLogoUrl', initialData.companyLogoUrl);
+    } else if (isOpen && !initialData) {
+      reset();
+    }
+  }, [isOpen, initialData, setValue, reset]);
 
   const {
     preview,
@@ -28,24 +46,37 @@ export const CreateWorkplaceModal = ({ isOpen, onClose }: Props) => {
     clearFile,
     triggerUpload,
   } = useImageUpload((file) => {
-    // 실제로는 S3 업로드 후 URL을 setValue하겠지만, 지금은 로컬 프리뷰만
     if (file) {
       setValue('companyLogoUrl', URL.createObjectURL(file));
     }
   });
 
   const onSubmit = (data: WorkplaceCreate) => {
-    mutate(data as any, {
-      onSuccess: () => {
-        alert('작업장이 등록되었습니다.');
-        reset();
-        clearFile();
-        onClose();
-      },
-      onError: () => {
-        alert('작업장 등록에 실패했습니다.');
-      },
-    });
+    if (isEditMode && initialData) {
+      updateMutate({ ...data, id: initialData.id }, {
+        onSuccess: () => {
+          alert('작업장이 수정되었습니다.');
+          reset();
+          clearFile();
+          onClose();
+        },
+        onError: () => {
+          alert('작업장 수정에 실패했습니다.');
+        },
+      });
+    } else {
+      createMutate(data, {
+        onSuccess: () => {
+          alert('작업장이 등록되었습니다.');
+          reset();
+          clearFile();
+          onClose();
+        },
+        onError: () => {
+          alert('작업장 등록에 실패했습니다.');
+        },
+      });
+    }
   };
 
   return (
@@ -69,13 +100,13 @@ export const CreateWorkplaceModal = ({ isOpen, onClose }: Props) => {
             onClick={handleSubmit(onSubmit)}
             disabled={isPending}
           >
-            {isPending ? '등록 중...' : '등록하기'}
+            {isPending ? (isEditMode ? '수정 중...' : '등록 중...') : (isEditMode ? '수정하기' : '등록하기')}
           </Button>
         </>
       }
     >
       <S.FormContent>
-        <S.Title>작업장 정보</S.Title>
+        <S.Title>{isEditMode ? '작업장 수정' : '작업장 정보'}</S.Title>
 
         <InputText
           label="작업장 이름"
@@ -122,9 +153,9 @@ export const CreateWorkplaceModal = ({ isOpen, onClose }: Props) => {
 
         <S.ImageSection>
           <S.ImageLabel>로고 이미지</S.ImageLabel>
-          {preview && (
+          {(preview || initialData?.companyLogoUrl) && (
             <S.PreviewImage>
-              <img src={preview} alt="로고 미리보기" />
+              <img src={preview || initialData?.companyLogoUrl} alt="로고 미리보기" />
             </S.PreviewImage>
           )}
           <ButtonGroup style={{ flexDirection: 'row', width: 'auto' }}>
@@ -133,7 +164,7 @@ export const CreateWorkplaceModal = ({ isOpen, onClose }: Props) => {
               onChange={handleFileChange}
               triggerUpload={triggerUpload}
             />
-            {preview && <ImageRemoveButton onDelete={clearFile} />}
+            {(preview || initialData?.companyLogoUrl) && <ImageRemoveButton onDelete={clearFile} />}
           </ButtonGroup>
         </S.ImageSection>
       </S.FormContent>

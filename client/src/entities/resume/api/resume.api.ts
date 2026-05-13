@@ -34,6 +34,13 @@ export const deleteCareer = async (id: number) => {
 }
 
 
+//이력서 좋아요 토글
+export const likeResume = async (id: number) => {
+  const response = await authClient.post(`/api/v1/resumes/${id}/like`);
+  return response.data;
+}
+
+
 //=========================mock API 함수 ======================================
 
 export const fetchMockResumes = (): Promise<ResumeResponse[]> => {
