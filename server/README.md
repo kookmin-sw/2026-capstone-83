@@ -165,6 +165,53 @@ Base URL: `http://44.207.95.136:8080/api/v1`
 
 ---
 
+### 🏢 사업장 (Workplace)
+
+| 메서드 | 경로 | 설명 | 인증 |
+|--------|------|------|------|
+| GET | `/workplaces/me` | 내 사업장 목록 조회 (로그인 고용주 기준) | ✅ |
+| GET | `/workplaces/{id}` | 사업장 단건 조회 (본인 소유만) | ✅ |
+| POST | `/workplaces` | 사업장 등록 | ✅ |
+| PUT | `/workplaces/{id}` | 사업장 수정 (부분 수정 — null 필드는 기존 값 유지) | ✅ |
+| DELETE | `/workplaces/{id}` | 사업장 삭제 (본인 소유 + 연결 공고 0건일 때만) | ✅ |
+
+**요청 예시 — 사업장 등록 / 수정 (POST · PUT)**
+```json
+{
+  "name": "성수 1현장",
+  "companyName": "워크브릿지 건설",
+  "businessNumber": "123-45-67890",
+  "address": "서울 성동구 성수동 1가 656",
+  "companyLogoUrl": "https://.../logo.png"
+}
+```
+> 회사 로고 이미지는 S3 업로드 연동 전까지 `companyLogoUrl`(이미 업로드된 URL)로 전달합니다.
+
+**응답 예시 — 사업장 조회 / 등록 (200 · 201)**
+```json
+{
+  "id": 12,
+  "name": "성수 1현장",
+  "companyName": "워크브릿지 건설",
+  "businessNumber": "123-45-67890",
+  "address": "서울 성동구 성수동 1가 656",
+  "companyLogoUrl": "https://.../logo.png"
+}
+```
+
+**삭제 응답 코드**
+
+| 코드 | 설명 |
+|------|------|
+| 204 | 삭제 성공 (No Content) |
+| 403 | 본인 소유 사업장이 아님 |
+| 404 | 사업장을 찾을 수 없음 |
+| 409 | 연결된 공고가 존재 — 공고를 먼저 정리해야 함 |
+
+> 본인 소유 검증은 모든 단건 API(`GET`/`PUT`/`DELETE /{id}`)에 공통 적용됩니다. 다른 사용자의 사업장을 조회/수정 시도하면 403이 반환됩니다.
+
+---
+
 ### 📝 지원 (Application)
 
 | 메서드 | 경로 | 설명 | 인증 |
@@ -297,3 +344,4 @@ User (1) ──── (N) Application ───── (N) JobPost
 | Manager Service/Controller | 🔲 미구현 |
 | SSE 실시간 알림 (승인/확정 시) | 🔲 미구현 |
 | CORS 허용 도메인 EC2 주소 추가 | 🔲 미구현 |
+| 사업장(Workplace) CRUD | ✅ 구현 완료 |

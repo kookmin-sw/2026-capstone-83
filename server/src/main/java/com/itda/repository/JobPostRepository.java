@@ -16,6 +16,9 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long> {
     List<JobPost> findByStatusOrderByDeadlineAsc(JobPostStatus status);
     List<JobPost> findByStatusAndTitleContaining(JobPostStatus status, String keyword);
 
+    // 사업장 단위 공고 개수 — 사업장 삭제 가능 여부 판단에 사용
+    long countByWorkplaceId(Long workplaceId);
+
     // 고용주 공고 목록 조회
     @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.id = :employerId")
     List<JobPost> findByEmployerId(@Param("employerId") Long employerId);
