@@ -2,10 +2,12 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { useWorkplaces } from 'entities/workplace/model/hooks/useWorkplace';
 import { useWorkplaceStore } from 'entities/workplace/model/store/workplaceStore';
+import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import { WorkplaceFilterBar } from 'features/workplace/WorkplaceFilterBar';
 import { CreateWorkplaceModal } from 'features/workplace/CreateWorkplaceModal';
 import { WorkplaceInfoSection } from 'entities/workplace/ui/WorkplaceInfoSection';
 import { EmployerCalendarWidget } from 'widgets/calendar/EmployerCalendar/ui/EmployerCalendarWidget';
+import SelectedJobPostSection from 'entities/jobPost/ui/SelectedJobPostSection';
 import Button from 'shared/ui/Button/Button';
 import Loading from 'shared/ui/Loading/Loading';
 
@@ -16,6 +18,7 @@ const EmployerDashboardPage = () => {
 
   const selectedId = useWorkplaceStore((s) => s.selectedWorkplaceId);
   const setSelectedId = useWorkplaceStore((s) => s.setSelectedWorkplaceId);
+  const selectedJobPostId = useScheduleStore((s) => s.selectedJobPostId);
 
   if (isLoading || !workplaces) return <Loading message="작업장 정보를 불러오는 중..." />;
 
@@ -48,6 +51,14 @@ const EmployerDashboardPage = () => {
       {/* 대시보드 콘텐츠 영역 — 캘린더 */}
       <EmployerCalendarWidget />
 
+      {/* 선택된 공고 정보 */}
+      {selectedJobPostId !== null && (
+        <>
+          <S.SectionLabel>공고 정보</S.SectionLabel>
+          <SelectedJobPostSection postId={selectedJobPostId} />
+        </>
+      )}
+
       {/* 작업장 생성 모달 */}
       <CreateWorkplaceModal
         isOpen={isCreateModalOpen}
@@ -69,6 +80,12 @@ const S = {
     display: flex;
     flex-direction: column;
     gap: 24px;
+  `,
+  SectionLabel: styled.h2`
+    font-size: ${({ theme }) => theme.fontSize.large};
+    font-weight: ${({ theme }) => theme.fontWeight.bold};
+    color: ${({ theme }) => theme.color.text};
+    margin: 0;
   `,
 };
 
