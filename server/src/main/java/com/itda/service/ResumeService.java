@@ -154,12 +154,6 @@ public class ResumeService {
                 : List.of();
 
         List<ResumeCardResponse> result = resumes.stream()
-                .sorted((a, b) -> {
-                    boolean aLiked = likedIds.contains(a.getId());
-                    boolean bLiked = likedIds.contains(b.getId());
-                    if (aLiked == bLiked) return 0;
-                    return aLiked ? -1 : 1;
-                })
                 .map(resume -> {
                     User resumeUser = resume.getUser();
                     List<CareerResponse> careers = careerRepository.findByResumeId(resume.getId())

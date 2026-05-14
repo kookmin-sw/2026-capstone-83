@@ -60,12 +60,6 @@ public class JobPostService {
 
         // liked 상단 정렬 후 DTO 변환
         List<JobPostCardResponse> jobPosts = posts.stream()
-                .sorted((a, b) -> {
-                    boolean aLiked = likedIds.contains(a.getId());
-                    boolean bLiked = likedIds.contains(b.getId());
-                    if (aLiked == bLiked) return 0;
-                    return aLiked ? -1 : 1;
-                })
                 .map(j -> JobPostCardResponse.from(j, likedIds.contains(j.getId())))
                 .toList();
 
