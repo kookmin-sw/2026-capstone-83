@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { fetchMockSchedules } from 'entities/schedule/api/schedule.api';
 import type { Schedule } from 'entities/schedule/model/types/schedule.type';
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
+import { useWorkplaceStore } from 'entities/workplace/model/store/workplaceStore';
 import { ScheduleChip } from 'entities/schedule/ui/ScheduleChip';
 import { BaseMonthlyCalendar } from 'widgets/calendar/BaseMonthlyCalendar';
 import { WeeklyCalendar } from './WeeklyCalendar';
@@ -61,6 +62,7 @@ export const EmployerCalendarWidget = () => {
   const [schedules, setSchedules] = useState<Record<string, Schedule[]>>({});
   const [isLoading, setIsLoading] = useState(true);
   const setSelectedJobPostId = useScheduleStore((s) => s.setSelectedJobPostId);
+  const selectedWpId = useWorkplaceStore((s) => s.selectedWorkplaceId);
 
   useEffect(() => {
     fetchMockSchedules().then((data) => {
@@ -130,13 +132,17 @@ export const EmployerCalendarWidget = () => {
           renderEmptyCell={(fullDate) => (
             <AddButton onClick={(e) => {
               e.stopPropagation();
-              window.open(`/jobpost/create?workDate=${fullDate}`, '_blank');
+              const wpParam = selectedWpId ? `&workplaceId=${selectedWpId}` : '';
+              window.open(`/jobpost/create?workDate=${fullDate}${wpParam}`, '_blank');
             }}>
               + 공고 추가
             </AddButton>
           )}
           renderModalFooter={(fullDate) => (
-            <ModalAddButton onClick={() => window.open(`/jobpost/create?workDate=${fullDate}`, '_blank')}>
+            <ModalAddButton onClick={() => {
+              const wpParam = selectedWpId ? `&workplaceId=${selectedWpId}` : '';
+              window.open(`/jobpost/create?workDate=${fullDate}${wpParam}`, '_blank');
+            }}>
               + 공고 추가
             </ModalAddButton>
           )}

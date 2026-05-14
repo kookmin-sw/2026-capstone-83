@@ -10,9 +10,10 @@ interface Props {
   selectedId: number | null; // null = 전체
   onSelect: (id: number | null) => void;
   onCreateClick: () => void;
+  showAll?: boolean; // "전체" 탭 표시 여부 (기본 true)
 }
 
-export const WorkplaceFilterBar = ({ workplaces, selectedId, onSelect, onCreateClick }: Props) => {
+export const WorkplaceFilterBar = ({ workplaces, selectedId, onSelect, onCreateClick, showAll = true }: Props) => {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scrollBy = (direction: 'left' | 'right') => {
@@ -29,12 +30,14 @@ export const WorkplaceFilterBar = ({ workplaces, selectedId, onSelect, onCreateC
       </S.ScrollButton>
 
       <S.TabList ref={scrollRef}>
-        <S.Tab
-          $active={selectedId === null}
-          onClick={() => onSelect(null)}
-        >
-          전체
-        </S.Tab>
+        {showAll && (
+          <S.Tab
+            $active={selectedId === null}
+            onClick={() => onSelect(null)}
+          >
+            전체
+          </S.Tab>
+        )}
         {workplaces.map((wp) => (
           <S.Tab
             key={wp.id}

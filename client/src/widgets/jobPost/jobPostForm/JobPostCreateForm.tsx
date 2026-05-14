@@ -2,9 +2,13 @@
 import styled from 'styled-components';
 
 // import { JobPostSubmitCard } from 'features/jobPost'; // 제출 버튼 기능이 담긴 카드
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSearchParams } from 'react-router-dom';
 import type { JobPostCreate } from 'entities/jobPost/model/types/jobPost.type';
+import { useWorkplaces } from 'entities/workplace/model/hooks/useWorkplace';
+import { WorkplaceFilterBar } from 'features/workplace/WorkplaceFilterBar';
+import { CreateWorkplaceModal } from 'features/workplace/CreateWorkplaceModal';
 import Main from 'shared/ui/Layout/Main';
 import Article from 'shared/ui/Layout/Article';
 import { JobPostBasicInfoFields } from 'entities/jobPost/ui/InputFields/JobPostBasicInfoFields';
@@ -23,6 +27,13 @@ import CreateJobPostButton from 'features/jobPost/create-jobPost/CreateJobPostBu
 export const JobPostCreateForm = () => {
   const [searchParams] = useSearchParams();
   const defaultWorkDate = searchParams.get('workDate') || '';
+  const defaultWorkplaceId = searchParams.get('workplaceId');
+
+  const { data: workplaces } = useWorkplaces();
+  const [selectedWorkplaceId, setSelectedWorkplaceId] = useState<number | null>(
+    defaultWorkplaceId ? Number(defaultWorkplaceId) : null
+  );
+  const [isCreateWpModalOpen, setIsCreateWpModalOpen] = useState(false);
 
   const { handleSubmit, register, setValue, formState } = useForm<JobPostCreate>({
     defaultValues: {
@@ -30,6 +41,25 @@ export const JobPostCreateForm = () => {
     },
   });
   const { mutate } = useCreateJobPost();
+
+  // 작업장 선택 시 관련 필드 자동 채우기
+  useEffect(() => {
+    if (!workplaces || !selectedWorkplaceId) return;
+    const wp = workplaces.find((w) => w.id === selectedWorkplaceId);
+    if (wp) {
+      setValue('workplaceId', wp.id);
+      setValue('company', wp.companyName);
+      setValue('location', wp.address);
+    }
+  }, [selectedWorkplaceId, workplaces, setValue]);
+
+  // 첫 번째 작업장 자동 선택
+  useEffect(() => {
+    if (workplaces && workplaces.length > 0 && selectedWorkplaceId === null) {
+      setSelectedWorkplaceId(workplaces[0].id);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [workplaces]);
 
 
   const onSubmit = (data: JobPostCreate) => {
@@ -76,6 +106,17 @@ export const JobPostCreateForm = () => {
   return (
     <Main>
       <Article>
+        {/* 작업장 선택 바 */}
+        {workplaces && workplaces.length > 0 && (
+          <WorkplaceFilterBar
+            workplaces={workplaces}
+            selectedId={selectedWorkplaceId}
+            onSelect={(id) => setSelectedWorkplaceId(id)}
+            onCreateClick={() => setIsCreateWpModalOpen(true)}
+            showAll={false}
+          />
+        )}
+
         <FormContainer onSubmit={handleSubmit(onSubmit)}>
           {/* 좌측: 엔티티들의 집합 */}
           <FieldsSection>
@@ -131,6 +172,11 @@ export const JobPostCreateForm = () => {
 
         </FormContainer>
       </Article>
+
+      <CreateWorkplaceModal
+        isOpen={isCreateWpModalOpen}
+        onClose={() => setIsCreateWpModalOpen(false)}
+      />
     </Main>
   );
 };

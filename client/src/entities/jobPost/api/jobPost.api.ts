@@ -36,7 +36,7 @@ export const createJobPost = async (data: JobPostCreate) => {
   const response = await authClient.post('/api/v1/job-posts', formData,
     {
       params: {
-        workplaceId: 1, // 나중에 작업장 받아서 넣기
+        workplaceId: data.workplaceId,
       },
     }
   );
