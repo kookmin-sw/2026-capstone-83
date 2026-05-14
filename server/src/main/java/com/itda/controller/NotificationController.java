@@ -1,5 +1,6 @@
 package com.itda.controller;
 
+import com.itda.config.JwtTokenProvider;
 import com.itda.dto.response.NotificationResponse;
 import com.itda.entity.User;
 import com.itda.service.NotificationService;
@@ -19,10 +20,22 @@ import java.util.Map;
 public class NotificationController {
 
     private final NotificationService notificationService;
+    private final JwtTokenProvider jwtTokenProvider;
+
+    /**
+     * SSE 전용 단기 토큰 발급 (30초 만료)
+     * 클라이언트는 이 토큰을 받아 /subscribe?token={sseToken} 으로 SSE 연결
+     */
+    @PostMapping("/token")
+    public ResponseEntity<Map<String, String>> issueSseToken(
+            @AuthenticationPrincipal User user) {
+        String sseToken = jwtTokenProvider.createSseToken(user.getId(), user.getRole().name());
+        return ResponseEntity.ok(Map.of("sseToken", sseToken));
+    }
 
     /**
      * SSE 구독 엔드포인트
-     * 인증은 쿼리 파라미터 token으로 처리 (JwtAuthenticationFilter에서 파싱)
+     * 인증은 쿼리 파라미터의 SSE 전용 단기 토큰으로 처리
      */
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter subscribe(@AuthenticationPrincipal User user) {

@@ -33,6 +33,8 @@ public class JwtTokenProvider {
         return createToken(userId, role, refreshTokenExpiry);
     }
 
+    private static final long SSE_TOKEN_EXPIRY = 30_000L; // 30초
+
     private String createToken(Long userId, String role, long expiry) {
         Date now = new Date();
         return Jwts.builder()
@@ -42,6 +44,28 @@ public class JwtTokenProvider {
                 .expiration(new Date(now.getTime() + expiry))
                 .signWith(key)
                 .compact();
+    }
+
+    /**
+     * SSE 전용 단기 토큰 생성 (30초 만료, purpose=sse 클레임)
+     */
+    public String createSseToken(Long userId, String role) {
+        Date now = new Date();
+        return Jwts.builder()
+                .subject(String.valueOf(userId))
+                .claim("role", role)
+                .claim("purpose", "sse")
+                .issuedAt(now)
+                .expiration(new Date(now.getTime() + SSE_TOKEN_EXPIRY))
+                .signWith(key)
+                .compact();
+    }
+
+    /**
+     * 토큰의 purpose 클레임 조회 (없으면 null)
+     */
+    public String getPurpose(String token) {
+        return getClaims(token).get("purpose", String.class);
     }
 
     public Long getUserId(String token) {

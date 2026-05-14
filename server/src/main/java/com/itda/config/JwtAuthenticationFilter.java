@@ -52,10 +52,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     }
 
     private String resolveToken(HttpServletRequest request) {
+        // 1. Authorization 헤더에서 토큰 추출
         String bearer = request.getHeader("Authorization");
         if (bearer != null && bearer.startsWith("Bearer ")) {
             return bearer.substring(7);
         }
+
+        // 2. SSE 구독 엔드포인트: 쿼리 파라미터에서 SSE 전용 토큰 추출
+        if (request.getRequestURI().contains("/notifications/subscribe")) {
+            String tokenParam = request.getParameter("token");
+            if (tokenParam != null && !tokenParam.isBlank()) {
+                // SSE 전용 토큰인지 검증 (purpose=sse 클레임 확인)
+                if (jwtTokenProvider.validateToken(tokenParam)) {
+                    String purpose = jwtTokenProvider.getPurpose(tokenParam);
+                    if ("sse".equals(purpose)) {
+                        return tokenParam;
+                    }
+                }
+            }
+        }
+
         return null;
     }
 }
