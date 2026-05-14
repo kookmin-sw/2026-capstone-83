@@ -113,6 +113,12 @@ public class JobPost {
     @Column(columnDefinition = "TEXT")
     private List<String> items;
 
+    // 연령/성별/학력 등 인적 필수 조건 - JSON 배열로 저장 (예: ["ADULT_ONLY", "GENDER_ANY"])
+    // 자격/인증 종류의 필수 조건은 requirements 컬럼에 그대로 적재됩니다.
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "age_requirements", columnDefinition = "TEXT")
+    private List<String> ageRequirements;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

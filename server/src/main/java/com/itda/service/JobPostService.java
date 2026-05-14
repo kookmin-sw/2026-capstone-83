@@ -14,7 +14,6 @@ import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
 import com.itda.repository.WorkplaceRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,20 +32,11 @@ public class JobPostService {
     private final WorkplaceRepository workplaceRepository; // 로고 URL 저장용
 
     // 공고 목록 통합 조회 (필터 + 커서 페이지네이션)
-    // 지원자/고용주 공통 사용 - 모든 필터를 JobPostFilterRequest 하나로 처리
+    // 지원자/고용주 공통 사용 - 모든 필터(다중 태그/범위 포함)를 JobPostRepositoryCustom으로 위임
     public CursorPageResponse<JobPostCardResponse> getJobPosts(JobPostFilterRequest filter, User user) {
         int fetchSize = filter.getSize() + 1;
 
-        List<JobPost> posts = jobPostRepository.findByFilter(
-                filter.cursor(),
-                filter.keyword(),
-                filter.jobCategory(),
-                filter.jobSubcategory(),
-                filter.location(),
-                filter.workDate(),
-                filter.sortType(),
-                PageRequest.of(0, fetchSize)
-        );
+        List<JobPost> posts = jobPostRepository.findByDynamicFilter(filter, fetchSize);
 
         boolean hasNext = posts.size() > filter.getSize();
         if (hasNext) {
@@ -58,7 +48,7 @@ public class JobPostService {
                 ? likeService.getLikedJobPostIds(user.getId())
                 : List.of();
 
-        // liked 상단 정렬 후 DTO 변환
+        // liked 표시 포함하여 DTO 변환
         List<JobPostCardResponse> jobPosts = posts.stream()
                 .map(j -> JobPostCardResponse.from(j, likedIds.contains(j.getId())))
                 .toList();

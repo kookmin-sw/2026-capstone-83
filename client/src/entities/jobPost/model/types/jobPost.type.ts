@@ -141,8 +141,8 @@ export interface GetJobPostsParams {
 
   // 검색 필터링 옵션
   keyword?: string;          // 검색어
-  jobCategory?: string;    // 업종 대분류 
-  jobSubcategory?: string; // 업종 소분류 
+  jobCategory?: string;    // 업종 대분류
+  jobSubcategory?: string; // 업종 소분류
   location?: string;    // 지역 필터
   workDate?: string;       // 근무 날짜 필터 (예: "2024-07-01")
   sortType?: 'WAGE' | 'LOCATION' | 'WORK_DATE'; // 정렬 기준 필터

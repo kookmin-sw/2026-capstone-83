@@ -32,8 +32,8 @@ export const JobPostListPage = () => {
     <main>
       {/* 현재 필터 상태를 UI에 표시하고 변경 이벤트를 처리 */}
       {/* <JobPostFilterBar
-        activeFilters={filterParams} 
-        onFilterChange={handleFilterChange} 
+        activeFilters={filterParams}
+        onFilterChange={handleFilterChange}
       /> */}
 
       {/* 업데이트된 filterParams를 리스트 위젯에 주입 */}
