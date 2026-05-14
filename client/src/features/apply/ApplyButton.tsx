@@ -46,9 +46,9 @@ const ApplyButton = ({ jobPostId }: Props) => {
         scheme="primary"
         buttonSize="medium"
         onClick={handleClick}
-        style={{ width: '100%', }}
+        style={{ whiteSpace: 'nowrap' }}
       >
-        <UserRoundPlus size={16} style={{ marginRight: '6px' }} />
+        <UserRoundPlus size={16} style={{ marginRight: '6px', flexShrink: 0 }} />
         지원하기
       </Button>
 

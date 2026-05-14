@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { ResumeCard } from 'entities/resume/ui/ResumeCard';
 import { fetchMockResumes } from 'entities/resume/api/resume.api';
 import type { ResumeResponse } from 'entities/resume/model/types/resume.type';
+import LikeResumeButton from 'features/like/LikeResumeButton';
 import Loading from 'shared/ui/Loading/Loading';
 import Empty from 'shared/ui/Empty/Empty';
 
@@ -23,7 +24,11 @@ export const ResumeList = () => {
   return (
     <ListContainer>
       {resumes.map((resume) => (
-        <ResumeCard key={resume.id} data={resume} />
+        <ResumeCard
+          key={resume.id}
+          data={resume}
+          extraActions={<LikeResumeButton resumeId={resume.id} liked={resume.liked} variant="icon" />}
+        />
       ))}
     </ListContainer>
   );

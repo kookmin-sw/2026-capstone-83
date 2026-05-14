@@ -5,6 +5,7 @@ import { JobPostDetailOverviewSection } from 'entities/jobPost/ui/detailSections
 import { JobPostLocationSection } from 'entities/jobPost/ui/detailSections/JobPostLocationSection';
 import { JobPostWorkContentSection } from 'entities/jobPost/ui/detailSections/JobPostWorkContentSection';
 import ApplyButton from 'features/apply/ApplyButton';
+import LikeJobPostButton from 'features/like/LikeJobPostButton';
 import Article from 'shared/ui/Layout/Article';
 import Main from 'shared/ui/Layout/Main';
 import Loading from 'shared/ui/Loading/Loading';
@@ -36,7 +37,7 @@ export const JobPostDetailContent = ({ postId }: Props) => {
           data={post}
           actions={
             <>
-              {/* 추후 LikeButton 추가 위치 */}
+              <LikeJobPostButton jobPostId={post.id} liked={post.liked} variant="bordered" />
               <ApplyButton jobPostId={post.id} />
             </>
           }
@@ -54,7 +55,7 @@ export const JobPostDetailContent = ({ postId }: Props) => {
 
       {/* 하단 Sticky 지원 바 */}
       <StickyBar>
-        {/* 추후 LikeButton 추가 위치 */}
+        <LikeJobPostButton jobPostId={post.id} liked={post.liked} variant="bordered" />
         <ApplyButton jobPostId={post.id} />
       </StickyBar>
     </Main>

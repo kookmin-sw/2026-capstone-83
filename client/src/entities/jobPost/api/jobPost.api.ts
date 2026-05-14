@@ -1,12 +1,14 @@
 import { authClient, httpClient } from "shared/api/httpClient";
+import { useAuthStore } from "entities/auth/model/store/authStore";
 import type { GetJobPostsParams, JobPost, JobPostCreate, JobPostDetail, JobPostListCursor, JobPostUpdate } from "../model/types/jobPost.type";
 import mockJobPostData from "shared/mocks/data/mockJobPostData.json";
 import { toFormData } from "shared/lib/toFormData";
 
 
-//공고 목록 조회
+//공고 목록 조회 (로그인 시 authClient로 liked 포함 조회)
 export const fetchJobPosts = async (data: GetJobPostsParams): Promise<JobPostListCursor> => {
-  const response = await httpClient.get<JobPostListCursor>('/api/v1/job-posts', {
+  const client = useAuthStore.getState().accessToken ? authClient : httpClient;
+  const response = await client.get<JobPostListCursor>('/api/v1/job-posts', {
     params: data,
   });
   return response.data;

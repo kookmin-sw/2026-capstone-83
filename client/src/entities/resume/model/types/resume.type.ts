@@ -70,3 +70,28 @@ export interface ResumeResponse {
   liked: boolean;
   careers: Career[];
 }
+
+export interface ResumeCardItem {
+  resumeId: number;
+  profileImageUrl: string;
+  name: string;
+  gender: string;
+  age: number;
+  liked: boolean;
+  firstCareerTitle: string | null;
+  firstCareerYears: number;
+  firstCareerMonths: number;
+  location: string;
+  totalHired: number;
+}
+
+export interface ResumeListCursor {
+  jobPosts: ResumeCardItem[];
+  nextCursor: number | null;
+  hasNext: boolean;
+}
+
+export interface GetResumesParams {
+  cursor?: number;
+  size?: number;
+}

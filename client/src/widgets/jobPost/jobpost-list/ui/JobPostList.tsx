@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { useInView } from 'react-intersection-observer';
 import { JobPostCard } from 'entities/jobPost/ui/JobPostCard';
+import LikeJobPostButton from 'features/like/LikeJobPostButton';
 import * as S from './JobPostList.styled';
 import { useJobPostsInfinite } from 'entities/jobPost/model/hooks/useJobPostsInfinite';
 import Loading from 'shared/ui/Loading/Loading';
@@ -31,7 +32,11 @@ export const JobPostList = () => {
     <S.ListContainer>
       {data?.pages.map((page) =>
         page.jobPosts.map((post) => (
-          <JobPostCard key={post.id} data={post} />
+          <JobPostCard
+            key={post.id}
+            data={post}
+            extraActions={<LikeJobPostButton jobPostId={post.id} liked={post.liked} variant="icon" />}
+          />
         ))
       )}
 

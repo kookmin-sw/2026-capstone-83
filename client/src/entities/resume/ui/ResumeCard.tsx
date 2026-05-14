@@ -1,3 +1,4 @@
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import type { ResumeResponse } from '../model/types/resume.type';
@@ -5,9 +6,10 @@ import { MapPin } from 'lucide-react';
 
 interface Props {
   data: ResumeResponse;
+  extraActions?: React.ReactNode;
 }
 
-export const ResumeCard = ({ data }: Props) => {
+export const ResumeCard = ({ data, extraActions }: Props) => {
   const navigate = useNavigate();
   const { id, name, gender, birthDate, address, profileUrl, totalHired, careers } = data;
 
@@ -36,6 +38,7 @@ export const ResumeCard = ({ data }: Props) => {
       <CardContent>
         <NameRow>
           <Name>{name}({genderLabel}, {age}세)</Name>
+          {extraActions && <ActionGroup>{extraActions}</ActionGroup>}
         </NameRow>
 
         {mainCareer && (
@@ -128,4 +131,10 @@ const MetaItem = styled.span`
 const MetaDivider = styled.span`
   color: ${({ theme }) => theme.color.border};
   font-size: ${({ theme }) => theme.fontSize.xsmall};
+`;
+
+const ActionGroup = styled.div`
+  display: flex;
+  gap: 8px;
+  margin-left: auto;
 `;
