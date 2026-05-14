@@ -1,10 +1,11 @@
 package com.itda.controller;
 
 import com.itda.dto.request.CareerRequest;
+import com.itda.dto.request.CertificateRequest;
 import com.itda.dto.request.ResumeRequest;
-import com.itda.dto.response.ResumeResponse;
-import com.itda.dto.response.ResumeCardResponse;
 import com.itda.dto.response.CursorPageResponse;
+import com.itda.dto.response.ResumeCardResponse;
+import com.itda.dto.response.ResumeResponse;
 import com.itda.entity.User;
 import com.itda.service.ResumeService;
 import lombok.RequiredArgsConstructor;
@@ -48,18 +49,33 @@ public class ResumeController {
     @PutMapping("/careers/{id}")
     public ResponseEntity<Void> updateCareer(
             @PathVariable Long id,
-            @AuthenticationPrincipal User user,
             @RequestBody CareerRequest request) {
-        resumeService.updateCareer(id, user, request);
+        resumeService.updateCareer(id, request);
         return ResponseEntity.ok().build();
     }
 
     // 경력 삭제
     @DeleteMapping("/careers/{id}")
-    public ResponseEntity<Void> deleteCareer(
+    public ResponseEntity<Void> deleteCareer(@PathVariable Long id) {
+        resumeService.deleteCareer(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // 자격/인증 추가
+    @PostMapping("/certificates")
+    public ResponseEntity<Void> addCertificate(
+            @AuthenticationPrincipal User user,
+            @RequestBody CertificateRequest request) {
+        resumeService.addCertificate(user, request);
+        return ResponseEntity.status(201).build();
+    }
+
+    // 자격/인증 삭제
+    @DeleteMapping("/certificates/{id}")
+    public ResponseEntity<Void> deleteCertificate(
             @PathVariable Long id,
             @AuthenticationPrincipal User user) {
-        resumeService.deleteCareer(id, user);
+        resumeService.deleteCertificate(id, user);
         return ResponseEntity.ok().build();
     }
 
