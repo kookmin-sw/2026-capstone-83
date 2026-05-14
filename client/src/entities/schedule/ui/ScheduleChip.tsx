@@ -1,18 +1,18 @@
+import type { ReactNode } from 'react';
 import styled from 'styled-components';
 import type { Schedule } from '../model/types/schedule.type';
 import { useScheduleStore } from '../model/store/scheduleStore';
 import ProgressBar from 'shared/ui/ProgressBar/ProgressBar';
-import Badge from 'shared/ui/Badge/Badge';
 import { hoverOverlay } from 'shared/styles/hoverOverlay';
 
 interface Props {
   schedule: Schedule;
-  onSelect?: () => void; // 셀렉트 후 추가 동작 (예: 달 이동)
+  badge: ReactNode;
+  onSelect?: () => void;
 }
 
-export const ScheduleChip = ({ schedule, onSelect }: Props) => {
-  const { jobPostId, title, filledSlots, totalSlots, postStatus } = schedule;
-  const isClosed = postStatus === 'CLOSED';
+export const ScheduleChip = ({ schedule, badge, onSelect }: Props) => {
+  const { jobPostId, filledSlots, totalSlots, title } = schedule;
 
   const selectedId = useScheduleStore((s) => s.selectedJobPostId);
   const setSelectedId = useScheduleStore((s) => s.setSelectedJobPostId);
@@ -28,11 +28,7 @@ export const ScheduleChip = ({ schedule, onSelect }: Props) => {
 
   return (
     <S.Chip $selected={isSelected} onClick={handleClick}>
-      <S.BadgeRow>
-        <Badge scheme={isClosed ? 'warning' : 'primary'}>
-          {isClosed ? '모집완료' : '모집중'}
-        </Badge>
-      </S.BadgeRow>
+      {badge && <S.BadgeRow>{badge}</S.BadgeRow>}
       <S.Title>{title}</S.Title>
       <ProgressBar total={totalSlots} current={filledSlots} height="6px" fontSize="11px" />
     </S.Chip>
@@ -59,8 +55,6 @@ const S = {
   `,
   BadgeRow: styled.div`
     display: flex;
-
-    /* 뱃지 크기 축소 */
     & > span {
       font-size: 9px;
       padding: 2px 6px;

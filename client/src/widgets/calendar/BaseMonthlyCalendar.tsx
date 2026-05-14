@@ -1,13 +1,11 @@
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import styled from 'styled-components';
 import type { Schedule } from 'entities/schedule/model/types/schedule.type';
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
-import { ScheduleChip } from 'entities/schedule/ui/ScheduleChip';
+import { ViewToggle } from './EmployerCalendar/ui/ViewToggle';
 import Modal from 'shared/ui/Modal/Modal';
 import { hoverOverlay } from 'shared/styles/hoverOverlay';
-
-import { ViewToggle } from './ViewToggle';
 
 type ViewMode = 'monthly' | 'weekly';
 
@@ -19,6 +17,9 @@ interface Props {
   onNavigate: (date: Date) => void;
   viewMode: ViewMode;
   onViewChange: (mode: ViewMode) => void;
+  renderChip: (schedule: Schedule, options: { isOtherMonth: boolean; fullDate: string }) => ReactNode;
+  renderEmptyCell?: (fullDate: string) => ReactNode;
+  renderModalFooter?: (fullDate: string) => ReactNode;
 }
 
 const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -53,7 +54,18 @@ const getCalendarDays = (date: Date) => {
   return days;
 };
 
-export const MonthlyCalendar = ({ schedules, currentDate, onPrev, onNext, onNavigate, viewMode, onViewChange }: Props) => {
+export const BaseMonthlyCalendar = ({
+  schedules,
+  currentDate,
+  onPrev,
+  onNext,
+  onNavigate,
+  viewMode,
+  onViewChange,
+  renderChip,
+  renderEmptyCell,
+  renderModalFooter,
+}: Props) => {
   const [detailDate, setDetailDate] = useState<string | null>(null);
   const selectedJobPostId = useScheduleStore((s) => s.selectedJobPostId);
   const days = getCalendarDays(currentDate);
@@ -63,20 +75,17 @@ export const MonthlyCalendar = ({ schedules, currentDate, onPrev, onNext, onNavi
   const detailSchedules = detailDate ? (schedules[detailDate] || []) : [];
 
   const handleCellClick = (fullDate: string, monthType: 'prev' | 'current' | 'next') => {
-    // 다른 달 셀 클릭 시 해당 달로 이동
     if (monthType !== 'current') {
       const [year, month] = fullDate.split('-').map(Number);
       onNavigate(new Date(year, month - 1, 1));
       return;
     }
-
     const daySchedules = schedules[fullDate] || [];
     if (daySchedules.length > 0) {
       setDetailDate(fullDate);
     }
   };
 
-  // 해당 날짜에서 표시할 공고 결정: 선택된 공고가 그 날짜에 있으면 그걸, 아니면 첫 번째
   const getDisplaySchedule = (daySchedules: Schedule[]) => {
     if (daySchedules.length === 0) return null;
     const selected = daySchedules.find((s) => s.jobPostId === selectedJobPostId);
@@ -90,10 +99,6 @@ export const MonthlyCalendar = ({ schedules, currentDate, onPrev, onNext, onNavi
           <S.NavButton onClick={onPrev}><ChevronLeft size={20} /></S.NavButton>
           <S.MonthTitle>{currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월</S.MonthTitle>
           <S.NavButton onClick={onNext}><ChevronRight size={20} /></S.NavButton>
-          {/* <S.Legend>
-            <S.LegendDot $color="highlight" /> 모집중
-            <S.LegendDot $color="subText" /> 모집완료
-          </S.Legend> */}
         </S.NavRow>
         <ViewToggle viewMode={viewMode} onViewChange={onViewChange} />
       </S.Header>
@@ -110,11 +115,13 @@ export const MonthlyCalendar = ({ schedules, currentDate, onPrev, onNext, onNavi
           const isToday = fullDate === today;
           const isSunday = idx % 7 === 0;
           const isSaturday = idx % 7 === 6;
+          const isOtherMonth = month !== 'current';
+          const displaySchedule = getDisplaySchedule(daySchedules);
 
           return (
             <S.Cell
               key={fullDate + idx}
-              $isOtherMonth={month !== 'current'}
+              $isOtherMonth={isOtherMonth}
               onClick={() => handleCellClick(fullDate, month)}
             >
               <S.CellHeader>
@@ -126,25 +133,12 @@ export const MonthlyCalendar = ({ schedules, currentDate, onPrev, onNext, onNavi
                 )}
               </S.CellHeader>
 
-              {daySchedules.length > 0 ? (
+              {displaySchedule ? (
                 <S.ChipArea>
-                  <ScheduleChip
-                    schedule={getDisplaySchedule(daySchedules)!}
-                    onSelect={month !== 'current' ? () => {
-                      const [y, m] = fullDate.split('-').map(Number);
-                      onNavigate(new Date(y, m - 1, 1));
-                    } : undefined}
-                  />
+                  {renderChip(displaySchedule, { isOtherMonth, fullDate })}
                 </S.ChipArea>
               ) : (
-                month === 'current' && (
-                  <S.EmptyCellAdd onClick={(e) => {
-                    e.stopPropagation();
-                    window.open(`/jobpost/create?workDate=${fullDate}`, '_blank');
-                  }}>
-                    + 공고 추가
-                  </S.EmptyCellAdd>
-                )
+                !isOtherMonth && renderEmptyCell && renderEmptyCell(fullDate)
               )}
             </S.Cell>
           );
@@ -160,15 +154,12 @@ export const MonthlyCalendar = ({ schedules, currentDate, onPrev, onNext, onNavi
           </S.ModalHeader>
 
           {detailSchedules.map((s) => (
-            <ScheduleChip key={s.jobPostId} schedule={s} />
+            <div key={s.jobPostId}>
+              {renderChip(s, { isOtherMonth: false, fullDate: detailDate! })}
+            </div>
           ))}
 
-          <S.AddJobPostButton onClick={() => {
-            setDetailDate(null);
-            window.open(`/jobpost/create?workDate=${detailDate}`, '_blank');
-          }}>
-            + 공고 추가
-          </S.AddJobPostButton>
+          {detailDate && renderModalFooter && renderModalFooter(detailDate)}
         </S.ModalContent>
       </Modal>
     </>
@@ -202,21 +193,6 @@ const S = {
     padding: 4px;
     border-radius: 50%;
     &:hover { background-color: ${({ theme }) => theme.color.background}; }
-  `,
-  Legend: styled.div`
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: ${({ theme }) => theme.fontSize.xsmall};
-    color: ${({ theme }) => theme.color.subText};
-  `,
-  LegendDot: styled.span<{ $color: string }>`
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: ${({ theme, $color }) =>
-      $color === 'highlight' ? theme.color.highlight : theme.color.error};
-    margin-left: 8px;
   `,
   Grid: styled.div`
     display: grid;
@@ -284,14 +260,9 @@ const S = {
       justify-content: center;
     `}
   `,
-  TodayLabel: styled.span`
-    font-size: 9px;
-    font-weight: ${({ theme }) => theme.fontWeight.semibold};
-    color: ${({ theme }) => theme.color.text};
-  `,
   ExtraCount: styled.span`
     font-size: ${({ theme }) => theme.fontSize.xsmall};
-    font-weight: ${({ theme }) => theme.fontWeight.bold};
+    font-weight: ${({ theme }) => theme.fontWeight.semibold};
     color: ${({ theme }) => theme.color.thirdText};
     position: relative;
     z-index: 2;
@@ -313,7 +284,6 @@ const S = {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 8px;
-
     h3 {
       font-size: ${({ theme }) => theme.fontSize.large};
       font-weight: ${({ theme }) => theme.fontWeight.bold};
@@ -322,48 +292,5 @@ const S = {
   ModalDate: styled.span`
     font-size: ${({ theme }) => theme.fontSize.small};
     color: ${({ theme }) => theme.color.subText};
-  `,
-  AddJobPostButton: styled.button`
-    width: 100%;
-    padding: 16px;
-    margin-top: 8px;
-    border: 2px dashed ${({ theme }) => theme.color.border};
-    border-radius: ${({ theme }) => theme.borderRadius.medium};
-    background: transparent;
-    color: ${({ theme }) => theme.color.subText};
-    font-size: ${({ theme }) => theme.fontSize.small};
-    cursor: pointer;
-    transition: all 0.15s ease;
-
-    &:hover {
-      border-color: ${({ theme }) => theme.color.primary};
-      color: ${({ theme }) => theme.color.primary};
-    }
-  `,
-  EmptyCellAdd: styled.button`
-    display: none;
-    align-items: center;
-    justify-content: center;
-    flex: 1;
-    border: 2px dashed ${({ theme }) => theme.color.border};
-    border-radius: ${({ theme }) => theme.borderRadius.small};
-    background: transparent;
-    color: ${({ theme }) => theme.color.subText};
-    font-size: ${({ theme }) => theme.fontSize.small};
-    cursor: pointer;
-    transition: all 0.15s ease;
-    padding: 4px 2px;
-    position: relative;
-    z-index: 2;
-
-    /* 부모 Cell 호버 시 표시 */
-    div:hover > & {
-      display: flex;
-    }
-
-    &:hover {
-      border-color: ${({ theme }) => theme.color.primary};
-      color: ${({ theme }) => theme.color.primary};
-    }
   `,
 };

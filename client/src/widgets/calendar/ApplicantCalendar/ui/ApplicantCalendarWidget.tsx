@@ -1,61 +1,28 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { fetchMockSchedules } from 'entities/schedule/api/schedule.api';
-import type { Schedule } from 'entities/schedule/model/types/schedule.type';
+import type { Schedule, ApplicantSchedule } from 'entities/schedule/model/types/schedule.type';
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import { ScheduleChip } from 'entities/schedule/ui/ScheduleChip';
 import { BaseMonthlyCalendar } from 'widgets/calendar/BaseMonthlyCalendar';
-import { WeeklyCalendar } from './WeeklyCalendar';
+import { ApplicantWeeklyCalendarCards } from './ApplicantWeeklyCalendarCards';
+import { HiredWeeklyTimetable } from './HiredWeeklyTimetable';
 import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
+import type { ApplyStatus } from 'entities/jobPost/model/types/jobPost.type';
+import type { BadgeScheme } from 'shared/types/theme';
 
 type ViewMode = 'monthly' | 'weekly';
 
-const AddButton = styled.button`
-  display: none;
-  align-items: center;
-  justify-content: center;
-  flex: 1;
-  border: 2px dashed ${({ theme }) => theme.color.border};
-  border-radius: ${({ theme }) => theme.borderRadius.small};
-  background: transparent;
-  color: ${({ theme }) => theme.color.subText};
-  font-size: ${({ theme }) => theme.fontSize.xsmall};
-  cursor: pointer;
-  transition: all 0.15s ease;
-  padding: 4px 2px;
-  position: relative;
-  z-index: 2;
+const CALENDAR_APPLY_STATUS: Record<ApplyStatus, { label: string; scheme: BadgeScheme } | null> = {
+  NONE: null,
+  APPLYING: { label: '지원 중', scheme: 'primary' },
+  SELECTED: { label: '승인 대기', scheme: 'neutral' },
+  HIRED: { label: '채용 확정', scheme: 'success' },
+  REJECTED: { label: '지원 종료', scheme: 'error' },
+};
 
-  div:hover > & {
-    display: flex;
-  }
-
-  &:hover {
-    border-color: ${({ theme }) => theme.color.primary};
-    color: ${({ theme }) => theme.color.primary};
-  }
-`;
-
-const ModalAddButton = styled.button`
-  width: 100%;
-  padding: 16px;
-  margin-top: 8px;
-  border: 2px dashed ${({ theme }) => theme.color.border};
-  border-radius: ${({ theme }) => theme.borderRadius.medium};
-  background: transparent;
-  color: ${({ theme }) => theme.color.subText};
-  font-size: ${({ theme }) => theme.fontSize.small};
-  cursor: pointer;
-  transition: all 0.15s ease;
-
-  &:hover {
-    border-color: ${({ theme }) => theme.color.primary};
-    color: ${({ theme }) => theme.color.primary};
-  }
-`;
-
-export const EmployerCalendarWidget = () => {
+export const ApplicantCalendarWidget = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [schedules, setSchedules] = useState<Record<string, Schedule[]>>({});
@@ -111,15 +78,17 @@ export const EmployerCalendarWidget = () => {
           viewMode={viewMode}
           onViewChange={setViewMode}
           renderChip={(schedule, { isOtherMonth, fullDate }) => {
-            const isClosed = schedule.postStatus === 'CLOSED';
+            const applicantSchedule = schedule as ApplicantSchedule;
+            const statusInfo = CALENDAR_APPLY_STATUS[applicantSchedule.applyStatus || 'NONE'];
+
             return (
               <ScheduleChip
                 schedule={schedule}
-                badge={
-                  <Badge scheme={isClosed ? 'warning' : 'primary'}>
-                    {isClosed ? '모집완료' : '모집중'}
+                badge={statusInfo ? (
+                  <Badge scheme={statusInfo.scheme}>
+                    {statusInfo.label}
                   </Badge>
-                }
+                ) : null}
                 onSelect={isOtherMonth ? () => {
                   const [y, m] = fullDate.split('-').map(Number);
                   setCurrentDate(new Date(y, m - 1, 1));
@@ -127,29 +96,26 @@ export const EmployerCalendarWidget = () => {
               />
             );
           }}
-          renderEmptyCell={(fullDate) => (
-            <AddButton onClick={(e) => {
-              e.stopPropagation();
-              window.open(`/jobpost/create?workDate=${fullDate}`, '_blank');
-            }}>
-              + 공고 추가
-            </AddButton>
-          )}
-          renderModalFooter={(fullDate) => (
-            <ModalAddButton onClick={() => window.open(`/jobpost/create?workDate=${fullDate}`, '_blank')}>
-              + 공고 추가
-            </ModalAddButton>
-          )}
         />
       ) : (
-        <WeeklyCalendar
-          schedules={schedules}
-          currentDate={currentDate}
-          onPrev={handlePrev}
-          onNext={handleNext}
-          viewMode={viewMode}
-          onViewChange={setViewMode}
-        />
+        <>
+          <ApplicantWeeklyCalendarCards
+            schedules={schedules as Record<string, ApplicantSchedule[]>}
+            currentDate={currentDate}
+            onPrev={handlePrev}
+            onNext={handleNext}
+            viewMode={viewMode}
+            onViewChange={setViewMode}
+          />
+          <S.TimetableSection>
+            <HiredWeeklyTimetable
+              schedules={schedules as Record<string, ApplicantSchedule[]>}
+              currentDate={currentDate}
+              onPrev={handlePrev}
+              onNext={handleNext}
+            />
+          </S.TimetableSection>
+        </>
       )}
     </S.Wrapper>
   );
@@ -161,5 +127,10 @@ const S = {
     background-color: ${({ theme }) => theme.color.white};
     border-radius: ${({ theme }) => theme.borderRadius.medium};
     box-shadow: ${({ theme }) => theme.shadow.default};
+  `,
+  TimetableSection: styled.div`
+    margin-top: 32px;
+    padding-top: 32px;
+    border-top: 1px solid ${({ theme }) => theme.color.border};
   `,
 };

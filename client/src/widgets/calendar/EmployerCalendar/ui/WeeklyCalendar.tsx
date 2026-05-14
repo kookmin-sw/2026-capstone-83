@@ -200,6 +200,8 @@ const S = {
   DayHeader: styled.div<{ $isSaturday: boolean; $isSunday: boolean }>`
     text-align: center;
     padding: 8px 0;
+    background-color: ${({ theme }) => theme.color.background};
+    border-radius: ${({ theme }) => theme.borderRadius.small};
     .label {
       display: block;
       font-size: ${({ theme }) => theme.fontSize.xsmall};
