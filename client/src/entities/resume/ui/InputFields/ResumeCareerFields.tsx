@@ -81,7 +81,7 @@ export const ResumeCareerFields = ({ careers }: Props) => {
         {careers.map((career) => (
           <S.CareerItem key={career.id}>
             {editingId === career.id ? (
-              <S.EditForm onSubmit={handleSubmitEdit(handleUpdate)}>
+              <S.EditForm as="div">
                 <InputText
                   placeholder="담당 업무"
                   {...registerEdit('jobTitle', { required: true })}
@@ -104,7 +104,7 @@ export const ResumeCareerFields = ({ careers }: Props) => {
                   <Button type="button" scheme="secondary" buttonSize="xsmall" onClick={() => setEditingId(null)}>
                     취소
                   </Button>
-                  <Button type="submit" scheme="primary" buttonSize="xsmall">
+                  <Button type="button" scheme="primary" buttonSize="xsmall" onClick={handleSubmitEdit(handleUpdate)}>
                     저장
                   </Button>
                 </S.ButtonRow>
@@ -130,7 +130,7 @@ export const ResumeCareerFields = ({ careers }: Props) => {
 
       {/* 경력 추가 */}
       {isAdding ? (
-        <S.AddForm onSubmit={handleSubmitNew(handleCreate)}>
+        <S.AddForm as="div">
           <InputText
             label="담당 업무"
             labelSize="xsmall"
@@ -158,7 +158,7 @@ export const ResumeCareerFields = ({ careers }: Props) => {
             <Button type="button" scheme="secondary" buttonSize="xsmall" onClick={() => { setIsAdding(false); resetNew(); }}>
               취소
             </Button>
-            <Button type="submit" scheme="primary" buttonSize="xsmall">
+            <Button type="button" scheme="primary" buttonSize="xsmall" onClick={handleSubmitNew(handleCreate)}>
               저장
             </Button>
           </S.ButtonRow>
