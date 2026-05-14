@@ -1,3 +1,4 @@
+import type { CursorResponse } from 'shared/api/types';
 
 export type ApplicationStatus = 'APPLIED' | 'HIRED' | 'REJECTED' | 'OFFERED' | 'PENDING';
 
@@ -13,12 +14,15 @@ export interface ApplicationResponse {
 export interface ApplicantResponse {
   userId: number;
   name: string;
+  phone: string;
   profileImageUrl: string;
-  gender: 'MALE' | 'FEMALE';
+  gender: string;
   age: number;
-  address: string;
+  location: string;
   matchCount: number;
   status: ApplicationStatus;
   appliedAt: string;
-
 }
+
+export type ApplicantListCursor = CursorResponse<ApplicantResponse>;
+export type ApplicationListCursor = CursorResponse<ApplicationResponse>;

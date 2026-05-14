@@ -1,6 +1,6 @@
 import { authClient, httpClient } from "shared/api/httpClient";
 import { useAuthStore } from "entities/auth/model/store/authStore";
-import type { GetJobPostsParams, JobPost, JobPostCreate, JobPostDetail, JobPostListCursor, JobPostUpdate } from "../model/types/jobPost.type";
+import type { GetJobPostsParams, JobPost, JobPostCreate, JobPostDetail, JobPostListCursor } from "../model/types/jobPost.type";
 import mockJobPostData from "shared/mocks/data/mockJobPostData.json";
 import { toFormData } from "shared/lib/toFormData";
 
@@ -43,27 +43,38 @@ export const createJobPost = async (data: JobPostCreate) => {
   return response.data;
 };
 
-//공고 수정
-export const updateJobPost = async (data: JobPostUpdate) => {
-  const { id, ...updateFields } = data;
+//공고 수정 (서버에 PUT 엔드포인트 없음 - 추후 추가 시 활성화)
+// export const updateJobPost = async (data: JobPostUpdate) => {
+//   const { id, ...updateFields } = data;
+//   const formData = toFormData(updateFields);
+//   const response = await authClient.put(`/api/v1/job-posts/${id}`, formData);
+//   return response.data;
+// }
 
-  const formData = toFormData(updateFields);
+//공고 삭제 (서버에 DELETE 엔드포인트 없음 - 추후 추가 시 활성화)
+// export const deleteJobPost = async (id: number) => {
+//   const response = await authClient.delete(`/api/v1/job-posts/${id}`);
+//   return response.data;
+// }
 
-  const response = await authClient.put(`/api/v1/job-posts/${id}`, formData);
+//공고 마감 처리
+export const closeJobPost = async (id: number) => {
+  const response = await authClient.patch(`/api/v1/job-posts/${id}/close`);
+  return response.data;
+}
+
+//캘린더용 날짜 범위 공고 조회 (고용주)
+export const fetchJobPostsByDateRange = async (start: string, end: string) => {
+  const response = await authClient.get(`/api/v1/job-posts/employer/calendar`, {
+    params: { start, end },
+  });
   return response.data;
 }
 
 
-//공고 삭제
-export const deleteJobPost = async (id: number) => {
-  const response = await authClient.delete(`/api/v1/job-posts/${id}`);
-  return response.data;
-}
-
-
-//고용주 공고 목록 조회
+//고용주 본인 공고 목록 조회
 export const fetchJobPostsByEmployer = async (data: GetJobPostsParams): Promise<JobPostListCursor> => {
-  const response = await authClient.get<JobPostListCursor>('/api/vi/job-posts/employer',
+  const response = await authClient.get<JobPostListCursor>('/api/v1/job-posts/employer',
     {
       params: data,
     }

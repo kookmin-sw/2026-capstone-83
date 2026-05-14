@@ -16,7 +16,10 @@ import type { ApplicantResponse, ApplicationResponse } from '../types/applicatio
 export const useApplicants = (jobPostId: number) => {
   return useQuery<ApplicantResponse[]>({
     queryKey: ['applicants', jobPostId],
-    queryFn: () => fetchApplicants(jobPostId),
+    queryFn: async () => {
+      const data = await fetchApplicants(jobPostId);
+      return data.jobPosts;
+    },
     enabled: !!jobPostId,
     staleTime: 1000 * 60 * 5,
   });
@@ -41,7 +44,10 @@ export const useApplications = () => {
   return useQuery<ApplicationResponse[]>({
     queryKey: ['applications'],
     staleTime: 1000 * 60 * 5,
-    queryFn: fetchApplications,
+    queryFn: async () => {
+      const data = await fetchApplications();
+      return data.jobPosts;
+    },
   });
 };
 

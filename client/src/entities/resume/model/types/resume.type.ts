@@ -71,6 +71,8 @@ export interface ResumeResponse {
   careers: Career[];
 }
 
+import type { CursorParams, CursorResponse } from 'shared/api/types';
+
 export interface ResumeCardItem {
   resumeId: number;
   profileImageUrl: string;
@@ -85,13 +87,6 @@ export interface ResumeCardItem {
   totalHired: number;
 }
 
-export interface ResumeListCursor {
-  jobPosts: ResumeCardItem[];
-  nextCursor: number | null;
-  hasNext: boolean;
-}
+export type ResumeListCursor = CursorResponse<ResumeCardItem>;
 
-export interface GetResumesParams {
-  cursor?: number;
-  size?: number;
-}
+export type GetResumesParams = CursorParams;

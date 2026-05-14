@@ -1,52 +1,32 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { updateJobPost, deleteJobPost } from 'entities/jobPost/api/jobPost.api';
-import type { JobPostUpdate } from '../types/jobPost.type';
+import { closeJobPost } from 'entities/jobPost/api/jobPost.api';
 
 /**
- * 공고 수정
+ * 공고 수정 (서버에 PUT 엔드포인트 없음 - 추후 추가 시 활성화)
  */
-export const useUpdateJobPost = () => {
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
-
-  return useMutation({
-    mutationFn: (data: JobPostUpdate) => updateJobPost(data),
-    onSuccess: (_response, variables) => {
-      // 수정된 공고 상세 캐시 무효화
-      queryClient.invalidateQueries({ queryKey: ['jobPost', variables.id] });
-      // 목록도 갱신
-      queryClient.invalidateQueries({ queryKey: ['jobPosts'] });
-
-      console.log('공고가 수정되었습니다.');
-      navigate(`/jobpost/${variables.id}`);
-    },
-    onError: (error) => {
-      console.error('공고 수정 실패:', error);
-      alert('공고 수정 중 오류가 발생했습니다.');
-    },
-  });
-};
+// export const useUpdateJobPost = () => { ... };
 
 /**
- * 공고 삭제
+ * 공고 삭제 (서버에 DELETE 엔드포인트 없음 - 추후 추가 시 활성화)
  */
-export const useDeleteJobPost = () => {
+// export const useDeleteJobPost = () => { ... };
+
+/**
+ * 공고 마감 처리
+ */
+export const useCloseJobPost = () => {
   const queryClient = useQueryClient();
-  const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: (id: number) => deleteJobPost(id),
-    onSuccess: () => {
-      // 목록 캐시 무효화
+    mutationFn: (id: number) => closeJobPost(id),
+    onSuccess: (_response, id) => {
+      queryClient.invalidateQueries({ queryKey: ['jobPost', id] });
       queryClient.invalidateQueries({ queryKey: ['jobPosts'] });
-
-      console.log('공고가 삭제되었습니다.');
-      navigate('/jobposts');
     },
     onError: (error) => {
-      console.error('공고 삭제 실패:', error);
-      alert('공고 삭제 중 오류가 발생했습니다.');
+      console.error('공고 마감 실패:', error);
+      alert('공고 마감 중 오류가 발생했습니다.');
     },
   });
 };

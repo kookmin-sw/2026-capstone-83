@@ -12,7 +12,7 @@ export const fetchResume = async (): Promise<ResumeResponse> => {
 }
 
 // 인재 목록 조회 (로그인 시 authClient로 liked 포함 조회)
-export const fetchResumes = async (params: GetResumesParams): Promise<ResumeListCursor> => {
+export const fetchResumes = async (params?: GetResumesParams): Promise<ResumeListCursor> => {
   const client = useAuthStore.getState().accessToken ? authClient : httpClient;
   const response = await client.get<ResumeListCursor>('/api/v1/resumes', { params });
   return response.data;
@@ -45,6 +45,18 @@ export const deleteCareer = async (id: number) => {
 //이력서 좋아요 토글
 export const likeResume = async (id: number) => {
   const response = await authClient.post(`/api/v1/resumes/${id}/like`);
+  return response.data;
+}
+
+// 자격/인증 추가
+export const createCertificate = async (data: { type: string }) => {
+  const response = await authClient.post(`/api/v1/resume/certificates`, data);
+  return response.data;
+}
+
+// 자격/인증 삭제
+export const deleteCertificate = async (id: number) => {
+  const response = await authClient.delete(`/api/v1/resume/certificates/${id}`);
   return response.data;
 }
 

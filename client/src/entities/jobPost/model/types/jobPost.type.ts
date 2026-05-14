@@ -123,6 +123,9 @@ export interface JobPostUpdate {
 
 
 
+import type { CursorParams, CursorResponse } from 'shared/api/types';
+
+
 //공고 목록 조회 할 때, 페이지네이션 어떻게 할 지 생각해주세요!
 // 일단 무한 스크롤 생각하고 있는데, offset 방식이 좋을지 cursor 방식이 좋을지 고민입니다.
 
@@ -134,10 +137,8 @@ export interface JobPostUpdate {
 
 
 // 공고 목록 조회 요청 파라미터
-export interface GetJobPostsParams {
-  size?: number;             // 한 페이지에 가져올 개수 (기본값 설정 가능)
+export interface GetJobPostsParams extends CursorParams {
   page?: number;             // [오프셋용] 페이지 번호 (0부터 시작)
-  cursor?: number | string;  // [커서용] 마지막으로 확인한 ID
 
   // 검색 필터링 옵션
   keyword?: string;          // 검색어
@@ -160,9 +161,5 @@ export interface JobPostListOffset {
 }
 
 //커서 응답
-export interface JobPostListCursor {
-  jobPosts: JobPost[]; // 공고 목록
-  nextCursor: number | string | null; // 다음 요청 시 사용할 기준 ID (더 이상 없으면 null)
-  hasNext: boolean;                   // 다음 페이지가 있는지 여부
-}
+export type JobPostListCursor = CursorResponse<JobPost>;
 
