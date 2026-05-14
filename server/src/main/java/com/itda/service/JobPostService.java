@@ -12,6 +12,7 @@ import com.itda.enums.JobPostStatus;
 import com.itda.exception.NotFoundException;
 import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
+import com.itda.repository.WorkplaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -28,6 +29,8 @@ public class JobPostService {
     private final JobPostRepository jobPostRepository;
     private final JobPostLikeRepository jobPostLikeRepository;
     private final LikeService likeService;
+    private final S3Service s3Service;                   // S3 업로드 서비스 주입
+    private final WorkplaceRepository workplaceRepository; // 로고 URL 저장용
 
     // 공고 목록 통합 조회 (필터 + 커서 페이지네이션)
     // 지원자/고용주 공통 사용 - 모든 필터를 JobPostFilterRequest 하나로 처리
@@ -88,15 +91,36 @@ public class JobPostService {
         return jobPostRepository.findByEmployerIdAndWorkDateBetween(userId, start, end);
     }
 
-    // 공고 등록 - 이미지 파일은 추후 S3 연동 시 업로드 처리 예정
+    // 공고 등록 - 이미지 파일 S3 업로드 후 URL 저장
     @Transactional
     public JobPostDetailResponse createJobPost(
             JobPostCreateRequest request,
             Workplace workplace,
             MultipartFile companyLogoImage,
             MultipartFile descriptionImage) {
-        // TODO: S3 업로드 연동 시 이미지 URL 처리 추가
-        JobPost saved = jobPostRepository.save(request.toEntity(workplace));
+
+        // 회사 로고 이미지가 있으면 S3 업로드 후 Workplace에 URL 저장
+        if (companyLogoImage != null && !companyLogoImage.isEmpty()) {
+            String logoUrl = s3Service.upload(companyLogoImage, "logos");
+            workplaceRepository.save(Workplace.builder()
+                    .id(workplace.getId())
+                    .employer(workplace.getEmployer())
+                    .name(workplace.getName())
+                    .companyName(workplace.getCompanyName())
+                    .businessNumber(workplace.getBusinessNumber())
+                    .address(workplace.getAddress())
+                    .companyLogoUrl(logoUrl)
+                    .build());
+        }
+
+        // 공고 상세 이미지가 있으면 S3 업로드 후 URL 추출, 없으면 null
+        String contentUrl = null;
+        if (descriptionImage != null && !descriptionImage.isEmpty()) {
+            contentUrl = s3Service.upload(descriptionImage, "job-posts");
+        }
+
+        // contentUrl을 받는 오버로드 toEntity 사용
+        JobPost saved = jobPostRepository.save(request.toEntity(workplace, contentUrl));
         return JobPostDetailResponse.from(saved);
     }
 
@@ -122,7 +146,7 @@ public class JobPostService {
                 .workEnd(jobPost.getWorkEnd())
                 .totalSlots(jobPost.getTotalSlots())
                 .filledSlots(jobPost.getFilledSlots())
-                .status(JobPostStatus.CLOSED)
+                .status(JobPostStatus.CLOSED) // 상태를 CLOSED로 변경
                 .deadline(jobPost.getDeadline())
                 .jobCategory(jobPost.getJobCategory())
                 .jobSubcategory(jobPost.getJobSubcategory())

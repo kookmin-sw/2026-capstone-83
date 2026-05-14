@@ -69,8 +69,9 @@ public class JobPostCreateRequest {
     // 준비물 목록
     private List<String> items;
 
-    // JobPostCreateRequest -> JobPost Entity 변환
-    public JobPost toEntity(Workplace workplace) {
+    // S3 업로드 완료 후 contentUrl을 받아서 엔티티 생성하는 버전
+    // 기존 toEntity(workplace)는 그대로 유지
+    public JobPost toEntity(Workplace workplace, String contentUrl) {
         return JobPost.builder()
                 .workplace(workplace)
                 .title(title)
@@ -85,7 +86,7 @@ public class JobPostCreateRequest {
                 .status(JobPostStatus.OPEN)
                 .deadline(LocalDate.parse(deadline))
                 .description(description)
-                .s3ContentUrl(s3ContentUrl)
+                .s3ContentUrl(contentUrl) // 기존은 request의 s3ContentUrl 사용, 여기선 업로드 결과 URL 사용
                 .requirements(requirements)
                 .benefits(benefits)
                 .tasks(tasks)
