@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="LogoIcon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>잇다 (ITDA) — 일용직 특화 매칭 플랫폼</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=2" />
+</head>
+
+<body>
+  <!-- Navigation -->
+  <nav class="navbar">
+    <div class="nav-container">
+      <a href="#" class="nav-logo">
+        <img src="KoreanIconLogo.svg" alt="잇다 로고" class="nav-logo-icon" />
+        <!-- <span class="logo-text">잇다</span> -->
+      </a>
+      <ul class="nav-links">
+        <li><a href="#problem">왜 잇다인가</a></li>
+        <li><a href="#features">핵심 기능</a></li>
+        <li><a href="#architecture">프로젝트 구조</a></li>
+        <li><a href="#tech-stack">기술 스택</a></li>
+        <li><a href="#team">팀 소개</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-bg-shapes">
+      <div class="shape shape-1"></div>
+      <div class="shape shape-2"></div>
+      <div class="shape shape-3"></div>
+    </div>
+    <div class="hero-container">
+      <div class="hero-badge">2026 Capstone Design Project - 83</div>
+      <h1 class="hero-title">
+        사람과 일자리를<br />
+        <span class="gradient-text">잇다</span>
+      </h1>
+      <p class="hero-description">
+        <!-- 일하고 싶은 구직자와 즉시 인력이 필요한 고용주를 직접 연결하는<br /> -->
+        <strong>일용직 특화 매칭 플랫폼</strong>. <br> 에이전시 없이, 더 빠르고 직관적으로.
+      </p>
+      <div class="hero-actions">
+        <a href="http://44.207.95.136/" class="btn btn-primary" target="_blank">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+            <polyline points="15 3 21 3 21 9" />
+            <line x1="10" y1="14" x2="21" y2="3" />
+          </svg>
+          서비스 바로가기
+        </a>
+        <a href="https://github.com/kookmin-sw/2026-capstone-83" class="btn btn-secondary" target="_blank">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+            <path
+              d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z" />
+          </svg>
+          GitHub
+        </a>
+      </div>
+      <div class="hero-scroll-link">
+        <a href="#problem" class="btn btn-text">자세히 보기 ↓</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Problem Section -->
+  <section id="problem" class="section problem-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Why ITDA?</span>
+        <h2 class="section-title">왜 잇다인가</h2>
+        <p class="section-subtitle">일용직 시장의 구조적 비효율을 해결합니다</p>
+      </div>
+      <div class="problem-content">
+        <!-- 기존 구조 문제 -->
+        <div class="problem-block">
+          <div class="problem-block-header">
+            <div class="problem-icon problem-icon-red">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+            </div>
+            <h3>기존 구조의 문제</h3>
+          </div>
+          <div class="problem-flow">
+            <div class="flow-item">호텔(고용주)</div>
+            <div class="flow-arrow">↔</div>
+            <div class="flow-item flow-item-highlight">에이전시</div>
+            <div class="flow-arrow">↔</div>
+            <div class="flow-item">구직자</div>
+          </div>
+          <ul class="problem-list">
+            <li>카카오톡·단체 문자 등 수동적 연락 방식의 비효율성</li>
+            <li>에이전시별 분산된 DB로 인한 구직자의 제한적 정보 접근</li>
+            <li>알바몬·알바천국은 정기 알바 중심, 단기·일용직 공고 탐색 어려움</li>
+            <li>고용주의 인력 관리 도구 부재 — 일별 배치 현황 파악 불가</li>
+          </ul>
+        </div>
+        <!-- 잇다의 해결 -->
+        <div class="problem-block">
+          <div class="problem-block-header">
+            <div class="problem-icon problem-icon-green">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+                <polyline points="22 4 12 14.01 9 11.01" />
+              </svg>
+            </div>
+            <h3>잇다의 해결</h3>
+          </div>
+          <div class="problem-flow">
+            <div class="flow-item">고용주</div>
+            <div class="flow-arrow">↔</div>
+            <div class="flow-item flow-item-solution">ITDA 플랫폼</div>
+            <div class="flow-arrow">↔</div>
+            <div class="flow-item">구직자</div>
+          </div>
+          <ul class="problem-list solution-list">
+            <li>에이전시의 중간 관리 역할을 플랫폼이 자동화하여 직접 연결</li>
+            <li>단기·일용직만 필터링된 공고 리스트와 원클릭 지원</li>
+            <li>캘린더 + 스택 구조 대시보드로 직관적 인력 관리</li>
+            <li>통합 플랫폼을 통한 구직 정보 접근성 향상</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Features Section -->
+  <section id="features" class="section features-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Features</span>
+        <h2 class="section-title">핵심 기능</h2>
+        <p class="section-subtitle">일용직 구인·구직에 최적화된 기능들을 제공합니다</p>
+      </div>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8" />
+              <line x1="21" y1="21" x2="16.65" y2="16.65" />
+            </svg>
+          </div>
+          <h3>일용직 특화 공고 탐색</h3>
+          <p>단기·일용직 공고만 필터링하여 한곳에서 탐색. 날짜·지역·직종별 검색과 무한스크롤로 빠르게 원하는 일자리를 찾을 수 있습니다.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
+              <polyline points="22 4 12 14.01 9 11.01" />
+            </svg>
+          </div>
+          <h3>원클릭 지원</h3>
+          <p>급전이 필요한 구직자를 위해 최소한의 단계로 빠르게 지원. 이력서 등록 후 원클릭으로 즉시 지원이 완료됩니다.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+              <line x1="16" y1="2" x2="16" y2="6" />
+              <line x1="8" y1="2" x2="8" y2="6" />
+              <line x1="3" y1="10" x2="21" y2="10" />
+            </svg>
+          </div>
+          <h3>캘린더 기반 인력 관리</h3>
+          <p>고용주 전용 캘린더 대시보드로 일별 필요 인력과 배치 현황을 시각적으로 파악하고, 공고 등록부터 지원자 확정까지 한 화면에서 관리합니다.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <h3>역할 기반 맞춤 서비스</h3>
+          <p>구직자와 고용주 역할을 구분하여 각각 최적화된 대시보드와 기능을 제공. 카카오 소셜 로그인과 JWT 인증으로 간편하고 안전합니다.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+          </div>
+          <h3>사업장 & 네이버 지도</h3>
+          <p>사업장 등록 시 주소 검색과 네이버 지도 연동으로 근무지 위치를 직관적으로 제공. 구직자가 거리 기반으로 일자리를 판단할 수 있습니다.</p>
+        </div>
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+              <line x1="16" y1="13" x2="8" y2="13" />
+              <line x1="16" y1="17" x2="8" y2="17" />
+              <polyline points="10 9 9 9 8 9" />
+            </svg>
+          </div>
+          <h3>이력서 & 지원자 관리</h3>
+          <p>구직자는 이력서를 간편하게 작성·관리하고, 고용주는 지원자 목록을 확인하며 수락·거절 상태를 실시간으로 관리합니다.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Architecture Section -->
+  <section id="architecture" class="section architecture-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Architecture</span>
+        <h2 class="section-title">프로젝트 구조</h2>
+        <p class="section-subtitle">프론트엔드와 백엔드의 아키텍처를 소개합니다</p>
+      </div>
+      <div class="arch-grid">
+        <!-- Frontend -->
+        <div class="arch-card">
+          <div class="arch-card-header">
+            <div class="arch-icon frontend-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="12 2 22 8.5 22 15.5 12 22 2 15.5 2 8.5 12 2" />
+                <line x1="12" y1="22" x2="12" y2="15.5" />
+                <polyline points="22 8.5 12 15.5 2 8.5" />
+              </svg>
+            </div>
+            <h3>Frontend</h3>
+            <span class="arch-badge">Feature-Sliced Design</span>
+          </div>
+          <div class="arch-tree">
+            <pre><code>client/src/
+├── <span class="tree-folder">app/</span>          <span class="tree-comment"># 앱 진입점, 라우터, 테마</span>
+├── <span class="tree-folder">pages/</span>        <span class="tree-comment"># 페이지 컴포넌트</span>
+│   ├── auth/        <span class="tree-comment">(로그인, 회원가입)</span>
+│   ├── JobPost/     <span class="tree-comment">(공고 CRUD)</span>
+│   ├── Resume/      <span class="tree-comment">(이력서 CRUD)</span>
+│   └── dashboard/   <span class="tree-comment">(대시보드)</span>
+├── <span class="tree-folder">widgets/</span>      <span class="tree-comment"># 조합된 UI 블록</span>
+├── <span class="tree-folder">features/</span>     <span class="tree-comment"># 사용자 액션 단위</span>
+├── <span class="tree-folder">entities/</span>     <span class="tree-comment"># 도메인 모델</span>
+│   ├── jobPost, resume, application
+│   ├── user, workplace, schedule
+│   └── auth
+└── <span class="tree-folder">shared/</span>       <span class="tree-comment"># 공통 UI, API, 유틸</span></code></pre>
+          </div>
+        </div>
+        <!-- Backend -->
+        <div class="arch-card">
+          <div class="arch-card-header">
+            <div class="arch-icon backend-icon">
+              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                <line x1="6" y1="6" x2="6.01" y2="6" />
+                <line x1="6" y1="18" x2="6.01" y2="18" />
+              </svg>
+            </div>
+            <h3>Backend</h3>
+            <span class="arch-badge">Layered Architecture</span>
+          </div>
+          <div class="arch-tree">
+            <pre><code>server/src/main/java/com/itda/
+├── <span class="tree-folder">config/</span>       <span class="tree-comment"># Security, JWT 설정</span>
+├── <span class="tree-folder">controller/</span>   <span class="tree-comment"># REST API 엔드포인트</span>
+│   ├── AuthController
+│   ├── JobPostController
+│   ├── ResumeController
+│   └── ApplicationController
+├── <span class="tree-folder">service/</span>      <span class="tree-comment"># 비즈니스 로직</span>
+├── <span class="tree-folder">repository/</span>   <span class="tree-comment"># JPA Repository</span>
+├── <span class="tree-folder">entity/</span>       <span class="tree-comment"># JPA 엔티티</span>
+│   ├── User, Employer, Manager
+│   ├── JobPost, Resume, Application
+│   └── Workplace, Career
+├── <span class="tree-folder">dto/</span>          <span class="tree-comment"># Request/Response DTO</span>
+└── <span class="tree-folder">enums/</span>        <span class="tree-comment"># 열거형 상수</span></code></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tech Stack Section -->
+  <section id="tech-stack" class="section techstack-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Tech Stack</span>
+        <h2 class="section-title">기술 스택</h2>
+        <p class="section-subtitle">잇다를 구성하는 기술들입니다</p>
+      </div>
+      <div class="stack-categories">
+        <!-- Frontend -->
+        <div class="stack-category">
+          <h3 class="stack-category-title">
+            <span class="stack-dot frontend-dot"></span>
+            Frontend
+          </h3>
+          <div class="stack-items">
+            <div class="stack-item">
+              <div class="stack-item-name">React 19</div>
+              <div class="stack-item-desc">UI 라이브러리</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">TypeScript</div>
+              <div class="stack-item-desc">타입 안전성</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">Vite</div>
+              <div class="stack-item-desc">빌드 도구</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">styled-components</div>
+              <div class="stack-item-desc">CSS-in-JS</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">Zustand</div>
+              <div class="stack-item-desc">상태 관리</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">TanStack Query</div>
+              <div class="stack-item-desc">서버 상태 관리</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">React Hook Form</div>
+              <div class="stack-item-desc">폼 관리</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">React Router v7</div>
+              <div class="stack-item-desc">라우팅</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">MSW</div>
+              <div class="stack-item-desc">API 모킹</div>
+            </div>
+          </div>
+        </div>
+        <!-- Backend -->
+        <div class="stack-category">
+          <h3 class="stack-category-title">
+            <span class="stack-dot backend-dot"></span>
+            Backend
+          </h3>
+          <div class="stack-items">
+            <div class="stack-item">
+              <div class="stack-item-name">Spring Boot 3.5</div>
+              <div class="stack-item-desc">웹 프레임워크</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">Java 17</div>
+              <div class="stack-item-desc">프로그래밍 언어</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">Spring Security</div>
+              <div class="stack-item-desc">인증/인가</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">Spring Data JPA</div>
+              <div class="stack-item-desc">ORM</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">JWT (jjwt)</div>
+              <div class="stack-item-desc">토큰 인증</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">OAuth2 Client</div>
+              <div class="stack-item-desc">소셜 로그인</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">MySQL</div>
+              <div class="stack-item-desc">데이터베이스</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">Lombok</div>
+              <div class="stack-item-desc">보일러플레이트 제거</div>
+            </div>
+          </div>
+        </div>
+        <!-- Infra / Tools -->
+        <div class="stack-category">
+          <h3 class="stack-category-title">
+            <span class="stack-dot infra-dot"></span>
+            Infra & Tools
+          </h3>
+          <div class="stack-items">
+            <div class="stack-item">
+              <div class="stack-item-name">Gradle</div>
+              <div class="stack-item-desc">빌드 자동화</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">ESLint</div>
+              <div class="stack-item-desc">코드 린팅</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">Naver Maps API</div>
+              <div class="stack-item-desc">지도 서비스</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">Kakao OAuth</div>
+              <div class="stack-item-desc">소셜 인증</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Team Section -->
+  <section id="team" class="section team-section">
+    <div class="container">
+      <div class="section-header">
+        <span class="section-tag">Team</span>
+        <h2 class="section-title">팀 소개</h2>
+        <p class="section-subtitle">잇다를 만든 팀원들입니다</p>
+      </div>
+      <div class="team-roles">
+        <!-- Frontend -->
+        <div class="team-role-box">
+          <h3 class="team-role-title">
+            <span class="stack-dot frontend-dot"></span>
+            Frontend
+          </h3>
+          <div class="team-role-members">
+            <div class="team-card">
+              <div class="team-avatar">👤</div>
+              <h4>김세현</h4>
+              <p>Frontend</p>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar">👤</div>
+              <h4>정호진</h4>
+              <p>Frontend</p>
+            </div>
+          </div>
+        </div>
+        <!-- Backend -->
+        <div class="team-role-box">
+          <h3 class="team-role-title">
+            <span class="stack-dot backend-dot"></span>
+            Backend
+          </h3>
+          <div class="team-role-members">
+            <div class="team-card">
+              <div class="team-avatar">👤</div>
+              <h4>방현식</h4>
+              <p>Backend</p>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar">👤</div>
+              <h4>이재익</h4>
+              <p>Backend</p>
+            </div>
+            <div class="team-card">
+              <div class="team-avatar">👤</div>
+              <h4>이진백</h4>
+              <p>Backend</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-logo">
+          <img src="KoreanIconLogo.svg" alt="잇다 로고" class="footer-logo-icon" />
+        </div>
+        <p class="footer-text">2026 Capstone Design Project — 일용직 시장의 구직자와 고용주를 잇다</p>
+        <div class="footer-links">
+          <a href="https://github.com/kookmin-sw/2026-capstone-83" target="_blank">GitHub</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js?v=2"></script>
+</body>
+
+</html>

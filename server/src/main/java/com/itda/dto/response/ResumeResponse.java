@@ -7,7 +7,6 @@ import lombok.Builder;
 import lombok.Getter;
 import java.util.List;
 
-// 이력서 조회 응답 DTO (회원정보 + 이력서 + 경력 합산)
 @Getter
 @Builder
 public class ResumeResponse {
@@ -29,15 +28,21 @@ public class ResumeResponse {
     // ── 경력 목록 (careers 테이블) ──
     private List<CareerResponse> careers;
 
+    // ── 자격/인증 목록 (certificates 테이블) ──
+    private List<CertificateResponse> certificates;
+
     // ── 누적 채용 횟수 (applications 테이블에서 계산) ──
     private int totalHired;
 
-    public static ResumeResponse of(User user, Resume resume, List<CareerResponse> careers, int totalHired) {
+    public static ResumeResponse of(User user, Resume resume,
+                                    List<CareerResponse> careers,
+                                    List<CertificateResponse> certificates,
+                                    int totalHired) {
         return ResumeResponse.builder()
                 .name(user.getName())
-                .gender(user.getGender() != null ? user.getGender().toString() : null) // Integer → toString
-                .birthdate(user.getBirth() != null ? user.getBirth().toString() : null) // birth로 변경
-                .address(user.getLocation()) // location으로 변경
+                .gender(user.getGender() != null ? user.getGender().toString() : null)
+                .birthdate(user.getBirth() != null ? user.getBirth().toString() : null)
+                .address(user.getLocation())
                 .phone(user.getPhone())
                 .email(user.getEmail())
                 .profileImageUrl(user.getProfileImageUrl())
@@ -45,6 +50,7 @@ public class ResumeResponse {
                 .educationStatus(resume != null && resume.getEducationStatus() != null ? resume.getEducationStatus().name() : null)
                 .major(resume != null ? resume.getMajor() : null)
                 .careers(careers)
+                .certificates(certificates) // 자격/인증 목록 추가
                 .totalHired(totalHired)
                 .build();
     }
