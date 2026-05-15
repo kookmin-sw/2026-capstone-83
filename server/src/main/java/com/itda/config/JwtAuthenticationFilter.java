@@ -1,6 +1,7 @@
 package com.itda.config;
 
 import com.itda.entity.User;
+import com.itda.enums.UserStatus;
 import com.itda.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -34,14 +35,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             Long userId = jwtTokenProvider.getUserId(token);
             String role = jwtTokenProvider.getRole(token);
 
-            // principal에는 실제 User 엔티티를 주입한다.
-            // 컨트롤러의 @AuthenticationPrincipal User user 가 정상 동작하려면 필요.
-            // 사용자가 DB에서 사라진 경우(탈퇴 등) 인증 컨텍스트를 세팅하지 않고 통과시킨다.
             Optional<User> userOpt = userRepository.findById(userId);
             if (userOpt.isPresent()) {
+                User user = userOpt.get();
+
+                // 정지 기간 만료 체크 → 자동 해제
+                if (user.isSuspensionExpired()) {
+                    user.activate();
+                    userRepository.save(user);
+                }
+
+                // 정지 상태인 유저는 인증 차단
+                if (user.getStatus() == UserStatus.SUSPENDED) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"error\":\"SUSPENDED\",\"message\":\"계정이 정지되었습니다.\",\"suspendedUntil\":\""
+                            + (user.getSuspendedUntil() != null ? user.getSuspendedUntil().toString() : "영구정지") + "\"}");
+                    return;
+                }
+
                 UsernamePasswordAuthenticationToken authentication =
                         new UsernamePasswordAuthenticationToken(
-                                userOpt.get(), null,
+                                user, null,
                                 List.of(new SimpleGrantedAuthority("ROLE_" + role)));
 
                 SecurityContextHolder.getContext().setAuthentication(authentication);

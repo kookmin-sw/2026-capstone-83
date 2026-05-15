@@ -76,7 +76,7 @@ public class ApplicationController {
 
     // 근무 일정 조회
     @GetMapping("/api/v1/worker/schedule")
-    public ResponseEntity<Map<String, List<EmployeeScheduleResponse>>> getMySchedule(
+    public ResponseEntity<EmployeeScheduleResponse> getMySchedule(
             @RequestParam LocalDate fromDate,
             @RequestParam LocalDate toDate,
             @AuthenticationPrincipal User user) {
