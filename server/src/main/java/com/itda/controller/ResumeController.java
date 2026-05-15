@@ -27,6 +27,14 @@ public class ResumeController {
         return ResponseEntity.ok(resumeService.getResume(user));
     }
 
+    // 이력서 상세 조회 (고용주용)
+    @GetMapping("/{resumeId}")
+    public ResponseEntity<ResumeResponse> getResumeDetail(
+            @PathVariable Long resumeId,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(resumeService.getResumeDetail(resumeId, user));
+    }
+
     // 이력서 등록/수정
     @PutMapping
     public ResponseEntity<Void> saveResume(

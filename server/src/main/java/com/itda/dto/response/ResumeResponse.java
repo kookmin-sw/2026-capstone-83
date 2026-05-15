@@ -34,10 +34,14 @@ public class ResumeResponse {
     // ── 누적 채용 횟수 (applications 테이블에서 계산) ──
     private int totalHired;
 
+    // ── 좋아요 여부 ──
+    private boolean liked;
+
     public static ResumeResponse of(User user, Resume resume,
                                     List<CareerResponse> careers,
                                     List<CertificateResponse> certificates,
-                                    int totalHired) {
+                                    int totalHired,
+                                    boolean liked) {
         return ResumeResponse.builder()
                 .name(user.getName())
                 .gender(user.getGender() != null ? user.getGender().toString() : null)
@@ -50,8 +54,9 @@ public class ResumeResponse {
                 .educationStatus(resume != null && resume.getEducationStatus() != null ? resume.getEducationStatus().name() : null)
                 .major(resume != null ? resume.getMajor() : null)
                 .careers(careers)
-                .certificates(certificates) // 자격/인증 목록 추가
+                .certificates(certificates)
                 .totalHired(totalHired)
+                .liked(liked)
                 .build();
     }
 }

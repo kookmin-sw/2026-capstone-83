@@ -1,5 +1,4 @@
 package com.itda.service;
-
 import com.itda.dto.request.CareerRequest;
 import com.itda.dto.request.CertificateRequest;
 import com.itda.dto.request.ResumeRequest;
@@ -18,6 +17,7 @@ import com.itda.repository.ApplicationRepository;
 import com.itda.repository.CareerRepository;
 import com.itda.repository.CertificateRepository;
 import com.itda.repository.ResumeRepository;
+import com.itda.repository.ResumeLikeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -32,11 +32,12 @@ public class ResumeService {
 
     private final ResumeRepository resumeRepository;
     private final CareerRepository careerRepository;
-    private final CertificateRepository certificateRepository; // 추가
+    private final CertificateRepository certificateRepository;
     private final ApplicationRepository applicationRepository;
     private final LikeService likeService;
+    private final ResumeLikeRepository resumeLikeRepository;
 
-    // 이력서 조회 - certificates 포함
+    // 본인 이력서 조회
     public ResumeResponse getResume(User user) {
         Resume resume = resumeRepository.findByUserId(user.getId()).orElse(null);
 
@@ -45,7 +46,6 @@ public class ResumeService {
                   .stream().map(CareerResponse::from).toList()
                 : List.of();
 
-        // 자격/인증 목록 조회
         List<CertificateResponse> certificates = resume != null
                 ? certificateRepository.findByResumeId(resume.getId())
                   .stream().map(CertificateResponse::from).toList()
@@ -54,9 +54,31 @@ public class ResumeService {
         int totalHired = applicationRepository
                 .findByApplicantUserIdAndStatus(user.getId(), ApplicationStatus.HIRED).size();
 
-        return ResumeResponse.of(user, resume, careers, certificates, totalHired);
+        return ResumeResponse.of(user, resume, careers, certificates, totalHired, false);
     }
 
+    // 이력서 상세 조회 (고용주용 - liked 포함)
+    public ResumeResponse getResumeDetail(Long resumeId, User viewer) {
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new NotFoundException("이력서를 찾을 수 없습니다."));
+
+        User resumeUser = resume.getUser();
+
+        List<CareerResponse> careers = careerRepository.findByResumeId(resume.getId())
+                .stream().map(CareerResponse::from).toList();
+
+        List<CertificateResponse> certificates = certificateRepository.findByResumeId(resume.getId())
+                .stream().map(CertificateResponse::from).toList();
+
+        int totalHired = applicationRepository
+                .findByApplicantUserIdAndStatus(resumeUser.getId(), ApplicationStatus.HIRED).size();
+
+        // 좋아요 여부 확인
+        boolean liked = (viewer != null)
+                && resumeLikeRepository.existsByEmployerUserIdAndResumeId(viewer.getId(), resume.getId());
+
+        return ResumeResponse.of(resumeUser, resume, careers, certificates, totalHired, liked);
+    }
     // 이력서 등록/수정
     @Transactional
     public void saveResume(User user, ResumeRequest request) {
@@ -138,7 +160,7 @@ public class ResumeService {
         certificateRepository.delete(certificate);
     }
 
-    // 인재 목록 조회 (커서 페이지네이션 + liked 상단 노출)
+    // 인재 목록 조회 (커서 페이지네이션)
     public CursorPageResponse<ResumeCardResponse> getResumeList(Long cursor, int size, User user) {
         Pageable pageable = PageRequest.of(0, size + 1);
 
