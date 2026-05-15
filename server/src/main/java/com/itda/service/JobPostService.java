@@ -9,11 +9,13 @@ import com.itda.entity.JobPost;
 import com.itda.entity.User;
 import com.itda.entity.Workplace;
 import com.itda.enums.JobPostStatus;
+import com.itda.enums.UserRole;
 import com.itda.exception.NotFoundException;
 import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
 import com.itda.repository.WorkplaceRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,10 +33,18 @@ public class JobPostService {
     private final LikeService likeService;
     private final S3Service s3Service;                   // S3 업로드 서비스 주입
     private final WorkplaceRepository workplaceRepository; // 로고 URL 저장용
+    private final JobPostRankingService rankingService;    // 개인화 추천
 
     // 공고 목록 통합 조회 (필터 + 커서 페이지네이션)
     // 지원자/고용주 공통 사용 - 모든 필터(다중 태그/범위 포함)를 JobPostRepositoryCustom으로 위임
     public CursorPageResponse<JobPostCardResponse> getJobPosts(JobPostFilterRequest filter, User user) {
+        // 추천 정렬: APPLICANT 로그인 사용자만 개인화 랭킹. 태그 필터는 무시.
+        if ("RECOMMENDED".equalsIgnoreCase(filter.sortType())
+                && user != null
+                && user.getRole() == UserRole.APPLICANT) {
+            return rankingService.recommend(user, filter.cursor(), filter.getSize());
+        }
+
         int fetchSize = filter.getSize() + 1;
 
         List<JobPost> posts = jobPostRepository.findByDynamicFilter(filter, fetchSize);

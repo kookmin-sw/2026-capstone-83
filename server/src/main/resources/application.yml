@@ -32,3 +32,21 @@ cloud:
       static: us-east-1
     stack:
       auto: false
+
+# 공고 추천(RECOMMENDED) 정렬의 점수 가중치.
+# 모든 값은 0 이상 정수. 환경별로 application-{profile}.yml 또는 환경변수
+# (RANKING_WEIGHTS_CATEGORY_MATCH 등)로 오버라이드 가능.
+# 변경 사항은 앱 재시작 시 반영된다.
+ranking:
+  weights:
+    location-per-level: 10    # 도/시 일치 +10, 시군구 +20, 동 +30 (단계 × 값)
+    category-match: 20        # 최빈 카테고리 일치
+    schedule-available: 15    # 같은 날짜 HIRED 일정과 미충돌
+    wage-tier:
+      top-25: 15              # 동일 카테고리 시급 백분위 상위 25%
+      mid-50-75: 10           # 50~75 백분위
+      mid-25-50: 5            # 25~50 백분위
+    freshness: 10             # D-day ≤ 7일 또는 등록 ≤ 24h
+    liked-employer: 5         # 좋아요한 사업장 (양방향)
+    hired-employer: 5         # 과거 HIRED 사업장
+    applied-penalty: 10       # APPLIED/PENDING 공고 감점 (점수에서 빼짐)
