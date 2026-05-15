@@ -1,14 +1,12 @@
 package com.itda.dto.response.calendar;
 
-import com.itda.entity.JobPost;
-import com.itda.enums.ApplicationStatus;
 import com.itda.entity.Application;
-import java.util.List;
+import com.itda.entity.JobPost;
 
 /**
- * 고용자 캘린더 일정 항목 DTO
+ * 구직자 캘린더 일정 항목 DTO
  */
-public record EmployerScheduleItem(
+public record EmployeeScheduleItem(
         Long jobPostId,
         String title,
         String workStart,
@@ -16,13 +14,14 @@ public record EmployerScheduleItem(
         int filledSlots,
         int totalSlots,
         String postStatus,
-        String workplace,
-        Long workplaceId,
-        int applicantCount,
-        int hiredCount
+        String applyStatus,
+        String company,
+        String location,
+        Integer wage
 ) {
-    public static EmployerScheduleItem from(JobPost jobPost, int applicantCount, int hiredCount) {
-        return new EmployerScheduleItem(
+    public static EmployeeScheduleItem from(Application application) {
+        JobPost jobPost = application.getJobPost();
+        return new EmployeeScheduleItem(
                 jobPost.getId(),
                 jobPost.getTitle(),
                 jobPost.getWorkStart().toString(),
@@ -30,10 +29,10 @@ public record EmployerScheduleItem(
                 jobPost.getFilledSlots(),
                 jobPost.getTotalSlots(),
                 jobPost.getStatus().name(),
-                jobPost.getWorkplace().getName(),
-                jobPost.getWorkplace().getId(),
-                applicantCount,
-                hiredCount
+                application.getStatus().name(),
+                jobPost.getWorkplace().getCompanyName(),
+                jobPost.getWorkplace().getAddress(),
+                jobPost.getWage()
         );
     }
 }

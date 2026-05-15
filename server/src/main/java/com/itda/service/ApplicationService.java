@@ -4,6 +4,7 @@ import com.itda.dto.request.ScheduleRequest;
 import com.itda.dto.response.ApplicantResponse;
 import com.itda.dto.response.ApplicationResponse;
 import com.itda.dto.response.CursorPageResponse;
+import com.itda.dto.response.calendar.EmployeeScheduleItem;
 import com.itda.dto.response.calendar.EmployeeScheduleResponse;
 import com.itda.dto.response.calendar.EmployerScheduleItem;
 import com.itda.dto.response.calendar.EmployerScheduleResponse;
@@ -137,17 +138,19 @@ public class ApplicationService {
     }
 
     // 구직자 근무 일정 조회
-    public Map<String, List<EmployeeScheduleResponse>> getEmployeeSchedules(Long applicantUserId, LocalDate fromDate, LocalDate toDate) {
+    public EmployeeScheduleResponse getEmployeeSchedules(Long applicantUserId, LocalDate fromDate, LocalDate toDate) {
         List<Application> applications = applicationRepository
                 .findByApplicantUserIdAndStatusAndJobPost_WorkDateBetween(
                         applicantUserId, ApplicationStatus.HIRED, fromDate, toDate);
 
-        return applications.stream()
+        Map<String, List<EmployeeScheduleItem>> schedules = applications.stream()
                 .collect(Collectors.groupingBy(
                         a -> a.getJobPost().getWorkDate().toString(),
                         TreeMap::new,
-                        Collectors.mapping(EmployeeScheduleResponse::from, Collectors.toList())
+                        Collectors.mapping(EmployeeScheduleItem::from, Collectors.toList())
                 ));
+
+        return EmployeeScheduleResponse.of(schedules);
     }
 
     // ─── 고용주 API ───────────────────────────────────────────
@@ -334,14 +337,18 @@ public class ApplicationService {
                         JobPost::getWorkDate,
                         Collectors.mapping(
                                 jobPost -> {
-                                    int applicantCount = applicationRepository.findByJobPostId(jobPost.getId()).size();
-                                    return EmployerScheduleItem.from(jobPost, applicantCount);
+                                    List<Application> applications = applicationRepository.findByJobPostId(jobPost.getId());
+                                    int applicantCount = applications.size();
+                                    int hiredCount = (int) applications.stream()
+                                            .filter(a -> a.getStatus() == ApplicationStatus.HIRED)
+                                            .count();
+                                    return EmployerScheduleItem.from(jobPost, applicantCount, hiredCount);
                                 },
                                 Collectors.toList()
                         )
                 ));
 
-        return EmployerScheduleResponse.of(request.getFromDate(), request.getToDate(), schedules);
+        return EmployerScheduleResponse.of(schedules);
     }
 
     // ─── 내부 헬퍼 ───────────────────────────────────────────

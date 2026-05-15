@@ -1,22 +1,15 @@
 package com.itda.dto.response.calendar;
 
-import com.itda.entity.Application;
+import java.util.List;
+import java.util.Map;
 
 /**
- * 구직자 캘린더 일정 항목 DTO
+ * 구직자 캘린더 응답 DTO
  */
 public record EmployeeScheduleResponse(
-        Long jobPostId,
-        String title,
-        String workStart,
-        String workEnd
+        Map<String, List<EmployeeScheduleItem>> schedules
 ) {
-    public static EmployeeScheduleResponse from(Application application) {
-        return new EmployeeScheduleResponse(
-                application.getJobPost().getId(),
-                application.getJobPost().getTitle(),
-                application.getJobPost().getWorkStart().toString(),
-                application.getJobPost().getWorkEnd().toString()
-        );
+    public static EmployeeScheduleResponse of(Map<String, List<EmployeeScheduleItem>> schedules) {
+        return new EmployeeScheduleResponse(schedules);
     }
 }
