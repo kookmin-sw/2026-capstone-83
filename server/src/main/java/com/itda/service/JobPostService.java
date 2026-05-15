@@ -69,11 +69,16 @@ public class JobPostService {
         return CursorPageResponse.of(jobPosts, nextCursor, hasNext);
     }
 
-    // 공고 상세 조회
-    public JobPostDetailResponse getJobPost(Long id) {
+    // 공고 상세 조회 — liked 포함
+    public JobPostDetailResponse getJobPost(Long id, User user) {
         JobPost post = jobPostRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
-        return JobPostDetailResponse.from(post);
+
+        // 로그인 유저면 좋아요 여부 확인
+        boolean liked = (user != null)
+                && jobPostLikeRepository.existsByUserIdAndJobPostId(user.getId(), id);
+
+        return JobPostDetailResponse.from(post, liked);
     }
 
     // 고용주 본인 공고 목록 조회 (커서 페이지네이션)
@@ -130,7 +135,7 @@ public class JobPostService {
 
         // contentUrl을 받는 오버로드 toEntity 사용
         JobPost saved = jobPostRepository.save(request.toEntity(workplace, contentUrl));
-        return JobPostDetailResponse.from(saved);
+        return JobPostDetailResponse.from(saved, false);
     }
 
     // 공고 마감 처리 - 소유권 검증

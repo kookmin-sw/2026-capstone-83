@@ -17,4 +17,7 @@ public interface ResumeLikeRepository extends JpaRepository<ResumeLike, Long> {
 
     // 특정 이력서를 좋아요한 employer 목록 (랭킹 시 '내 이력서에 관심 보인 employer' 역추적용)
     List<ResumeLike> findByResumeId(Long resumeId);
+
+    boolean existsByEmployerUserIdAndResumeId(Long employerUserId, Long resumeId);
+
 }

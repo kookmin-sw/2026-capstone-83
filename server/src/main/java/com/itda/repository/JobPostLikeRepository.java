@@ -14,4 +14,7 @@ public interface JobPostLikeRepository extends JpaRepository<JobPostLike, Long> 
 
     // 유저가 좋아요한 공고 ID 목록
     List<JobPostLike> findByUserId(Long userId);
+
+    boolean existsByUserIdAndJobPostId(Long userId, Long jobPostId);
+
 }
