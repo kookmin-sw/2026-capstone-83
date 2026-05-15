@@ -30,6 +30,8 @@ public class JobPostController {
     private final WorkplaceRepository workplaceRepository;
 
 
+
+
     //공고 목록 통합 조회 (필터 + 커서 페이지네이션)
     //지원자/고용주 공통 사용 - 버튼은 프론트에서 role 기준으로 처리
     //GET /api/v1/job-posts?cursor=&size=&keyword=&jobCategory=&location=&sortType=
@@ -41,11 +43,19 @@ public class JobPostController {
     }
 
 
-    // 공고 상세 조회
+    /** 공고 상세 조회
     @GetMapping("/{id}")
     public ResponseEntity<JobPostDetailResponse> getJobPost(
             @PathVariable Long id,
             @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(jobPostService.getJobPost(id, user));
+    }**/
+    @GetMapping("/{id}")
+    public ResponseEntity<JobPostDetailResponse> getJobPost(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        System.out.println("=== 공고 상세 user: " + user);
+        System.out.println("=== 공고 상세 user id: " + (user != null ? user.getId() : "null"));
         return ResponseEntity.ok(jobPostService.getJobPost(id, user));
     }
 
