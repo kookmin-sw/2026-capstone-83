@@ -52,11 +52,11 @@ public class SecurityConfig {
                         ).permitAll()
 
                         // 공고 목록/상세 조회는 비로그인 허용
-                        // - GET /api/v1/job-posts
-                        // - GET /api/v1/job-posts/{id}
-                        // (/job-posts/{id}/apply, /applicants 같은 하위 경로는 별도 매칭이므로 인증 필요)
                         .requestMatchers(HttpMethod.GET, "/api/v1/job-posts").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/job-posts/*").permitAll()
+
+                        // 매니저 전용 엔드포인트
+                        .requestMatchers("/api/v1/manager/**").hasRole("MANAGER")
 
                         // 그 외는 모두 인증 필요
                         .anyRequest().authenticated()

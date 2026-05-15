@@ -2,6 +2,7 @@ package com.itda.entity;
 
 import com.itda.enums.OAuthProvider;
 import com.itda.enums.UserRole;
+import com.itda.enums.UserStatus;
 import com.itda.enums.Gender;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -63,11 +64,63 @@ public class User {
     @Column(nullable = false, length = 10)
     private UserRole role;
 
+    // 회원 상태 (정상 / 정지)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 10)
+    @Builder.Default
+    private UserStatus status = UserStatus.ACTIVE;
+
+    // 정지 시작일
+    @Column(name = "suspended_at")
+    private LocalDateTime suspendedAt;
+
+    // 정지 해제일 (null이면 영구정지)
+    @Column(name = "suspended_until")
+    private LocalDateTime suspendedUntil;
+
+    // 정지 사유
+    @Column(name = "suspend_reason", length = 500)
+    private String suspendReason;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
+        if (this.status == null) {
+            this.status = UserStatus.ACTIVE;
+        }
+    }
+
+    /**
+     * 회원 정지 처리
+     * @param days 정지 일수 (0이면 영구정지)
+     * @param reason 정지 사유
+     */
+    public void suspend(int days, String reason) {
+        this.status = UserStatus.SUSPENDED;
+        this.suspendedAt = LocalDateTime.now();
+        this.suspendedUntil = (days > 0) ? LocalDateTime.now().plusDays(days) : null;
+        this.suspendReason = reason;
+    }
+
+    /**
+     * 정지 해제
+     */
+    public void activate() {
+        this.status = UserStatus.ACTIVE;
+        this.suspendedAt = null;
+        this.suspendedUntil = null;
+        this.suspendReason = null;
+    }
+
+    /**
+     * 정지 기간이 만료되었는지 확인
+     */
+    public boolean isSuspensionExpired() {
+        if (this.status != UserStatus.SUSPENDED) return false;
+        if (this.suspendedUntil == null) return false; // 영구정지는 만료 안됨
+        return LocalDateTime.now().isAfter(this.suspendedUntil);
     }
 }
