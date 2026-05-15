@@ -22,9 +22,10 @@ export const fetchJobPosts = async (data: GetJobPostsParams): Promise<JobPostLis
 // };
 
 
-//공고 상세 조회
+//공고 상세 조회 (로그인 시 authClient로 liked 포함 조회)
 export const fetchJobPost = async (id: number): Promise<JobPostDetail> => {
-  const response = await httpClient.get<JobPostDetail>(`/api/v1/job-posts/${id}`);
+  const client = useAuthStore.getState().accessToken ? authClient : httpClient;
+  const response = await client.get<JobPostDetail>(`/api/v1/job-posts/${id}`);
   return response.data;
 };
 
