@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useNavigate } from 'react-router-dom';
 import { closeJobPost } from 'entities/jobPost/api/jobPost.api';
 
 /**
