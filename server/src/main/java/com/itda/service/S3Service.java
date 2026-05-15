@@ -23,7 +23,7 @@ public class S3Service {
     private String bucket;
 
     // 파일 업로드 후 S3 URL 반환
-    // folder : 저장할 폴더명 (예: "logos", "job-posts")
+    // folder : 저장할 폴더명 (예: "uploads/logos", "uploads/profiles", "job-posts")
     public String upload(MultipartFile file, String folder) {
         // UUID로 파일명 중복 방지
         String key = folder + "/" + UUID.randomUUID() + "_" + file.getOriginalFilename();

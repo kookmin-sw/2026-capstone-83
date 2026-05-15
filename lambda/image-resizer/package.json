@@ -1,0 +1,14 @@
+{
+  "name": "itda-image-resizer",
+  "version": "1.0.0",
+  "description": "S3 이미지 업로드 시 자동 리사이징 Lambda",
+  "main": "index.mjs",
+  "type": "module",
+  "scripts": {
+    "build": "npm install && zip -r function.zip index.mjs node_modules"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.600.0",
+    "sharp": "^0.33.0"
+  }
+}

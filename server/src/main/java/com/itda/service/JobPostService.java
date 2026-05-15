@@ -115,7 +115,7 @@ public class JobPostService {
 
         // 회사 로고 이미지가 있으면 S3 업로드 후 Workplace에 URL 저장
         if (companyLogoImage != null && !companyLogoImage.isEmpty()) {
-            String logoUrl = s3Service.upload(companyLogoImage, "logos");
+            String logoUrl = s3Service.upload(companyLogoImage, "uploads/logos");
             workplaceRepository.save(Workplace.builder()
                     .id(workplace.getId())
                     .employer(workplace.getEmployer())
