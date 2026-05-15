@@ -10,7 +10,9 @@ const DashboardLayout = () => {
       <LayoutWrapper>
         <DashboardSidebar />
         <ContentArea>
-          <Outlet />
+          <ContentInner>
+            <Outlet />
+          </ContentInner>
         </ContentArea>
       </LayoutWrapper>
     </>
@@ -27,6 +29,14 @@ const ContentArea = styled.main`
   padding: 32px 24px;
   background-color: ${({ theme }) => theme.color.background};
   overflow-y: auto;
+  min-width: 0;
+`;
+
+const ContentInner = styled.div`
+  max-width: 1200px;
+  min-width: 320px;
+  width: 100%;
+  margin: 0 auto;
 `;
 
 export default DashboardLayout;
