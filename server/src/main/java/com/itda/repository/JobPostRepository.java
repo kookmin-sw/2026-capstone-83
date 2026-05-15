@@ -43,5 +43,15 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JobPost
     @Query("SELECT j FROM JobPost j WHERE j.id IN :ids ORDER BY j.id DESC")
     List<JobPost> findByIdIn(@Param("ids") List<Long> ids);
 
+    /**
+     * 랭킹용 후보 풀 조회 — OPEN 상태의 공고 중 사용자의 HIRED 공고는 제외.
+     * 메모리에서 점수 매기기 위해 한 번에 가져온다.
+     * excludeIds 가 비어 있을 수 있으므로 NULL 체크 패턴을 사용한다.
+     */
+    @Query("SELECT j FROM JobPost j " +
+            "WHERE j.status = com.itda.enums.JobPostStatus.OPEN " +
+            "AND (:excludeIds IS NULL OR j.id NOT IN :excludeIds)")
+    List<JobPost> findOpenPostsExcluding(@Param("excludeIds") List<Long> excludeIds);
+
     // 공고 목록 통합 필터 조회는 JobPostRepositoryCustom#findByDynamicFilter 로 위임.
 }
