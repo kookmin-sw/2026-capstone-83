@@ -6,7 +6,6 @@ import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import { ScheduleChip } from 'entities/schedule/ui/ScheduleChip';
 import { BaseMonthlyCalendar } from 'widgets/calendar/BaseMonthlyCalendar';
 import { ApplicantWeeklyCalendarCards } from './ApplicantWeeklyCalendarCards';
-import { HiredWeeklyTimetable } from './HiredWeeklyTimetable';
 import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
 import type { ApplyStatus } from 'entities/jobPost/model/types/jobPost.type';
@@ -25,8 +24,9 @@ const CALENDAR_APPLY_STATUS: Record<ApplyStatus, { label: string; scheme: BadgeS
 export const ApplicantCalendarWidget = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [schedules, setSchedules] = useState<Record<string, Schedule[]>>({});
   const [isLoading, setIsLoading] = useState(true);
+  const schedules = useScheduleStore((s) => s.schedules);
+  const setSchedules = useScheduleStore((s) => s.setSchedules);
   const setSelectedJobPostId = useScheduleStore((s) => s.setSelectedJobPostId);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export const ApplicantCalendarWidget = () => {
         setSelectedJobPostId(todaySchedules[0].jobPostId);
       }
     });
-  }, [setSelectedJobPostId]);
+  }, [setSelectedJobPostId, setSchedules]);
 
   const handlePrev = () => {
     const next = new Date(currentDate);
@@ -98,24 +98,14 @@ export const ApplicantCalendarWidget = () => {
           }}
         />
       ) : (
-        <>
-          <ApplicantWeeklyCalendarCards
-            schedules={schedules as Record<string, ApplicantSchedule[]>}
-            currentDate={currentDate}
-            onPrev={handlePrev}
-            onNext={handleNext}
-            viewMode={viewMode}
-            onViewChange={setViewMode}
-          />
-          <S.TimetableSection>
-            <HiredWeeklyTimetable
-              schedules={schedules as Record<string, ApplicantSchedule[]>}
-              currentDate={currentDate}
-              onPrev={handlePrev}
-              onNext={handleNext}
-            />
-          </S.TimetableSection>
-        </>
+        <ApplicantWeeklyCalendarCards
+          schedules={schedules as Record<string, ApplicantSchedule[]>}
+          currentDate={currentDate}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          viewMode={viewMode}
+          onViewChange={setViewMode}
+        />
       )}
     </S.Wrapper>
   );
@@ -127,10 +117,5 @@ const S = {
     background-color: ${({ theme }) => theme.color.white};
     border-radius: ${({ theme }) => theme.borderRadius.medium};
     box-shadow: ${({ theme }) => theme.shadow.default};
-  `,
-  TimetableSection: styled.div`
-    margin-top: 32px;
-    padding-top: 32px;
-    border-top: 1px solid ${({ theme }) => theme.color.border};
   `,
 };
