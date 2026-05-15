@@ -41,11 +41,12 @@ public class JobPostController {
     }
 
 
-    //공고 상세 조회
-    //GET /api/v1/job-posts/{id}
+    // 공고 상세 조회
     @GetMapping("/{id}")
-    public ResponseEntity<JobPostDetailResponse> getJobPost(@PathVariable Long id) {
-        return ResponseEntity.ok(jobPostService.getJobPost(id));
+    public ResponseEntity<JobPostDetailResponse> getJobPost(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(jobPostService.getJobPost(id, user));
     }
 
      // 고용주 본인 공고 목록 조회 (커서 페이지네이션)

@@ -19,8 +19,8 @@ export const createWorkplace = async (data: WorkplaceCreate): Promise<Workplace>
 };
 
 export const updateWorkplace = async (data: Workplace): Promise<Workplace> => {
-  const { id } = data;
-  const response = await authClient.put(`/api/v1/workplaces/${id}`, data);
+  const { id, ...rest } = data;
+  const response = await authClient.put(`/api/v1/workplaces/${id}`, rest);
   return response.data;
 };
 

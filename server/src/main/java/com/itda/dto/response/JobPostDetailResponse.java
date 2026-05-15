@@ -33,27 +33,19 @@ public record JobPostDetailResponse(
 
         // 상세 전용 필드
         String description,
-
-        // 상세 이미지 S3 URL
         String s3ContentUrl,
-
-        // 지원 자격 목록 (JSON 배열 -> List<String>)
         List<String> requirements,
-
-        // 우대사항 목록
         List<String> benefits,
-
-        // 업무 내용 목록 (필수)
         List<String> tasks,
-
-        // 준비물 목록
         List<String> items,
-
         String createdAt,
-        String updatedAt
+        String updatedAt,
+
+        // 좋아요 여부
+        boolean liked
 ) {
-    // JobPost Entity -> JobPostDetailResponse 변환
-    public static JobPostDetailResponse from(JobPost post) {
+    // liked 포함 버전
+    public static JobPostDetailResponse from(JobPost post, boolean liked) {
         long leftDays = ChronoUnit.DAYS.between(LocalDate.now(), post.getDeadline());
         return new JobPostDetailResponse(
                 post.getId(),
@@ -80,7 +72,8 @@ public record JobPostDetailResponse(
                 post.getTasks(),
                 post.getItems(),
                 post.getCreatedAt() != null ? post.getCreatedAt().toString() : null,
-                null // updatedAt은 Entity에 없어서 null 처리
+                null,
+                liked
         );
     }
 }
