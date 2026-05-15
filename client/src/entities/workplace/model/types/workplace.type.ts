@@ -9,6 +9,7 @@ export interface Workplace {
   companyLogoUrl: string;
 }
 
+
 export interface WorkplaceCreate {
   name: string;
   companyName: string;
