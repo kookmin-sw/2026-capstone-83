@@ -68,7 +68,7 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
   };
 
   if (isLoading) return <Loading message="지원자 목록을 불러오는 중..." />;
-  if (!applicants || applicants.length === 0) return <Empty description="지원자가 없습니다." />;
+  if (!applicants || applicants.length === 0) return <Empty message="지원자가 없습니다." />;
 
   const renderActions = (status: ApplicationStatus, applicant: ApplicantResponse) => {
     switch (status) {

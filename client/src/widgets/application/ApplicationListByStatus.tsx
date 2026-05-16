@@ -25,7 +25,7 @@ export const ApplicationListByStatus = () => {
   }, [applications]);
 
   if (isLoading) return <Loading message="지원 이력을 불러오는 중..." />;
-  if (!applications || applications.length === 0) return <Empty description="지원 이력이 없습니다." />;
+  if (!applications || applications.length === 0) return <Empty message="지원 이력이 없습니다." />;
 
   return (
     <S.TwoColumn>
