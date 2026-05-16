@@ -18,7 +18,7 @@ export const useApplicants = (jobPostId: number) => {
     queryKey: ['applicants', jobPostId],
     queryFn: async () => {
       const data = await fetchApplicants(jobPostId);
-      return data.jobPosts;
+      return data.contents;
     },
     enabled: !!jobPostId,
     staleTime: 1000 * 60 * 5,
@@ -46,7 +46,7 @@ export const useApplications = () => {
     staleTime: 1000 * 60 * 5,
     queryFn: async () => {
       const data = await fetchApplications();
-      return data.jobPosts;
+      return data.contents;
     },
   });
 };

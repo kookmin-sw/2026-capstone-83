@@ -8,16 +8,15 @@ import java.util.List;
  */
 public record CursorPageResponse<T>(
 
-        // 조회된 공고 목록
-        List<T> jobPosts,
+    // 조회된 목록
+    List<T> contents,
 
-        // 다음 요청에 사용할 커서 ID (마지막 페이지면 null)
-        Long nextCursor,
+    // 다음 요청에 사용할 커서 ID (마지막 페이지면 null)
+    Long nextCursor,
 
-        // 다음 페이지 존재 여부
-        boolean hasNext
-) {
-    public static <T> CursorPageResponse<T> of(List<T> jobPosts, Long nextCursor, boolean hasNext) {
-        return new CursorPageResponse<>(jobPosts, nextCursor, hasNext);
-    }
+    // 다음 페이지 존재 여부
+    boolean hasNext) {
+  public static <T> CursorPageResponse<T> of(List<T> contents, Long nextCursor, boolean hasNext) {
+    return new CursorPageResponse<>(contents, nextCursor, hasNext);
+  }
 }

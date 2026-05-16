@@ -14,7 +14,7 @@ export const useJobPosts = (params: GetJobPostsParams = {}) => {
     queryKey: ['jobPosts', params],
     queryFn: async () => {
       const real = await fetchJobPosts(params).catch(() => ({
-        jobPosts: [] as JobPost[],
+        contents: [] as JobPost[],
         nextCursor: null,
         hasNext: false,
       }));
@@ -23,7 +23,7 @@ export const useJobPosts = (params: GetJobPostsParams = {}) => {
         const mock = await fetchMockJobPosts();
         return {
           ...real,
-          jobPosts: [...mock, ...real.jobPosts],
+          contents: [...mock, ...real.contents],
         };
       }
 

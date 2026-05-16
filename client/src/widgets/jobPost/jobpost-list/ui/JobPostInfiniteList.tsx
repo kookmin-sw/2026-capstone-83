@@ -36,7 +36,7 @@ export const JobPostInfiniteList = ({ filterParams }: { filterParams: GetJobPost
     <S.ListContainer>
       {/* 3. 2차원 배열(pages)을 1차원으로 펼쳐서 렌더링 */}
       {data?.pages.map((page) =>
-        page.jobPosts.map((post) => (
+        page.contents.map((post) => (
           <JobPostCard
             key={post.id}
             data={post}

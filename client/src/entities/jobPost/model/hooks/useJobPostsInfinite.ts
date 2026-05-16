@@ -16,7 +16,7 @@ export const useJobPostsInfinite = (params: GetJobPostsParams) => {
         const mock = await fetchMockJobPosts();
         return {
           ...result,
-          jobPosts: [...result.jobPosts, ...mock],
+          contents: [...result.contents, ...mock],
         };
       }
 

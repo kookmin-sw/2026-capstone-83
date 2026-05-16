@@ -6,7 +6,7 @@ export interface CursorParams {
 
 /** 커서 기반 페이지네이션 공통 응답 */
 export interface CursorResponse<T> {
-  jobPosts: T[];
+  contents: T[];
   nextCursor: number | null;
   hasNext: boolean;
 }

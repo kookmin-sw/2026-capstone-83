@@ -31,7 +31,7 @@ export const JobPostList = () => {
   return (
     <S.ListContainer>
       {data?.pages.map((page) =>
-        page.jobPosts.map((post) => (
+        page.contents.map((post) => (
           <JobPostCard
             key={post.id}
             data={post}

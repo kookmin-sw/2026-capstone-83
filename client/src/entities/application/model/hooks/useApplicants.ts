@@ -16,7 +16,7 @@ export const useApplicants = (jobPostId: number | null) => {
       if (!jobPostId) return [];
 
       const real = await fetchApplicants(jobPostId)
-        .then((res) => res.jobPosts)
+        .then((res) => res.contents)
         .catch(() => []);
 
       if (USE_MOCK) {
