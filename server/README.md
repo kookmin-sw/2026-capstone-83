@@ -14,6 +14,7 @@
 - [API 명세](#api-명세)
 - [ERD 및 엔티티 설명](#erd-및-엔티티-설명)
 - [인증 방식](#인증-방식)
+- [공고 추천 알고리즘](#공고-추천-알고리즘)
 
 ---
 
@@ -28,6 +29,8 @@
 | Database | AWS RDS MySQL 8 |
 | Auth | JWT (jjwt 0.12.6) + 카카오 OAuth2 |
 | Security | Spring Security (Stateless) |
+| Storage | AWS S3 (`pj-kmucd2-3-itda-s3`, us-east-1) |
+| 실시간 알림 | SSE (Server-Sent Events) |
 | Deploy | AWS EC2 + GitHub Actions (자동 배포) |
 
 ---
@@ -37,9 +40,10 @@
 ```
 server/
 └── src/main/java/com/itda/
-    ├── config/           # Security, JWT, CORS, Jackson 설정
+    ├── config/           # Security, JWT, CORS, S3, Jackson 설정
     ├── controller/       # REST API 컨트롤러
     ├── service/          # 비즈니스 로직
+    │   └── event/        # Spring 이벤트 리스너 (추천 로그)
     ├── repository/       # Spring Data JPA Repository
     ├── entity/           # JPA 엔티티 (DB 테이블 매핑)
     ├── dto/
@@ -120,7 +124,7 @@ Base URL: `http://44.207.95.136:8080/api/v1`
 
 ---
 
-### 🔐 인증 (Auth)
+### 인증 (Auth)
 
 | 메서드 | 경로 | 설명 | 인증 |
 |--------|------|------|------|
@@ -141,16 +145,16 @@ Base URL: `http://44.207.95.136:8080/api/v1`
 
 ---
 
-### 📢 공고 (JobPost)
+### 공고 (JobPost)
 
 | 메서드 | 경로 | 설명 | 인증 |
 |--------|------|------|------|
 | GET | `/job-posts` | 공고 목록 조회 (필터 + 커서 페이지네이션) | ❌ |
 | GET | `/job-posts/{id}` | 공고 상세 조회 | ❌ |
-| POST | `/job-posts?workplaceId=` | 공고 등록 (multipart/form-data) | ✅ |
-| PATCH | `/job-posts/{id}/close` | 공고 마감 처리 | ✅ |
-| GET | `/job-posts/employer/{employerId}` | 고용주 본인 공고 목록 | ✅ |
-| GET | `/job-posts/employer/{employerId}/calendar?start=&end=` | 캘린더용 날짜 범위 공고 조회 | ✅ |
+| POST | `/job-posts?workplaceId=` | 공고 등록 (multipart/form-data) | ✅ EMPLOYER |
+| PATCH | `/job-posts/{id}/close` | 공고 마감 처리 | ✅ EMPLOYER |
+| GET | `/job-posts/employer` | 내 공고 목록 | ✅ EMPLOYER |
+| GET | `/job-posts/employer/calendar` | 캘린더용 날짜 범위 공고 조회 | ✅ EMPLOYER |
 
 **공고 목록 쿼리 파라미터**
 
@@ -161,109 +165,173 @@ Base URL: `http://44.207.95.136:8080/api/v1`
 | `keyword` | String | 제목 검색어 |
 | `jobCategory` | String | 업종 대분류 필터 |
 | `location` | String | 근무지 필터 |
-| `sortType` | String | 정렬 방식 |
+| `sortType` | String | 정렬 방식 (`WAGE` / `WORK_DATE` / `RECOMMENDED`) |
 
 ---
 
-### 🏢 사업장 (Workplace)
+### 사업장 (Workplace)
 
 | 메서드 | 경로 | 설명 | 인증 |
 |--------|------|------|------|
-| GET | `/workplaces/me` | 내 사업장 목록 조회 (로그인 고용주 기준) | ✅ |
-| GET | `/workplaces/{id}` | 사업장 단건 조회 (본인 소유만) | ✅ |
-| POST | `/workplaces` | 사업장 등록 | ✅ |
-| PUT | `/workplaces/{id}` | 사업장 수정 (부분 수정 — null 필드는 기존 값 유지) | ✅ |
-| DELETE | `/workplaces/{id}` | 사업장 삭제 (본인 소유 + 연결 공고 0건일 때만) | ✅ |
-
-**요청 예시 — 사업장 등록 / 수정 (POST · PUT)**
-```json
-{
-  "name": "성수 1현장",
-  "companyName": "워크브릿지 건설",
-  "businessNumber": "123-45-67890",
-  "address": "서울 성동구 성수동 1가 656",
-  "companyLogoUrl": "https://.../logo.png"
-}
-```
-> 회사 로고 이미지는 S3 업로드 연동 전까지 `companyLogoUrl`(이미 업로드된 URL)로 전달합니다.
-
-**응답 예시 — 사업장 조회 / 등록 (200 · 201)**
-```json
-{
-  "id": 12,
-  "name": "성수 1현장",
-  "companyName": "워크브릿지 건설",
-  "businessNumber": "123-45-67890",
-  "address": "서울 성동구 성수동 1가 656",
-  "companyLogoUrl": "https://.../logo.png"
-}
-```
+| POST | `/workplaces` | 사업장 등록 | ✅ EMPLOYER |
+| GET | `/workplaces/me` | 내 사업장 목록 조회 | ✅ EMPLOYER |
+| GET | `/workplaces/{id}` | 사업장 단건 조회 (본인 소유만) | ✅ EMPLOYER |
+| PUT | `/workplaces/{id}` | 사업장 수정 (null 필드는 기존 값 유지) | ✅ EMPLOYER |
+| DELETE | `/workplaces/{id}` | 사업장 삭제 (연결 공고 0건일 때만) | ✅ EMPLOYER |
 
 **삭제 응답 코드**
 
 | 코드 | 설명 |
 |------|------|
-| 204 | 삭제 성공 (No Content) |
+| 204 | 삭제 성공 |
 | 403 | 본인 소유 사업장이 아님 |
 | 404 | 사업장을 찾을 수 없음 |
 | 409 | 연결된 공고가 존재 — 공고를 먼저 정리해야 함 |
 
-> 본인 소유 검증은 모든 단건 API(`GET`/`PUT`/`DELETE /{id}`)에 공통 적용됩니다. 다른 사용자의 사업장을 조회/수정 시도하면 403이 반환됩니다.
-
 ---
 
-### 📝 지원 (Application)
+### 지원 (Application)
 
 | 메서드 | 경로 | 설명 | 인증 |
 |--------|------|------|------|
-| POST | `/job-posts/{id}/apply` | 공고 지원 | ✅ |
-| GET | `/job-posts/{id}/applied` | 지원 여부 확인 | ✅ |
-| GET | `/worker/applications?status=` | 내 지원 내역 조회 | ✅ |
-| GET | `/worker/schedule?fromDate=&toDate=` | 근무 일정 조회 | ✅ |
-| POST | `/applications/{id}/accept-offer` | 제안 수락 (OFFERED → PENDING) | ✅ |
-| GET | `/job-posts/{id}/applicants` | 지원자 목록 조회 (고용주) | ✅ |
-| POST | `/applications/{id}/accept` | 지원자 채용 확정 (고용주) | ✅ |
-| POST | `/applications/{id}/reject` | 지원자 거절 (고용주) | ✅ |
+| POST | `/job-posts/{id}/apply` | 공고 지원 | ✅ APPLICANT |
+| GET | `/job-posts/{id}/applied` | 지원 여부 확인 | ✅ APPLICANT |
+| GET | `/worker/applications` | 내 지원 내역 (커서 페이지네이션) | ✅ APPLICANT |
+| GET | `/worker/applications/filter?status=` | 내 지원 내역 (상태 필터) | ✅ APPLICANT |
+| GET | `/worker/schedule?fromDate=&toDate=` | 근무 일정 조회 | ✅ APPLICANT |
+| POST | `/applications/{id}/accept-offer` | 고용주 제안 수락 | ✅ APPLICANT |
+| GET | `/job-posts/{id}/applicants` | 지원자 목록 조회 | ✅ EMPLOYER |
+| GET | `/job-posts/{id}/workers` | 근무자 목록 조회 | ✅ EMPLOYER |
+| POST | `/applications/{id}/accept` | 지원자 채용 확정 | ✅ EMPLOYER |
+| POST | `/applications/{id}/reject` | 지원자 거절 | ✅ EMPLOYER |
+| POST | `/applications/{id}/complete` | 근무 완료 처리 | ✅ EMPLOYER |
 
 **지원 상태 흐름**
 
 ```
-구직자 지원     고용주 제안
-    │               │
-  APPLIED        OFFERED
-    │               │
-    │         구직자 수락
-    │               │
-    └──────▶ PENDING ◀─────────┐
-                │               │
-          고용주 최종 확정    고용주 거절
-                │               │
-              HIRED          REJECTED
+구직자 지원       고용주 제안
+    │                 │
+  APPLIED          OFFERED
+    │                 │
+    │           구직자 수락
+    │                 │
+    └────────▶ PENDING ◀──────┐
+                   │           │
+           고용주 최종 확정  고용주 거절
+                   │           │
+                HIRED       REJECTED
+                   │
+           고용주 근무 완료 처리
+                   │
+              COMPLETED
 ```
 
 ---
 
-### 📄 이력서 (Resume)
+### 이력서 (Resume)
 
 | 메서드 | 경로 | 설명 | 인증 |
 |--------|------|------|------|
-| GET | `/resume` | 내 이력서 조회 | ✅ |
-| PUT | `/resume` | 이력서 등록/수정 | ✅ |
-| POST | `/resume/careers` | 경력 추가 | ✅ |
-| PUT | `/resume/careers/{id}` | 경력 수정 | ✅ |
-| DELETE | `/resume/careers/{id}` | 경력 삭제 | ✅ |
-| GET | `/resumes` | 인재 목록 조회 (커서 페이지네이션) | ✅ |
+| GET | `/resume` | 내 이력서 조회 | ✅ APPLICANT |
+| PUT | `/resume` | 이력서 등록/수정 | ✅ APPLICANT |
+| POST | `/resume/careers` | 경력 추가 | ✅ APPLICANT |
+| PUT | `/resume/careers/{id}` | 경력 수정 | ✅ APPLICANT |
+| DELETE | `/resume/careers/{id}` | 경력 삭제 | ✅ APPLICANT |
+| POST | `/resume/certificates` | 자격/인증 추가 | ✅ APPLICANT |
+| DELETE | `/resume/certificates/{id}` | 자격/인증 삭제 | ✅ APPLICANT |
+| GET | `/resumes` | 인재 목록 조회 (커서 페이지네이션) | ✅ EMPLOYER |
+| GET | `/resume/{resumeId}` | 이력서 상세 조회 (고용주용) | ✅ EMPLOYER |
 
 ---
 
-### ❤️ 좋아요 (Like)
+### 좋아요 (Like)
 
 | 메서드 | 경로 | 설명 | 인증 |
 |--------|------|------|------|
-| POST | `/job-posts/{id}/like` | 공고 좋아요 토글 (구직자) | ✅ |
-| POST | `/resumes/{id}/like` | 이력서 좋아요 토글 (고용주) | ✅ |
+| POST | `/job-posts/{id}/like` | 공고 좋아요 토글 | ✅ APPLICANT |
+| POST | `/resumes/{id}/like` | 이력서 좋아요 토글 | ✅ EMPLOYER |
 
-> 좋아요한 항목은 목록 상단에 노출됩니다.
+---
+
+### 리뷰 (Review)
+
+근무 완료(`COMPLETED`) 상태의 application에 한해 작성 가능합니다.
+
+| 메서드 | 경로 | 설명 | 인증 |
+|--------|------|------|------|
+| POST | `/applications/{id}/reviews/employee` | 구직자 → 사업장 리뷰 작성 | ✅ APPLICANT |
+| POST | `/applications/{id}/reviews/employer` | 고용주 → 구직자 리뷰 작성 | ✅ EMPLOYER |
+| GET | `/workplaces/{id}/reviews` | 사업장 리뷰 목록 | ❌ |
+| GET | `/users/{id}/reviews` | 구직자 리뷰 목록 | ❌ |
+| GET | `/applications/{id}/reviews` | application별 리뷰 조회 (양방향) | ❌ |
+| GET | `/reviews/my` | 내가 작성한 리뷰 목록 | ✅ |
+| GET | `/reviews/tags?target=` | 방향별 태그 목록 조회 | ❌ |
+
+**리뷰 작성 요청 예시**
+```json
+{
+  "tags": ["GOOD_PAY", "KIND_EMPLOYER"],
+  "content": "급여도 정확하고 분위기도 좋았어요!"
+}
+```
+> `tags`와 `content` 중 최소 하나는 필수입니다.
+
+---
+
+### 알림 (Notification)
+
+| 메서드 | 경로 | 설명 | 인증 |
+|--------|------|------|------|
+| GET | `/notifications/subscribe?token=` | SSE 실시간 구독 | ✅ (쿼리 파라미터) |
+| GET | `/notifications` | 전체 알림 목록 (최근 50개) | ✅ |
+| GET | `/notifications/unread` | 미읽은 알림 목록 | ✅ |
+| GET | `/notifications/unread-count` | 미읽은 알림 개수 | ✅ |
+| PATCH | `/notifications/{id}/read` | 알림 읽음 처리 | ✅ |
+| PATCH | `/notifications/read-all` | 전체 읽음 처리 | ✅ |
+
+---
+
+### 공고 템플릿 (Template)
+
+| 메서드 | 경로 | 설명 | 인증 |
+|--------|------|------|------|
+| GET | `/templates` | 템플릿 목록 조회 | ✅ EMPLOYER |
+| GET | `/templates/{id}` | 템플릿 상세 조회 | ✅ EMPLOYER |
+| POST | `/templates` | 템플릿 생성 | ✅ EMPLOYER |
+| PUT | `/templates/{id}` | 템플릿 수정 | ✅ EMPLOYER |
+| DELETE | `/templates/{id}` | 템플릿 삭제 | ✅ EMPLOYER |
+
+---
+
+### 캘린더 (Calendar)
+
+| 메서드 | 경로 | 설명 | 인증 |
+|--------|------|------|------|
+| GET | `/calendar/employer` | 고용주 캘린더 일정 조회 | ✅ EMPLOYER |
+
+---
+
+### 신고 (Report)
+
+| 메서드 | 경로 | 설명 | 인증 |
+|--------|------|------|------|
+| POST | `/reports` | 신고 접수 | ✅ |
+
+---
+
+### 매니저 (Manager)
+
+| 메서드 | 경로 | 설명 | 인증 |
+|--------|------|------|------|
+| GET | `/manager/users` | 유저 목록 조회 | ✅ MANAGER |
+| GET | `/manager/users/{id}` | 유저 상세 조회 | ✅ MANAGER |
+| PATCH | `/manager/users/{id}/suspend` | 유저 정지 | ✅ MANAGER |
+| PATCH | `/manager/users/{id}/activate` | 유저 정지 해제 | ✅ MANAGER |
+| GET | `/manager/reports` | 신고 목록 조회 | ✅ MANAGER |
+| GET | `/manager/reports/{id}` | 신고 상세 조회 | ✅ MANAGER |
+| PATCH | `/manager/reports/{id}/status` | 신고 상태 처리 | ✅ MANAGER |
+| GET | `/manager/metrics/recommendation/daily` | 추천 알고리즘 일별 지표 | ✅ MANAGER |
+| GET | `/manager/metrics/recommendation/summary` | 추천 알고리즘 요약 지표 | ✅ MANAGER |
 
 ---
 
@@ -271,21 +339,23 @@ Base URL: `http://44.207.95.136:8080/api/v1`
 
 ### DB 테이블 목록
 
-`users` · `employers` · `workplaces` · `job_posts` · `applications` · `manager` · `resumes` · `careers` · `job_post_likes` · `resume_likes`
+`users` · `employers` · `workplaces` · `job_posts` · `applications` · `manager` · `resumes` · `careers` · `certificates` · `job_post_likes` · `resume_likes` · `reviews` · `notifications` · `reports` · `job_post_templates` · `job_post_click_logs` · `job_post_impression_logs`
 
 ### 주요 관계
 
 ```
 User (1) ──── (1) Employer (1) ──── (N) Workplace (1) ──── (N) JobPost
 User (1) ──── (1) Resume   (1) ──── (N) Career
+                           (1) ──── (N) Certificate
 User (N) ──── (N) JobPost  [via job_post_likes]
 User (N) ──── (N) Resume   [via resume_likes]
-User (1) ──── (N) Application ───── (N) JobPost
+User (1) ──── (N) Application ───── (1) JobPost
+Application (1) ──── (N) Review
 ```
 
 ### Enum 정의
 
-**ApplicationStatus** - 지원 상태
+**ApplicationStatus** — 지원 상태
 
 | 값 | 설명 |
 |----|------|
@@ -294,8 +364,9 @@ User (1) ──── (N) Application ───── (N) JobPost
 | `PENDING` | 구직자가 제안 수락 (고용주 최종 확정 대기) |
 | `HIRED` | 채용 확정 |
 | `REJECTED` | 거절 |
+| `COMPLETED` | 근무 완료 |
 
-**UserRole** - 사용자 역할
+**UserRole** — 사용자 역할
 
 | 값 | 설명 |
 |----|------|
@@ -303,7 +374,7 @@ User (1) ──── (N) Application ───── (N) JobPost
 | `EMPLOYER` | 고용주 |
 | `MANAGER` | 매니저 |
 
-**WageType** - 급여 유형
+**WageType** — 급여 유형
 
 | 값 | 설명 |
 |----|------|
@@ -311,13 +382,22 @@ User (1) ──── (N) Application ───── (N) JobPost
 | `DAILY` | 일급 |
 | `MONTHLY` | 월급 |
 
-**JobPostStatus** - 공고 상태
+**ReviewTag** — 리뷰 태그
 
-| 값 | 설명 |
-|----|------|
-| `OPEN` | 모집 중 |
-| `CLOSED` | 마감 |
-| `CANCELLED` | 취소 |
+| 방향 | 태그 | 라벨 |
+|------|------|------|
+| 구직자→사업장 | `GOOD_PAY` | 급여가 정확했어요 |
+| 구직자→사업장 | `GOOD_ATMOSPHERE` | 분위기가 좋았어요 |
+| 구직자→사업장 | `CLEAR_DESCRIPTION` | 업무 설명이 명확했어요 |
+| 구직자→사업장 | `KIND_EMPLOYER` | 사장님이 친절했어요 |
+| 구직자→사업장 | `EASY_WORK` | 업무 강도가 적당했어요 |
+| 구직자→사업장 | `GOOD_LOCATION` | 교통이 편리했어요 |
+| 고용주→구직자 | `PUNCTUAL` | 시간을 잘 지켜요 |
+| 고용주→구직자 | `HARD_WORKING` | 성실하게 일해요 |
+| 고용주→구직자 | `QUICK_LEARNER` | 습득이 빨라요 |
+| 고용주→구직자 | `GOOD_MANNER` | 매너가 좋아요 |
+| 고용주→구직자 | `RESPONSIBLE` | 책임감이 강해요 |
+| 고용주→구직자 | `WANT_REHIRE` | 다시 함께 일하고 싶어요 |
 
 ---
 
@@ -336,12 +416,23 @@ User (1) ──── (N) Application ───── (N) JobPost
 
 ---
 
-## 미구현 / 예정 기능
+## 공고 추천 알고리즘
 
-| 기능 | 상태 |
+`sortType=RECOMMENDED` 선택 시 아래 가중치 기반으로 공고 점수를 계산합니다.
+
+| 항목 | 점수 |
 |------|------|
-| S3 이미지 업로드 | 🔲 미구현 |
-| Manager Service/Controller | 🔲 미구현 |
-| SSE 실시간 알림 (승인/확정 시) | 🔲 미구현 |
-| CORS 허용 도메인 EC2 주소 추가 | 🔲 미구현 |
-| 사업장(Workplace) CRUD | ✅ 구현 완료 |
+| 지역 일치 — 도/시 | +10 |
+| 지역 일치 — 시군구 | +20 |
+| 지역 일치 — 동 | +30 |
+| 최빈 카테고리 일치 | +20 |
+| 근무 일정 미충돌 | +15 |
+| 시급 상위 25% | +15 |
+| 시급 50~75 백분위 | +10 |
+| 시급 25~50 백분위 | +5 |
+| 최신 공고 (7일 이내 / 24h 이내 등록) | +10 |
+| 좋아요한 사업장 | +5 |
+| 과거 HIRED 사업장 | +5 |
+| 이미 지원한 공고 | -10 |
+
+> 가중치는 `application.yml`의 `ranking.weights` 항목에서 조정 가능합니다.
