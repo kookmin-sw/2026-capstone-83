@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { useWorkplaces } from 'entities/workplace/model/hooks/useWorkplace';
 import { useWorkplaceStore } from 'entities/workplace/model/store/workplaceStore';
@@ -7,7 +6,6 @@ import { useJobPost } from 'entities/jobPost/model/hooks/useJobPost';
 import { ApplicantListByStatus } from 'widgets/applicant/ApplicantListByStatus';
 import Section from 'shared/ui/Layout/Section';
 import Loading from 'shared/ui/Loading/Loading';
-import Badge from 'shared/ui/Badge/Badge';
 import ProgressBar from 'shared/ui/ProgressBar/ProgressBar';
 import { MapPin, Calendar, Clock, Building2 } from 'lucide-react';
 

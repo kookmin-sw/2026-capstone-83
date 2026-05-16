@@ -14,7 +14,7 @@ interface Props {
 /** 공고 선택 탭 (가로 스크롤) — 재사용 가능 */
 export const JobPostSelectTabs = ({ jobPosts, selectedId, onSelect, isLoading }: Props) => {
   if (isLoading) return <Loading message="공고 목록을 불러오는 중..." />;
-  if (jobPosts.length === 0) return <Empty description="등록된 공고가 없습니다." />;
+  if (jobPosts.length === 0) return <Empty message="등록된 공고가 없습니다." />;
 
   return (
     <S.TabList>

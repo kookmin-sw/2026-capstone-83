@@ -95,7 +95,11 @@ export const fetchMockApplicants = (_jobPostId: number): Promise<ApplicantRespon
 // 구직자 지원 목록 mock 조회
 export const fetchMockApplications = (): Promise<ApplicationWithJobPost[]> => {
   return new Promise((resolve) => {
-    resolve(mockApplicationData as ApplicationWithJobPost[]);
+    const data = mockApplicationData.map((item) => ({
+      ...item,
+      id: item.jobPostId,
+    }));
+    resolve(data as unknown as ApplicationWithJobPost[]);
   });
 };
 
