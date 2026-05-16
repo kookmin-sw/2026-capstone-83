@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import styled from 'styled-components';
 import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
-import { fetchMockNotifications } from 'entities/notification/api/notification.api';
+import { fetchMockNotifications } from 'entities/notification/api/notification.mock.api';
 import { NotificationItem } from 'entities/notification/ui/NotificationItem';
 import Empty from 'shared/ui/Empty/Empty';
 

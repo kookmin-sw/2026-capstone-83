@@ -1,66 +1,27 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import {
-  fetchNotifications,
-  fetchUnreadNotifications,
-  fetchUnreadCount,
-  markNotificationAsRead,
-  markAllNotificationsAsRead,
-} from '../api/notification.api';
+import { useQuery } from '@tanstack/react-query';
+import { fetchMockNotifications } from '../api/notification.mock.api';
+import { fetchNotifications as fetchRealNotifications } from '../api/notification.api';
+import type { Notification } from '../model/types/notification.type';
 
-const NOTIFICATION_KEYS = {
-  all: ['notifications'] as const,
-  unread: ['notifications', 'unread'] as const,
-  unreadCount: ['notifications', 'unread-count'] as const,
-};
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
-/** 전체 알림 목록 조회 */
+/**
+ * 알림 목록 조회 훅
+ * - mock 모드: mock 데이터 + 실제 API 응답 병합
+ * - 실제 모드: 실제 API 응답만 반환
+ */
 export const useNotifications = () => {
-  return useQuery({
-    queryKey: NOTIFICATION_KEYS.all,
-    queryFn: fetchNotifications,
-  });
-};
+  return useQuery<Notification[]>({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const real = await fetchRealNotifications().catch(() => []);
 
-/** 미읽은 알림 목록 조회 */
-export const useUnreadNotifications = () => {
-  return useQuery({
-    queryKey: NOTIFICATION_KEYS.unread,
-    queryFn: fetchUnreadNotifications,
-  });
-};
+      if (USE_MOCK) {
+        const mock = await fetchMockNotifications();
+        return [...mock, ...real];
+      }
 
-/** 미읽은 알림 개수 */
-export const useUnreadCount = () => {
-  return useQuery({
-    queryKey: NOTIFICATION_KEYS.unreadCount,
-    queryFn: fetchUnreadCount,
-  });
-};
-
-/** 개별 알림 읽음 처리 */
-export const useMarkAsRead = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: markNotificationAsRead,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
-      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.unread });
-      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.unreadCount });
-    },
-  });
-};
-
-/** 전체 읽음 처리 */
-export const useMarkAllAsRead = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: markAllNotificationsAsRead,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.all });
-      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.unread });
-      queryClient.invalidateQueries({ queryKey: NOTIFICATION_KEYS.unreadCount });
+      return real;
     },
   });
 };

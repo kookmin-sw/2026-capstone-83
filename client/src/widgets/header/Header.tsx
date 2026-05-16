@@ -4,7 +4,7 @@ import { Bell, User } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import { useLogout } from 'entities/auth/model/hooks/useAuth';
 import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
-import { fetchMockNotifications } from 'entities/notification/api/notification.api';
+import { fetchMockNotifications } from 'entities/notification/api/notification.mock.api';
 import { NotificationDropdown } from 'widgets/notification/NotificationDropdown';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';

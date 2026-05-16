@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
-import { fetchMockNotifications } from 'entities/notification/api/notification.api';
+import { fetchMockNotifications } from 'entities/notification/api/notification.mock.api';
 import { NotificationItem } from 'entities/notification/ui/NotificationItem';
 
 interface Props {
