@@ -1,9 +1,12 @@
 import { useEffect } from 'react';
 import styled from 'styled-components';
 import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
+import { fetchNotifications } from 'entities/notification/api/notification.api';
 import { fetchMockNotifications } from 'entities/notification/api/notification.mock.api';
 import { NotificationItem } from 'entities/notification/ui/NotificationItem';
 import Empty from 'shared/ui/Empty/Empty';
+
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 const NotificationsPage = () => {
   const notifications = useNotificationStore((s) => s.notifications);
@@ -13,7 +16,12 @@ const NotificationsPage = () => {
 
   useEffect(() => {
     if (notifications.length === 0) {
-      fetchMockNotifications().then(setNotifications);
+      const loadNotifications = async () => {
+        const real = await fetchNotifications().catch(() => []);
+        const mock = USE_MOCK ? await fetchMockNotifications() : [];
+        setNotifications([...mock, ...real]);
+      };
+      loadNotifications();
     }
   }, [notifications.length, setNotifications]);
 

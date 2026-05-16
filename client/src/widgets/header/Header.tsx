@@ -4,12 +4,15 @@ import { Bell, User } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import { useLogout } from 'entities/auth/model/hooks/useAuth';
 import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
+import { fetchNotifications } from 'entities/notification/api/notification.api';
 import { fetchMockNotifications } from 'entities/notification/api/notification.mock.api';
 import { NotificationDropdown } from 'widgets/notification/NotificationDropdown';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
 import KoreanIconLogo from 'shared/assets/KoreanIconLogo.svg';
 import * as S from './Header.styled';
+
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 
 const NAV_ITEMS = [
@@ -40,7 +43,12 @@ const Header = () => {
   // 알림 데이터 초기 로드
   useEffect(() => {
     if (notifications.length === 0) {
-      fetchMockNotifications().then(setNotifications);
+      const loadNotifications = async () => {
+        const real = await fetchNotifications().catch(() => []);
+        const mock = USE_MOCK ? await fetchMockNotifications() : [];
+        setNotifications([...mock, ...real]);
+      };
+      loadNotifications();
     }
   }, [notifications.length, setNotifications]);
 

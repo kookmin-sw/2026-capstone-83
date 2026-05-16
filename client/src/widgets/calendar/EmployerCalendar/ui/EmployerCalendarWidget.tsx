@@ -10,6 +10,8 @@ import { WeeklyCalendar } from './WeeklyCalendar';
 import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
 
+const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+
 type ViewMode = 'monthly' | 'weekly';
 
 const AddButton = styled.button`
@@ -65,8 +67,10 @@ export const EmployerCalendarWidget = () => {
   const selectedWpId = useWorkplaceStore((s) => s.selectedWorkplaceId);
 
   useEffect(() => {
-    fetchMockSchedules().then((data) => {
-      const loadedSchedules = data.schedules as Record<string, Schedule[]>;
+    const load = async () => {
+      const mock = USE_MOCK ? await fetchMockSchedules() : null;
+      // TODO: 실제 API 연동 시 fetchSchedules(workplaceId, { fromDate, toDate }) 호출 추가
+      const loadedSchedules = (mock?.schedules || {}) as Record<string, Schedule[]>;
       setSchedules(loadedSchedules);
       setIsLoading(false);
 
@@ -76,7 +80,8 @@ export const EmployerCalendarWidget = () => {
       if (todaySchedules && todaySchedules.length > 0) {
         setSelectedJobPostId(todaySchedules[0].jobPostId);
       }
-    });
+    };
+    load();
   }, [setSelectedJobPostId]);
 
   const handlePrev = () => {

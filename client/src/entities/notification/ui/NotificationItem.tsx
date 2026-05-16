@@ -9,10 +9,12 @@ interface Props {
 }
 
 const ICON_MAP: Record<NotificationType, typeof UserPlus> = {
-  APPLY: UserPlus,
-  ACCEPT: CheckCircle,
-  WORK_COMPLETE: Pencil,
-  SYSTEM: Info,
+  NEW_APPLICATION: UserPlus,
+  OFFER_RECEIVED: Info,
+  OFFER_ACCEPTED: CheckCircle,
+  HIRED: CheckCircle,
+  REJECTED: Info,
+  WORK_COMPLETED: Pencil,
 };
 
 const formatTimeAgo = (dateStr: string) => {
@@ -35,11 +37,13 @@ export const NotificationItem = ({ data, onClick }: Props) => {
   const { type, message, createdAt, isRead } = data;
   const IconComponent = ICON_MAP[type];
 
-  const iconBgColor = type === 'APPLY' || type === 'ACCEPT'
+  const isHighlight = type === 'NEW_APPLICATION' || type === 'OFFER_ACCEPTED' || type === 'HIRED';
+
+  const iconBgColor = isHighlight
     ? theme.color.secondary
     : theme.color.background;
 
-  const iconColor = type === 'APPLY' || type === 'ACCEPT'
+  const iconColor = isHighlight
     ? theme.color.primary
     : theme.color.subText;
 
