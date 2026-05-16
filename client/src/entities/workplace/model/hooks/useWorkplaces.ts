@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchUserWorkplaces, fetchMockWorkplaces } from '../api/workplace.api';
-import type { Workplace } from '../model/types/workplace.type';
+import { fetchUserWorkplaces, fetchMockWorkplaces } from '../../api/workplace.api';
+import type { Workplace } from '../types/workplace.type';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 

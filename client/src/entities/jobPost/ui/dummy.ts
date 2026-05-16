@@ -12,7 +12,7 @@ export const dummyJobPost: JobPost = {
   workDate: '2026-07-01',
   workStart: '09:00',
   workEnd: '18:00',
-  postStatus: 'OPEN',
+  status: 'OPEN',
   applyStatus: 'APPLYING',
   deadline: '2026-06-30',
   liked: false

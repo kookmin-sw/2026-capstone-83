@@ -12,11 +12,11 @@
     "workDate": "2026/05/10",
     "workStart": "08:00",
     "workEnd": "17:00",
-    "postStatus": "OPEN",
+    "status": "OPEN",
     "applyStatus": "APPLYING",
     "deadline": "2026/05/05",
     "liked": false,
-    "status": "APPLIED",
+    "applicationStatus": "APPLIED",
     "appliedAt": "2026-05-01"
   },
   {
@@ -32,11 +32,11 @@
     "workDate": "2026/05/12",
     "workStart": "09:00",
     "workEnd": "18:00",
-    "postStatus": "OPEN",
+    "status": "OPEN",
     "applyStatus": "SELECTED",
     "deadline": "2026/05/08",
     "liked": true,
-    "status": "PENDING",
+    "applicationStatus": "PENDING",
     "appliedAt": "2026-05-02"
   },
   {
@@ -52,11 +52,11 @@
     "workDate": "2026/05/08",
     "workStart": "07:00",
     "workEnd": "15:00",
-    "postStatus": "CLOSED",
+    "status": "CLOSED",
     "applyStatus": "HIRED",
     "deadline": "2026/05/03",
     "liked": false,
-    "status": "HIRED",
+    "applicationStatus": "HIRED",
     "appliedAt": "2026-04-28"
   },
   {
@@ -72,11 +72,11 @@
     "workDate": "2026/05/15",
     "workStart": "06:00",
     "workEnd": "14:00",
-    "postStatus": "OPEN",
+    "status": "OPEN",
     "applyStatus": "APPLYING",
     "deadline": "2026/05/12",
     "liked": false,
-    "status": "APPLIED",
+    "applicationStatus": "APPLIED",
     "appliedAt": "2026-05-05"
   },
   {
@@ -92,11 +92,11 @@
     "workDate": "2026/05/18",
     "workStart": "08:00",
     "workEnd": "18:00",
-    "postStatus": "OPEN",
+    "status": "OPEN",
     "applyStatus": "SELECTED",
     "deadline": "2026/05/14",
     "liked": true,
-    "status": "PENDING",
+    "applicationStatus": "PENDING",
     "appliedAt": "2026-05-06"
   },
   {
@@ -112,11 +112,11 @@
     "workDate": "2026/05/06",
     "workStart": "09:00",
     "workEnd": "17:00",
-    "postStatus": "CLOSED",
+    "status": "CLOSED",
     "applyStatus": "HIRED",
     "deadline": "2026/05/02",
     "liked": false,
-    "status": "HIRED",
+    "applicationStatus": "HIRED",
     "appliedAt": "2026-04-25"
   },
   {
@@ -132,11 +132,11 @@
     "workDate": "2026/05/20",
     "workStart": "22:00",
     "workEnd": "06:00",
-    "postStatus": "CLOSED",
+    "status": "CLOSED",
     "applyStatus": "REJECTED",
     "deadline": "2026/05/16",
     "liked": false,
-    "status": "REJECTED",
+    "applicationStatus": "REJECTED",
     "appliedAt": "2026-05-10"
   }
 ]

@@ -23,7 +23,7 @@ export const JobPostCard = ({ data, extraActions, bottomActions }: JobPostCardPr
     title,
     company,
     deadline,
-    postStatus,
+    status,
     applyStatus,
     wage,
     wageType,
@@ -35,7 +35,7 @@ export const JobPostCard = ({ data, extraActions, bottomActions }: JobPostCardPr
     filledSlots
   } = data;
 
-  const recruitInfo = RECRUITMENT_STATUS_MAP[postStatus];
+  const recruitInfo = RECRUITMENT_STATUS_MAP[status];
   const applyInfo = APPLICATION_STATUS_MAP[applyStatus];
 
 

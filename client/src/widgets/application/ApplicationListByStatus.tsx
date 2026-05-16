@@ -18,8 +18,8 @@ export const ApplicationListByStatus = () => {
     const applied: ApplicationWithJobPost[] = [];
     const pending: ApplicationWithJobPost[] = [];
     applications.forEach((app) => {
-      if (app.status === 'APPLIED') applied.push(app);
-      else if (app.status === 'PENDING') pending.push(app);
+      if (app.applicationStatus === 'APPLIED') applied.push(app);
+      else if (app.applicationStatus === 'PENDING') pending.push(app);
     });
     return { applied, pending };
   }, [applications]);

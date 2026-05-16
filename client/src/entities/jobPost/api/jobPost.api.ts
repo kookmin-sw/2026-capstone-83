@@ -133,7 +133,7 @@ export const createMockJobPost = (data: Partial<JobPostCreate>): Promise<JobPost
       "workDate": "2026/05/10",
       "workStart": "08:00",
       "workEnd": "17:00",
-      "postStatus": "OPEN",
+      "status": "OPEN",
       "applyStatus": "NONE",
       "deadline": "2026/05/05",
       "liked": false,

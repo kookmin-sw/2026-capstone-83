@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchMockNotifications } from '../api/notification.mock.api';
-import { fetchNotifications as fetchRealNotifications } from '../api/notification.api';
-import type { Notification } from '../model/types/notification.type';
+import { fetchMockNotifications } from '../../api/notification.mock.api';
+import { fetchNotifications as fetchRealNotifications } from '../../api/notification.api';
+import type { Notification } from '../types/notification.type';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 

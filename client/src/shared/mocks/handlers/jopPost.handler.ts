@@ -93,7 +93,7 @@ export const jobPostHandlers = [
         totalSlots: 10,
         filledSlots: 0,
         leftDays: 7,
-        postStatus: "OPEN",
+        status: "OPEN",
         applyStatus: "NONE",
         liked: false,
         createdAt: new Date().toISOString().split('T')[0],

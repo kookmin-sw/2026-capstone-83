@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchJobPost, fetchMockJobPost } from '../api/jobPost.api';
-import type { JobPostDetail } from '../model/types/jobPost.type';
+import { fetchJobPost, fetchMockJobPost } from '../../api/jobPost.api';
+import type { JobPostDetail } from '../types/jobPost.type';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 

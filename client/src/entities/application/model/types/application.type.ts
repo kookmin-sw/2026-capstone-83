@@ -15,7 +15,7 @@ export interface ApplicationResponse {
 /** 구직자 지원 목록 항목 (공고 정보 + 지원 상태) */
 export interface ApplicationWithJobPost extends JobPost {
   applicationId: number;
-  status: ApplicationStatus;
+  applicationStatus: ApplicationStatus;
   appliedAt: string;
 }
 

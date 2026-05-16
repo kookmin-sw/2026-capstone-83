@@ -1,6 +1,6 @@
 
 export type WageType = 'HOURLY' | 'DAILY' | 'MONTHLY';
-export type PostStatus = 'OPEN' | 'CLOSED' | 'ALMOST_CLOSED' | 'CANCELLED';
+export type PostStatus = 'OPEN' | 'CLOSED' | 'CANCELLED';
 export type ApplyStatus = 'NONE' | 'APPLYING' | 'SELECTED' | 'HIRED' | 'REJECTED';
 
 export interface JobPost {
@@ -15,7 +15,7 @@ export interface JobPost {
   workDate: string; // 근무 날짜
   workStart: string; // 근무 시작 시간
   workEnd: string; // 근무 종료 시간
-  postStatus: PostStatus; // 공고 상태
+  status: PostStatus; // 공고 상태
   applyStatus: ApplyStatus; // 지원 상태
   deadline: string; // 마감일
   liked: boolean; // 공고 좋아요 여부

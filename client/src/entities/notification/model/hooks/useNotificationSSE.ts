@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { issueSseToken } from '../api/notification.api';
+import { issueSseToken } from '../../api/notification.api';
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 

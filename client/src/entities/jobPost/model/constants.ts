@@ -12,7 +12,6 @@ interface StatusInfo {
 export const RECRUITMENT_STATUS_MAP = {
   OPEN: { label: '모집 중', scheme: 'primary' },
   CLOSED: { label: '마감', scheme: 'success' },
-  ALMOST_CLOSED: { label: '마감 임박', scheme: 'warning' },
   CANCELLED: { label: '취소', scheme: 'error' },
 } as const satisfies Record<PostStatus, StatusInfo>;
 

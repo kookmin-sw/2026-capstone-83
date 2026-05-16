@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchSchedules, fetchMockSchedules } from '../api/schedule.api';
-import type { ScheduleResponse } from '../model/types/schedule.type';
+import { fetchSchedules, fetchMockSchedules } from '../../api/schedule.api';
+import type { ScheduleResponse } from '../types/schedule.type';
 
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
