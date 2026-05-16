@@ -5,13 +5,26 @@ import type { GetJobPostsParams } from 'entities/jobPost/model/types/jobPost.typ
 import { USE_MOCK } from 'shared/config/env';
 
 export const useJobPostsInfinite = (params: GetJobPostsParams) => {
+  // 필터가 하나라도 적용되어 있으면 mock 데이터를 붙이지 않음
+  const hasActiveFilter = !!(
+    params.keyword ||
+    params.location ||
+    params.minWage ||
+    params.wageType ||
+    params.timeTags?.length ||
+    params.certRequirements?.length ||
+    params.jobCategories?.length ||
+    params.locations?.length ||
+    params.weekdays?.length
+  );
+
   return useInfiniteQuery({
     queryKey: ['jobPosts', params],
     queryFn: async ({ pageParam }) => {
       const result = await fetchJobPosts({ ...params, cursor: pageParam });
 
-      // 마지막 페이지(더 이상 다음이 없을 때)에 mock 데이터를 뒤에 붙임
-      if (USE_MOCK && !result.hasNext) {
+      // 필터 없고, 마지막 페이지일 때만 mock 데이터를 뒤에 붙임
+      if (USE_MOCK && !hasActiveFilter && !result.hasNext) {
         const mock = await fetchMockJobPosts();
         return {
           ...result,

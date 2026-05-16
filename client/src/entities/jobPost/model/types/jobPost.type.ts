@@ -182,11 +182,14 @@ export interface GetJobPostsParams extends CursorParams {
   // 최소 급여
   minWage?: number;
 
+  // 급여 유형 필터
+  wageType?: WageType;
+
   // 우대 조건 (다중)
   benefits?: string[];
 
-  // 정렬: WAGE(급여순) | WORK_DATE(근무일순) | DEADLINE(마감임박순)
-  sortType?: 'WAGE' | 'WORK_DATE' | 'DEADLINE';
+  // 정렬: RECOMMENDED(추천순) | WAGE(급여순) | WORK_DATE(근무일순) | DEADLINE(마감임박순)
+  sortType?: 'RECOMMENDED' | 'WAGE' | 'WORK_DATE' | 'DEADLINE';
 
   // legacy 하위호환 (단일 값)
   jobCategory?: string;
