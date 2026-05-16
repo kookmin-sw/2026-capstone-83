@@ -10,6 +10,7 @@ import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
 import type { ApplyStatus } from 'entities/jobPost/model/types/jobPost.type';
 import type { BadgeScheme } from 'shared/types/theme';
+import { USE_MOCK } from 'shared/config/env';
 
 type ViewMode = 'monthly' | 'weekly';
 
@@ -30,8 +31,10 @@ export const ApplicantCalendarWidget = () => {
   const setSelectedJobPostId = useScheduleStore((s) => s.setSelectedJobPostId);
 
   useEffect(() => {
-    fetchMockSchedules().then((data) => {
-      const loadedSchedules = data.schedules as Record<string, Schedule[]>;
+    const load = async () => {
+      const mock = USE_MOCK ? await fetchMockSchedules() : null;
+      // TODO: 실제 API 연동 시 fetchSchedules 호출 추가
+      const loadedSchedules = (mock?.schedules || {}) as Record<string, Schedule[]>;
       setSchedules(loadedSchedules);
       setIsLoading(false);
 
@@ -41,7 +44,8 @@ export const ApplicantCalendarWidget = () => {
       if (todaySchedules && todaySchedules.length > 0) {
         setSelectedJobPostId(todaySchedules[0].jobPostId);
       }
-    });
+    };
+    load();
   }, [setSelectedJobPostId, setSchedules]);
 
   const handlePrev = () => {

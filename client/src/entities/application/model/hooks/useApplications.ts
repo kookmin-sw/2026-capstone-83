@@ -2,8 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchApplications, fetchMockApplications } from 'entities/application/api/application.api';
 import { fetchJobPost } from 'entities/jobPost/api/jobPost.api';
 import type { ApplicationWithJobPost } from '../types/application.type';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+import { USE_MOCK } from 'shared/config/env';
 
 /**
  * 구직자 지원 목록 조회 훅

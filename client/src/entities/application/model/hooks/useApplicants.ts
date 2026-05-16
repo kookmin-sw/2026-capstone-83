@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchApplicants, fetchMockApplicants } from 'entities/application/api/application.api';
 import type { ApplicantResponse } from '../types/application.type';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+import { USE_MOCK } from 'shared/config/env';
 
 /**
  * 지원자 목록 조회 훅

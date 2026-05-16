@@ -2,8 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchMockNotifications } from '../../api/notification.mock.api';
 import { fetchNotifications as fetchRealNotifications } from '../../api/notification.api';
 import type { Notification } from '../types/notification.type';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+import { USE_MOCK } from 'shared/config/env';
 
 /**
  * 알림 목록 조회 훅

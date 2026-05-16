@@ -11,8 +11,7 @@ import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
 import KoreanIconLogo from 'shared/assets/KoreanIconLogo.svg';
 import * as S from './Header.styled';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+import { USE_MOCK } from 'shared/config/env';
 
 
 const NAV_ITEMS = [

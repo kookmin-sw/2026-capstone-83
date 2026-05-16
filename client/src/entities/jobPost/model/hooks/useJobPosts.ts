@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchJobPosts, fetchMockJobPosts } from '../../api/jobPost.api';
 import type { GetJobPostsParams, JobPost, JobPostListCursor } from '../types/jobPost.type';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+import { USE_MOCK } from 'shared/config/env';
 
 /**
  * 공고 목록 조회 훅

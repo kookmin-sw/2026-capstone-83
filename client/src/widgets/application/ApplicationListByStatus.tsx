@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import styled from 'styled-components';
-import { useMockApplications } from 'entities/application/model/hooks/useMockApplications';
+import { useApplications } from 'entities/application/model/hooks/useApplications';
 import type { ApplicationWithJobPost } from 'entities/application/model/types/application.type';
 import { JobPostCard } from 'entities/jobPost/ui/JobPostCard';
 import { DDay } from 'entities/jobPost/ui/JobPost.styled';
@@ -11,7 +11,7 @@ import Loading from 'shared/ui/Loading/Loading';
 import Empty from 'shared/ui/Empty/Empty';
 
 export const ApplicationListByStatus = () => {
-  const { data: applications, isLoading } = useMockApplications();
+  const { data: applications, isLoading } = useApplications();
 
   const grouped = useMemo(() => {
     if (!applications) return { applied: [] as ApplicationWithJobPost[], pending: [] as ApplicationWithJobPost[] };

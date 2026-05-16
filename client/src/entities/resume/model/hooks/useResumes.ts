@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchResumes, fetchMockResumes } from '../../api/resume.api';
 import type { ResumeResponse } from '../types/resume.type';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+import { USE_MOCK } from 'shared/config/env';
 
 /**
  * 이력서(인재) 목록 조회 훅
@@ -14,7 +13,7 @@ export const useResumes = () => {
     queryKey: ['resumes'],
     queryFn: async () => {
       const real = await fetchResumes()
-        .then((res) => res.jobPosts as unknown as ResumeResponse[])
+        .then((res) => res.contents as unknown as ResumeResponse[])
         .catch(() => []);
 
       if (USE_MOCK) {

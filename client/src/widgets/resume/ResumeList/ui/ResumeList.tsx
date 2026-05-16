@@ -1,21 +1,27 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { ResumeCard } from 'entities/resume/ui/ResumeCard';
-import { fetchMockResumes } from 'entities/resume/api/resume.api';
+import { fetchResumes, fetchMockResumes } from 'entities/resume/api/resume.api';
 import type { ResumeResponse } from 'entities/resume/model/types/resume.type';
 import LikeResumeButton from 'features/like/LikeResumeButton';
 import Loading from 'shared/ui/Loading/Loading';
 import Empty from 'shared/ui/Empty/Empty';
+import { USE_MOCK } from 'shared/config/env';
 
 export const ResumeList = () => {
   const [resumes, setResumes] = useState<ResumeResponse[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    fetchMockResumes().then((data) => {
-      setResumes(data);
+    const load = async () => {
+      const real = await fetchResumes()
+        .then((res) => res.contents as unknown as ResumeResponse[])
+        .catch(() => []);
+      const mock = USE_MOCK ? await fetchMockResumes() : [];
+      setResumes([...mock, ...real]);
       setIsLoading(false);
-    });
+    };
+    load();
   }, []);
 
   if (isLoading) return <Loading message="인재 목록을 불러오는 중..." />;

@@ -9,8 +9,7 @@ import { BaseMonthlyCalendar } from 'widgets/calendar/BaseMonthlyCalendar';
 import { WeeklyCalendar } from './WeeklyCalendar';
 import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+import { USE_MOCK } from 'shared/config/env';
 
 type ViewMode = 'monthly' | 'weekly';
 

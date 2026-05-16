@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import styled from 'styled-components';
-import { useMockApplicants } from 'entities/application/model/hooks/useMockApplicants';
+import { useApplicants } from 'entities/application/model/hooks/useApplicants';
 import type { ApplicantResponse, ApplicationStatus } from 'entities/application/model/types/application.type';
 import { ApplicantCard } from 'entities/application/ui/ApplicantCard';
 import { AcceptApplicantButton } from 'features/applicant/AcceptApplicantButton';
@@ -32,7 +32,7 @@ const STATUS_SECTIONS: StatusSection[] = [
 ];
 
 export const ApplicantListByStatus = ({ jobPostId }: Props) => {
-  const { data: applicants, isLoading } = useMockApplicants(jobPostId);
+  const { data: applicants, isLoading } = useApplicants(jobPostId);
   const [selectedResume, setSelectedResume] = useState<ResumeResponse | null>(null);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
   const [isResumeLoading, setIsResumeLoading] = useState(false);

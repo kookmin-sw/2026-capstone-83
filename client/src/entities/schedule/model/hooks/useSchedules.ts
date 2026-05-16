@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchSchedules, fetchMockSchedules } from '../../api/schedule.api';
 import type { ScheduleResponse } from '../types/schedule.type';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+import { USE_MOCK } from 'shared/config/env';
 
 /**
  * 캘린더 일정 조회 훅
