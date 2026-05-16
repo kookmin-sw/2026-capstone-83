@@ -4,6 +4,7 @@ import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import type { ApplicantSchedule } from 'entities/schedule/model/types/schedule.type';
 import { ApplicantCalendarWidget } from 'widgets/calendar/ApplicantCalendar/ui/ApplicantCalendarWidget';
 import { HiredWeeklyTimetable } from 'widgets/calendar/ApplicantCalendar/ui/HiredWeeklyTimetable';
+import { ApplicationListByStatus } from 'widgets/application/ApplicationListByStatus';
 import SelectedJobPostSection from 'entities/jobPost/ui/SelectedJobPostSection';
 
 const WorkerDashBoardPage = () => {
@@ -49,6 +50,10 @@ const WorkerDashBoardPage = () => {
           <SelectedJobPostSection postId={selectedJobPostId} />
         </>
       )}
+
+      {/* 지원 이력 */}
+      <S.SectionLabel>내 지원 현황</S.SectionLabel>
+      <ApplicationListByStatus />
     </S.PageWrapper>
   );
 };

@@ -1,28 +1,27 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { useTheme } from 'styled-components';
-import { useRejectApplicant } from 'entities/application/model/hooks/useApplication';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
 
 interface Props {
   applicationId: number;
-  jobPostId: number;
 }
 
-/** 지원자 거절 버튼 */
-export const RejectApplicantButton = ({ applicationId, jobPostId }: Props) => {
+/** 채용 제안 거절 버튼 (구직자용, API 미구현 — 껍데기) */
+export const RejectOfferButton = ({ applicationId }: Props) => {
   const theme = useTheme();
-  const { mutate, isPending } = useRejectApplicant(jobPostId);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     setIsModalOpen(true);
   };
 
   const handleConfirm = () => {
-    mutate(applicationId);
+    // TODO: 채용 거절 API 연결
+    console.log(`채용 거절 요청 (applicationId: ${applicationId})`);
     setIsModalOpen(false);
   };
 
@@ -34,7 +33,6 @@ export const RejectApplicantButton = ({ applicationId, jobPostId }: Props) => {
         fontSize="xsmall"
         borderRadius="medium"
         onClick={handleClick}
-        disabled={isPending}
       >
         <X size={14} color={theme.color.error} />
         거절
@@ -48,15 +46,15 @@ export const RejectApplicantButton = ({ applicationId, jobPostId }: Props) => {
             <Button scheme="secondary" buttonSize="medium" onClick={() => setIsModalOpen(false)}>
               취소
             </Button>
-            <Button scheme="primary" buttonSize="medium" onClick={handleConfirm} disabled={isPending}>
+            <Button scheme="primary" buttonSize="medium" onClick={handleConfirm}>
               거절 확정
             </Button>
           </>
         }
       >
         <ModalContent>
-          <h2>지원 거절</h2>
-          <p>해당 지원자를 거절하시겠습니까?<br />이 작업은 되돌릴 수 없습니다.</p>
+          <h2>채용 거절</h2>
+          <p>해당 공고의 채용을 거절하시겠습니까?</p>
         </ModalContent>
       </Modal>
     </>

@@ -109,6 +109,7 @@ const Actions = styled.div`
 
   & > * {
     flex: 1;
+    white-space: nowrap;
   }
 `;
 

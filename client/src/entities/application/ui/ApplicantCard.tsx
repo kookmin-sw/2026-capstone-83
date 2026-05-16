@@ -6,14 +6,15 @@ import type { ApplicantResponse } from '../model/types/application.type';
 interface Props {
   data: ApplicantResponse;
   actions?: React.ReactNode;
+  onClick?: () => void;
 }
 
-export const ApplicantCard = ({ data, actions }: Props) => {
+export const ApplicantCard = ({ data, actions, onClick }: Props) => {
   const { name, profileImageUrl, gender, age, location, matchCount, appliedAt } = data;
   const genderLabel = gender === 'MALE' ? '남' : '여';
 
   return (
-    <S.Card>
+    <S.Card onClick={onClick}>
       <S.ProfileImage>
         <img
           src={profileImageUrl || 'https://api.dicebear.com/7.x/identicon/svg?seed=default'}

@@ -1,22 +1,22 @@
 import { useState } from 'react';
-import { X } from 'lucide-react';
+import { Check } from 'lucide-react';
 import { useTheme } from 'styled-components';
-import { useRejectApplicant } from 'entities/application/model/hooks/useApplication';
+import { useAcceptOffer } from 'entities/application/model/hooks/useApplication';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
 
 interface Props {
   applicationId: number;
-  jobPostId: number;
 }
 
-/** 지원자 거절 버튼 */
-export const RejectApplicantButton = ({ applicationId, jobPostId }: Props) => {
+/** 채용 제안 수락 버튼 (구직자용) */
+export const AcceptOfferButton = ({ applicationId }: Props) => {
   const theme = useTheme();
-  const { mutate, isPending } = useRejectApplicant(jobPostId);
+  const { mutate, isPending } = useAcceptOffer();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     setIsModalOpen(true);
   };
@@ -29,15 +29,15 @@ export const RejectApplicantButton = ({ applicationId, jobPostId }: Props) => {
   return (
     <>
       <Button
-        scheme="secondary"
+        scheme="primary"
         buttonSize="small"
         fontSize="xsmall"
         borderRadius="medium"
         onClick={handleClick}
         disabled={isPending}
       >
-        <X size={14} color={theme.color.error} />
-        거절
+        <Check size={14} color={theme.color.white} />
+        승인
       </Button>
 
       <Modal
@@ -49,14 +49,14 @@ export const RejectApplicantButton = ({ applicationId, jobPostId }: Props) => {
               취소
             </Button>
             <Button scheme="primary" buttonSize="medium" onClick={handleConfirm} disabled={isPending}>
-              거절 확정
+              승인 확정
             </Button>
           </>
         }
       >
         <ModalContent>
-          <h2>지원 거절</h2>
-          <p>해당 지원자를 거절하시겠습니까?<br />이 작업은 되돌릴 수 없습니다.</p>
+          <h2>채용 승인</h2>
+          <p>해당 공고의 채용을 승인하시겠습니까?</p>
         </ModalContent>
       </Modal>
     </>

@@ -12,9 +12,11 @@ interface JobPostCardProps {
   data: JobPost;
   /** 우측 상단 기능 버튼들을 위한 슬롯 (LikeButton 등) */
   extraActions?: React.ReactNode;
+  /** 카드 하단 액션 슬롯 (승인/거절 버튼 등) */
+  bottomActions?: React.ReactNode;
 }
 
-export const JobPostCard = ({ data, extraActions }: JobPostCardProps) => {
+export const JobPostCard = ({ data, extraActions, bottomActions }: JobPostCardProps) => {
 
   const {
     id,
@@ -96,6 +98,13 @@ export const JobPostCard = ({ data, extraActions }: JobPostCardProps) => {
         <S.ProgressSection>
           <ProgressBar total={totalSlots} current={filledSlots} />
         </S.ProgressSection>
+
+        {/* 5. 하단 액션 (있을 때만) */}
+        {bottomActions && (
+          <S.BottomActions onClick={(e) => e.preventDefault()}>
+            {bottomActions}
+          </S.BottomActions>
+        )}
 
       </S.CardContainer>
     </Link>

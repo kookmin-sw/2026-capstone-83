@@ -84,3 +84,17 @@ export const Icon = styled.span`
 export const ProgressSection = styled.div`
   margin-top: 10px;
 `;
+
+export const BottomActions = styled.div`
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  /* border-top: 1px solid ${({ theme }) => theme.color.border}; */
+  margin-top: 4px;
+
+  & > button {
+    flex: 1;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+`;

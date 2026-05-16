@@ -1,7 +1,8 @@
 import { authClient } from "shared/api/httpClient";
 import type { CursorParams } from "shared/api/types";
-import type { ApplicantListCursor, ApplicantResponse, ApplicationListCursor } from "../model/types/application.type";
+import type { ApplicantListCursor, ApplicantResponse, ApplicationListCursor, ApplicationWithJobPost } from "../model/types/application.type";
 import mockApplicantData from "shared/mocks/data/mockApplicantData.json";
+import mockApplicationData from "shared/mocks/data/mockApplicationData.json";
 
 
 // 공고 지원 (구직자, auth)
@@ -88,6 +89,13 @@ export const fetchWorkerSchedule = async (fromDate: string, toDate: string) => {
 export const fetchMockApplicants = (_jobPostId: number): Promise<ApplicantResponse[]> => {
   return new Promise((resolve) => {
     resolve(mockApplicantData as ApplicantResponse[]);
+  });
+};
+
+// 구직자 지원 목록 mock 조회
+export const fetchMockApplications = (): Promise<ApplicationWithJobPost[]> => {
+  return new Promise((resolve) => {
+    resolve(mockApplicationData as ApplicationWithJobPost[]);
   });
 };
 
