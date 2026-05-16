@@ -12,7 +12,7 @@ export const JobPostListPage = () => {
   const filterParams: GetJobPostsParams = {
     keyword: searchParams.get('keyword') || undefined,
     location: searchParams.get('location') || undefined,
-    sortType: (searchParams.get('sortType') as GetJobPostsParams['sortType']) || 'WORK_DATE',
+    sortType: (searchParams.get('sortType') as GetJobPostsParams['sortType']) || 'RECOMMENDED',
     minWage: searchParams.get('minWage') ? Number(searchParams.get('minWage')) : undefined,
     wageType: (searchParams.get('wageType') as GetJobPostsParams['wageType']) || undefined,
     timeTags: searchParams.getAll('timeTags').length > 0
