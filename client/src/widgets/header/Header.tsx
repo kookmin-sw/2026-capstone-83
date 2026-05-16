@@ -1,8 +1,11 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Bell, User } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import { useLogout } from 'entities/auth/model/hooks/useAuth';
+import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
+import { fetchMockNotifications } from 'entities/notification/api/notification.api';
+import { NotificationDropdown } from 'widgets/notification/NotificationDropdown';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
 import KoreanIconLogo from 'shared/assets/KoreanIconLogo.svg';
@@ -27,8 +30,19 @@ const Header = () => {
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
+  const notifications = useNotificationStore((s) => s.notifications);
+  const setNotifications = useNotificationStore((s) => s.setNotifications);
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
+
   const notiRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
+
+  // 알림 데이터 초기 로드
+  useEffect(() => {
+    if (notifications.length === 0) {
+      fetchMockNotifications().then(setNotifications);
+    }
+  }, [notifications.length, setNotifications]);
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {
@@ -50,46 +64,49 @@ const Header = () => {
         <S.HeaderInner>
           {/* 왼쪽: 로고 + 네비게이션 */}
           <S.LeftSection>
-            <S.LogoLink onClick={() => navigate('/')}>
+            <Link to="/" style={{ display: 'flex', alignItems: 'center' }}>
               <S.LogoImg src={KoreanIconLogo} alt="잇다 로고" />
-            </S.LogoLink>
+            </Link>
 
             <S.Nav>
               {NAV_ITEMS.map(({ label, path }) => (
-                <S.NavItem
+                <S.NavLink
                   key={path}
+                  to={path}
                   $active={location.pathname.startsWith(path)}
-                  onClick={() => {
+                  onClick={(e) => {
                     if (path === '/dashboard' && !isLoggedIn) {
+                      e.preventDefault();
                       setIsLoginModalOpen(true);
-                      return;
                     }
-                    navigate(path);
                   }}
                 >
                   {label}
-                </S.NavItem>
+                </S.NavLink>
               ))}
             </S.Nav>
           </S.LeftSection>
 
           {/* 오른쪽: 공고 생성 + 알림 + 유저 */}
           <S.RightSection>
-            <Button
-              scheme="primary"
-              buttonSize="small"
-              fontSize='xsmall'
-              borderRadius="medium"
-              onClick={() => {
+            <S.CreateLink
+              to="/jobpost/create"
+              onClick={(e) => {
                 if (!isLoggedIn || role !== 'EMPLOYER') {
+                  e.preventDefault();
                   setIsRoleModalOpen(true);
-                  return;
                 }
-                navigate('/jobpost/create');
               }}
             >
-              + 공고 등록
-            </Button>
+              <Button
+                scheme="primary"
+                buttonSize="small"
+                fontSize='xsmall'
+                borderRadius="medium"
+              >
+                + 공고 등록
+              </Button>
+            </S.CreateLink>
 
             {/* 알림 드롭다운 */}
             <S.DropdownWrapper ref={notiRef}>
@@ -101,12 +118,11 @@ const Header = () => {
                 aria-label="알림"
               >
                 <Bell size={20} />
+                {unreadCount() > 0 && <S.NotiBadge>{unreadCount()}</S.NotiBadge>}
               </S.IconButton>
 
               {isNotiOpen && (
-                <S.DropdownMenu>
-                  <S.EmptyMessage>새로운 알림이 없습니다.</S.EmptyMessage>
-                </S.DropdownMenu>
+                <NotificationDropdown onClose={() => setIsNotiOpen(false)} />
               )}
             </S.DropdownWrapper>
 

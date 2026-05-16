@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 
 export const HeaderWrapper = styled.header`
   position: sticky;
@@ -29,10 +30,9 @@ export const LeftSection = styled.div`
   gap: 32px;
 `;
 
-export const LogoLink = styled.a`
+export const LogoLink = styled(Link)`
   display: flex;
   align-items: center;
-  cursor: pointer;
 `;
 
 export const LogoImg = styled.img`
@@ -46,6 +46,22 @@ export const Nav = styled.nav`
   gap: 24px;
 `;
 
+export const NavLink = styled(Link) <{ $active?: boolean }>`
+  font-size: ${({ theme }) => theme.fontSize.small};
+  font-weight: ${({ theme, $active }) =>
+    $active ? theme.fontWeight.semibold : theme.fontWeight.regular};
+  color: ${({ theme, $active }) =>
+    $active ? theme.color.primary : theme.color.text};
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.15s ease;
+
+  &:hover {
+    color: ${({ theme }) => theme.color.primary};
+  }
+`;
+
+// 하위 호환용 (기존 NavItem 사용처가 있을 수 있음)
 export const NavItem = styled.a<{ $active?: boolean }>`
   font-size: ${({ theme }) => theme.fontSize.small};
   font-weight: ${({ theme, $active }) =>
@@ -68,12 +84,17 @@ export const RightSection = styled.div`
   gap: 12px;
 `;
 
+export const CreateLink = styled(Link)`
+  text-decoration: none;
+`;
+
 // 드롭다운 공통 래퍼
 export const DropdownWrapper = styled.div`
   position: relative;
 `;
 
 export const IconButton = styled.button`
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -89,6 +110,24 @@ export const IconButton = styled.button`
   &:hover {
     background-color: ${({ theme }) => theme.color.background};
   }
+`;
+
+export const NotiBadge = styled.span`
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 8px;
+  background-color: ${({ theme }) => theme.color.error};
+  color: ${({ theme }) => theme.color.white};
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 `;
 
 export const DropdownMenu = styled.div`

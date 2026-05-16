@@ -1,0 +1,58 @@
+[
+  {
+    "id": 1,
+    "type": "APPLY",
+    "message": "김철수님이 '물류센터 분류 및 적재' 공고에 지원했습니다.",
+    "createdAt": "2026-05-16T09:50:00",
+    "isRead": false
+  },
+  {
+    "id": 2,
+    "type": "ACCEPT",
+    "message": "이영희님이 채용 제안을 승인했습니다. 계약서를 확인해주세요.",
+    "createdAt": "2026-05-16T09:00:00",
+    "isRead": false
+  },
+  {
+    "id": 3,
+    "type": "WORK_COMPLETE",
+    "message": "성수동 카페 작업이 완료되었습니다. 근무 기록을 작성해주세요!",
+    "createdAt": "2026-05-16T07:00:00",
+    "isRead": true
+  },
+  {
+    "id": 4,
+    "type": "SYSTEM",
+    "message": "서비스 점검 안내: 05.18(월) 새벽 2시~4시",
+    "createdAt": "2026-05-15T10:00:00",
+    "isRead": true
+  },
+  {
+    "id": 5,
+    "type": "APPLY",
+    "message": "박준혁님이 '강남 사무실 이전 보조' 공고에 지원했습니다.",
+    "createdAt": "2026-05-15T08:30:00",
+    "isRead": true
+  },
+  {
+    "id": 6,
+    "type": "ACCEPT",
+    "message": "최유진님이 채용 제안을 승인했습니다.",
+    "createdAt": "2026-05-14T15:00:00",
+    "isRead": true
+  },
+  {
+    "id": 7,
+    "type": "WORK_COMPLETE",
+    "message": "마포 카페 주방 보조 작업이 완료되었습니다.",
+    "createdAt": "2026-05-14T12:00:00",
+    "isRead": true
+  },
+  {
+    "id": 8,
+    "type": "SYSTEM",
+    "message": "잇다 앱 업데이트가 완료되었습니다. 새로운 기능을 확인해보세요!",
+    "createdAt": "2026-05-13T09:00:00",
+    "isRead": true
+  }
+]

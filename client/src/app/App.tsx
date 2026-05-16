@@ -3,6 +3,7 @@ import { AppThemeProvider } from "./AppThemeProvider"
 import Routers from "./Routers"
 import { queryClient } from "./queryClient"
 import { useAuthInit } from "features/auth/model/hooks/useAuthInit"
+import ToastProvider from "shared/ui/Toast/ToastProvider"
 import Loading from "shared/ui/Loading/Loading"
 
 function AppInner() {
@@ -20,6 +21,7 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <AppThemeProvider>
         <AppInner />
+        <ToastProvider />
       </AppThemeProvider>
     </QueryClientProvider>
   )

@@ -20,6 +20,7 @@ import ResumeManagePage from 'pages/dashboard/applicant/ResumeManagePage';
 import ApplicationsPage from 'pages/dashboard/applicant/ApplicationsPage';
 import CalendarPage from 'pages/dashboard/common/CalendarPage';
 import SettingsPage from 'pages/dashboard/common/SettingsPage';
+import NotificationsPage from 'pages/dashboard/common/NotificationsPage';
 
 
 const Routers = () => {
@@ -50,6 +51,7 @@ const Routers = () => {
         <Route path="/dashboard/resume/edit" element={<ResumeFormPage />} />
         <Route path="/dashboard/applications" element={<ApplicationsPage />} />
         <Route path="/dashboard/settings" element={<SettingsPage />} />
+        <Route path="/dashboard/notifications" element={<NotificationsPage />} />
       </Route>
 
       {/* 인증 전용 레이아웃 (헤더 없음, 배경색 + 중앙 정렬) */}
