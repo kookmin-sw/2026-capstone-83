@@ -5,8 +5,11 @@ import {
   createCareer,
   updateCareer,
   deleteCareer,
+  createCertificate,
+  deleteCertificate,
 } from 'entities/resume/api/resume.api';
 import type { Career, CareerRequest, ResumeRequest, ResumeResponse } from '../types/resume.type';
+import type { CertificateType } from 'shared/types/certificate';
 
 /**
  * 이력서 조회
@@ -69,6 +72,35 @@ export const useDeleteCareer = () => {
 
   return useMutation({
     mutationFn: (id: number) => deleteCareer(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['resume'] });
+    },
+  });
+};
+
+
+/**
+ * 자격/인증 추가
+ */
+export const useCreateCertificate = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { type: CertificateType }) => createCertificate(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['resume'] });
+    },
+  });
+};
+
+/**
+ * 자격/인증 삭제
+ */
+export const useDeleteCertificate = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: number) => deleteCertificate(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['resume'] });
     },

@@ -35,9 +35,10 @@ export const JobPostCreateForm = () => {
   );
   const [isCreateWpModalOpen, setIsCreateWpModalOpen] = useState(false);
 
-  const { handleSubmit, register, setValue, formState } = useForm<JobPostCreate>({
+  const { handleSubmit, register, setValue, watch, formState } = useForm<JobPostCreate>({
     defaultValues: {
       workDate: defaultWorkDate,
+      requirements: [],
     },
   });
   const { mutate } = useCreateJobPost();
@@ -135,7 +136,7 @@ export const JobPostCreateForm = () => {
                 </ButtonGroup>
               }
             />
-            <JobPostWorkContentFields register={register} />
+            <JobPostWorkContentFields register={register} setValue={setValue} watch={watch} />
             <JobPostLocationField
               register={register}
               searchButtonSlot={

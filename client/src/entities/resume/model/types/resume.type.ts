@@ -54,6 +54,8 @@ export interface Career {
   months: number;
 }
 
+import type { CertificateResponse } from 'shared/types/certificate';
+
 export interface ResumeResponse {
   id: number;
   name: string;
@@ -69,6 +71,7 @@ export interface ResumeResponse {
   totalHired: number;
   liked: boolean;
   careers: Career[];
+  certificates: CertificateResponse[];
 }
 
 import type { CursorParams, CursorResponse } from 'shared/api/types';

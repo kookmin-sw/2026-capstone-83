@@ -1,6 +1,8 @@
 import styled from 'styled-components';
 import Section from 'shared/ui/Layout/Section';
 import type { Career, EducationLevel, ResumeResponse, SchoolStatus } from '../../model/types/resume.type';
+import { CERTIFICATE_LABEL } from 'shared/types/certificate';
+import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
 
 interface Props {
@@ -41,7 +43,7 @@ export const ResumeCareerSection = ({ data }: Props) => {
     return <Loading message="경력 정보를 불러오는 중..." />;
   }
 
-  const { education, educationStatus, major, careers } = data;
+  const { education, educationStatus, major, careers, certificates } = data;
 
   return (
     <Section title="경력">
@@ -71,6 +73,22 @@ export const ResumeCareerSection = ({ data }: Props) => {
               ))}
             </S.CareerItems>
           </S.CareerList>
+        )}
+
+        {/* 자격/인증 */}
+        {certificates && certificates.length > 0 && (
+          <S.CertSection>
+            <S.InfoRow>
+              <span className="label">자격/인증</span>
+            </S.InfoRow>
+            <S.CertList>
+              {certificates.map((cert) => (
+                <Badge key={cert.id} scheme="secondary">
+                  {CERTIFICATE_LABEL[cert.type]}
+                </Badge>
+              ))}
+            </S.CertList>
+          </S.CertSection>
         )}
       </S.CareerContent>
     </Section>
@@ -117,5 +135,16 @@ const S = {
     font-size: ${({ theme }) => theme.fontSize.small};
     color: ${({ theme }) => theme.color.thirdText};
     line-height: 1.6;
+  `,
+  CertSection: styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  `,
+  CertList: styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding-left: 16px;
   `,
 };

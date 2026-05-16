@@ -124,6 +124,7 @@ export interface JobPostUpdate {
 
 
 import type { CursorParams, CursorResponse } from 'shared/api/types';
+import type { CertificateType } from 'shared/types/certificate';
 
 
 //공고 목록 조회 할 때, 페이지네이션 어떻게 할 지 생각해주세요!
@@ -136,17 +137,62 @@ import type { CursorParams, CursorResponse } from 'shared/api/types';
 
 
 
+// 근무 시간대 태그
+export type TimeTag =
+  | 'MORNING'
+  | 'MORNING_AFTERNOON'
+  | 'AFTERNOON'
+  | 'AFTERNOON_EVENING'
+  | 'EVENING'
+  | 'EVENING_DAWN'
+  | 'DAWN'
+  | 'DAWN_MORNING';
+
 // 공고 목록 조회 요청 파라미터
 export interface GetJobPostsParams extends CursorParams {
-  page?: number;             // [오프셋용] 페이지 번호 (0부터 시작)
+  // 검색
+  keyword?: string;
 
-  // 검색 필터링 옵션
-  keyword?: string;          // 검색어
-  jobCategory?: string;    // 업종 대분류
-  jobSubcategory?: string; // 업종 소분류
-  location?: string;    // 지역 필터
-  workDate?: string;       // 근무 날짜 필터 (예: "2024-07-01")
-  sortType?: 'WAGE' | 'LOCATION' | 'WORK_DATE'; // 정렬 기준 필터
+  // 업종 (다중)
+  jobCategories?: string[];
+
+  // 위치 (다중)
+  locations?: string[];
+
+  // 근무 일자 (범위)
+  workDateFrom?: string;
+  workDateTo?: string;
+
+  // 선호 요일 (다중) — MON, TUE, ..., SUN
+  weekdays?: string[];
+
+  // 근무 시간 (범위, HH:mm)
+  timeFrom?: string;
+  timeTo?: string;
+
+  // 근무 시간대 태그 (다중)
+  timeTags?: TimeTag[];
+
+  // 필수 조건: 연령/성별/학력 (다중)
+  ageRequirements?: string[];
+
+  // 필수 조건: 자격/인증 (다중)
+  certRequirements?: CertificateType[];
+
+  // 최소 급여
+  minWage?: number;
+
+  // 우대 조건 (다중)
+  benefits?: string[];
+
+  // 정렬: WAGE(급여순) | WORK_DATE(근무일순) | DEADLINE(마감임박순)
+  sortType?: 'WAGE' | 'WORK_DATE' | 'DEADLINE';
+
+  // legacy 하위호환 (단일 값)
+  jobCategory?: string;
+  jobSubcategory?: string;
+  location?: string;
+  workDate?: string;
 }
 
 // 목록 조회 응답

@@ -5,8 +5,7 @@ import { fetchNotifications } from 'entities/notification/api/notification.api';
 import { fetchMockNotifications } from 'entities/notification/api/notification.mock.api';
 import { NotificationItem } from 'entities/notification/ui/NotificationItem';
 import Empty from 'shared/ui/Empty/Empty';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+import { USE_MOCK } from 'shared/config/env';
 
 const NotificationsPage = () => {
   const notifications = useNotificationStore((s) => s.notifications);

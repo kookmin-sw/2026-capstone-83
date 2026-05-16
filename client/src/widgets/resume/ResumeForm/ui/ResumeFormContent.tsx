@@ -5,6 +5,7 @@ import { useUpdateResume } from 'entities/resume/model/hooks/useResume';
 import { ResumeProfileSection } from 'entities/resume/ui/detailSections/ResumeProfileSection';
 import { ResumeEducationFields } from 'entities/resume/ui/InputFields/ResumeEducationFields';
 import { ResumeCareerFields } from 'entities/resume/ui/InputFields/ResumeCareerFields';
+import { ResumeCertificateFields } from 'entities/resume/ui/InputFields/ResumeCertificateFields';
 import type { ResumeRequest } from 'entities/resume/model/types/resume.type';
 import Button from 'shared/ui/Button/Button';
 import Main from 'shared/ui/Layout/Main';
@@ -65,12 +66,17 @@ export const ResumeFormContent = () => {
               <ResumeCareerFields careers={resume.careers || []} />
             </S.CareerFieldsWrapper>
 
+            {/* 자격/인증 (별도 API로 CRUD) */}
+            <S.CareerFieldsWrapper>
+              <ResumeCertificateFields certificates={resume.certificates || []} />
+            </S.CareerFieldsWrapper>
+
             {/* 이력서 등록/저장 버튼 */}
             <S.SubmitWrapper>
               <Button
                 type="submit"
                 scheme="primary"
-                buttonSize="smallMedium"
+                buttonSize="large"
                 disabled={isPending}
               >
                 {isPending ? '저장 중...' : '+ 이력서 등록'}

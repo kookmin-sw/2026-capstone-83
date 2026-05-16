@@ -1,8 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchWorkplaceById, fetchMockWorkplace } from '../../api/workplace.api';
 import type { Workplace } from '../types/workplace.type';
-
-const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
+import { USE_MOCK } from 'shared/config/env';
 
 /**
  * 사업장 상세 조회 훅

@@ -48,8 +48,10 @@ export const likeResume = async (id: number) => {
   return response.data;
 }
 
+import type { CertificateType } from 'shared/types/certificate';
+
 // 자격/인증 추가
-export const createCertificate = async (data: { type: string }) => {
+export const createCertificate = async (data: { type: CertificateType }) => {
   const response = await authClient.post(`/api/v1/resume/certificates`, data);
   return response.data;
 }
