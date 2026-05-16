@@ -3,8 +3,8 @@ import type { ScheduleRequest, ScheduleResponse } from "../model/types/schedule.
 import mockScheduleData from "shared/mocks/data/mockScheduleData.json";
 
 // 고용주 캘린더 공고 조회
-export const fetchSchedules = async (workplaceId: number, data: ScheduleRequest): Promise<ScheduleResponse> => {
-  const response = await authClient.get<ScheduleResponse>(`/api/v1/job-posts/employer/${workplaceId}/schedules`, {
+export const fetchSchedules = async (_workplaceId: number, data: ScheduleRequest): Promise<ScheduleResponse> => {
+  const response = await authClient.get<ScheduleResponse>(`/api/v1/calendar/employer`, {
     params: data,
   });
   return response.data;

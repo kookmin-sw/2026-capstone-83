@@ -4,14 +4,11 @@ import { Bell, User } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import { useLogout } from 'entities/auth/model/hooks/useAuth';
 import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
-import { fetchNotifications } from 'entities/notification/api/notification.api';
-import { fetchMockNotifications } from 'entities/notification/api/notification.mock.api';
 import { NotificationDropdown } from 'widgets/notification/NotificationDropdown';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
 import KoreanIconLogo from 'shared/assets/KoreanIconLogo.svg';
 import * as S from './Header.styled';
-import { USE_MOCK } from 'shared/config/env';
 
 
 const NAV_ITEMS = [
@@ -32,24 +29,12 @@ const Header = () => {
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  const notifications = useNotificationStore((s) => s.notifications);
-  const setNotifications = useNotificationStore((s) => s.setNotifications);
   const unreadCount = useNotificationStore((s) => s.unreadCount);
 
   const notiRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
 
-  // 알림 데이터 초기 로드
-  useEffect(() => {
-    if (notifications.length === 0) {
-      const loadNotifications = async () => {
-        const real = await fetchNotifications().catch(() => []);
-        const mock = USE_MOCK ? await fetchMockNotifications() : [];
-        setNotifications([...mock, ...real]);
-      };
-      loadNotifications();
-    }
-  }, [notifications.length, setNotifications]);
+  // 알림 데이터는 App의 useNotificationSSE에서 초기 로드됨
 
   // 외부 클릭 시 드롭다운 닫기
   useEffect(() => {

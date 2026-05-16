@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { fetchMockSchedules } from 'entities/schedule/api/schedule.api';
+import { fetchSchedules, fetchMockSchedules } from 'entities/schedule/api/schedule.api';
 import type { Schedule } from 'entities/schedule/model/types/schedule.type';
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import { useWorkplaceStore } from 'entities/workplace/model/store/workplaceStore';
@@ -67,21 +67,40 @@ export const EmployerCalendarWidget = () => {
 
   useEffect(() => {
     const load = async () => {
+      // 현재 월 기준 날짜 범위 계산
+      const now = currentDate;
+      const fromDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
+      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+      const toDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+
+      // 실제 API 호출
+      const real = selectedWpId
+        ? await fetchSchedules(selectedWpId, { fromDate, toDate }).catch(() => null)
+        : null;
+
+      // mock 데이터
       const mock = USE_MOCK ? await fetchMockSchedules() : null;
-      // TODO: 실제 API 연동 시 fetchSchedules(workplaceId, { fromDate, toDate }) 호출 추가
-      const loadedSchedules = (mock?.schedules || {}) as Record<string, Schedule[]>;
-      setSchedules(loadedSchedules);
+
+      // 병합
+      const realSchedules = (real?.schedules || {}) as Record<string, Schedule[]>;
+      const mockSchedules = (mock?.schedules || {}) as Record<string, Schedule[]>;
+      const merged = { ...mockSchedules };
+      for (const [date, items] of Object.entries(realSchedules)) {
+        merged[date] = [...(merged[date] || []), ...items];
+      }
+
+      setSchedules(USE_MOCK ? merged : realSchedules);
       setIsLoading(false);
 
-      const now = new Date();
-      const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-      const todaySchedules = loadedSchedules[todayStr];
+      const today = new Date();
+      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+      const todaySchedules = (USE_MOCK ? merged : realSchedules)[todayStr];
       if (todaySchedules && todaySchedules.length > 0) {
         setSelectedJobPostId(todaySchedules[0].jobPostId);
       }
     };
     load();
-  }, [setSelectedJobPostId]);
+  }, [setSelectedJobPostId, selectedWpId, currentDate]);
 
   const handlePrev = () => {
     const next = new Date(currentDate);

@@ -1,11 +1,7 @@
-import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
-import { fetchNotifications } from 'entities/notification/api/notification.api';
-import { fetchMockNotifications } from 'entities/notification/api/notification.mock.api';
 import { NotificationItem } from 'entities/notification/ui/NotificationItem';
-import { USE_MOCK } from 'shared/config/env';
 
 interface Props {
   onClose: () => void;
@@ -14,20 +10,8 @@ interface Props {
 export const NotificationDropdown = ({ onClose }: Props) => {
   const navigate = useNavigate();
   const notifications = useNotificationStore((s) => s.notifications);
-  const setNotifications = useNotificationStore((s) => s.setNotifications);
   const markAllAsRead = useNotificationStore((s) => s.markAllAsRead);
   const markAsRead = useNotificationStore((s) => s.markAsRead);
-
-  useEffect(() => {
-    if (notifications.length === 0) {
-      const loadNotifications = async () => {
-        const real = await fetchNotifications().catch(() => []);
-        const mock = USE_MOCK ? await fetchMockNotifications() : [];
-        setNotifications([...mock, ...real]);
-      };
-      loadNotifications();
-    }
-  }, [notifications.length, setNotifications]);
 
   const recentNotifications = notifications.slice(0, 5);
 
