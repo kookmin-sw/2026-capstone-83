@@ -1,0 +1,98 @@
+[
+  {
+    "userId": 101,
+    "name": "김민수",
+    "phone": "010-1234-5678",
+    "profileImageUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=minsu",
+    "gender": "MALE",
+    "age": 28,
+    "location": "서울 성동구",
+    "matchCount": 12,
+    "status": "APPLIED",
+    "appliedAt": "2026-05-10"
+  },
+  {
+    "userId": 102,
+    "name": "이서연",
+    "phone": "010-2345-6789",
+    "profileImageUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=seoyeon",
+    "gender": "FEMALE",
+    "age": 24,
+    "location": "서울 강남구",
+    "matchCount": 5,
+    "status": "APPLIED",
+    "appliedAt": "2026-05-11"
+  },
+  {
+    "userId": 103,
+    "name": "박준혁",
+    "phone": "010-3456-7890",
+    "profileImageUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=junhyuk",
+    "gender": "MALE",
+    "age": 32,
+    "location": "서울 마포구",
+    "matchCount": 20,
+    "status": "PENDING",
+    "appliedAt": "2026-05-09"
+  },
+  {
+    "userId": 104,
+    "name": "최유진",
+    "phone": "010-4567-8901",
+    "profileImageUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=yujin",
+    "gender": "FEMALE",
+    "age": 26,
+    "location": "서울 송파구",
+    "matchCount": 8,
+    "status": "PENDING",
+    "appliedAt": "2026-05-08"
+  },
+  {
+    "userId": 105,
+    "name": "정태현",
+    "phone": "010-5678-9012",
+    "profileImageUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=taehyun",
+    "gender": "MALE",
+    "age": 35,
+    "location": "경기 수원시",
+    "matchCount": 30,
+    "status": "HIRED",
+    "appliedAt": "2026-05-07"
+  },
+  {
+    "userId": 106,
+    "name": "한소희",
+    "phone": "010-6789-0123",
+    "profileImageUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=sohee",
+    "gender": "FEMALE",
+    "age": 29,
+    "location": "서울 용산구",
+    "matchCount": 15,
+    "status": "HIRED",
+    "appliedAt": "2026-05-06"
+  },
+  {
+    "userId": 107,
+    "name": "오동현",
+    "phone": "010-7890-1234",
+    "profileImageUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=donghyun",
+    "gender": "MALE",
+    "age": 22,
+    "location": "서울 관악구",
+    "matchCount": 3,
+    "status": "APPLIED",
+    "appliedAt": "2026-05-12"
+  },
+  {
+    "userId": 108,
+    "name": "윤지아",
+    "phone": "010-8901-2345",
+    "profileImageUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=jia",
+    "gender": "FEMALE",
+    "age": 27,
+    "location": "서울 서초구",
+    "matchCount": 10,
+    "status": "PENDING",
+    "appliedAt": "2026-05-10"
+  }
+]

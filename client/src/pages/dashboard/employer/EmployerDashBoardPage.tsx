@@ -8,6 +8,7 @@ import { CreateWorkplaceModal } from 'features/workplace/CreateWorkplaceModal';
 import { WorkplaceInfoSection } from 'entities/workplace/ui/WorkplaceInfoSection';
 import { EmployerCalendarWidget } from 'widgets/calendar/EmployerCalendar/ui/EmployerCalendarWidget';
 import SelectedJobPostSection from 'entities/jobPost/ui/SelectedJobPostSection';
+import { ApplicantListByStatus } from 'widgets/applicant/ApplicantListByStatus';
 import Button from 'shared/ui/Button/Button';
 import Loading from 'shared/ui/Loading/Loading';
 
@@ -56,6 +57,11 @@ const EmployerDashboardPage = () => {
         <>
           <S.SectionLabel>공고 정보</S.SectionLabel>
           <SelectedJobPostSection postId={selectedJobPostId} />
+
+          <S.SectionLabel>지원자 목록</S.SectionLabel>
+          <S.ApplicantSection>
+            <ApplicantListByStatus jobPostId={selectedJobPostId} />
+          </S.ApplicantSection>
         </>
       )}
 
@@ -86,6 +92,12 @@ const S = {
     font-weight: ${({ theme }) => theme.fontWeight.bold};
     color: ${({ theme }) => theme.color.text};
     margin: 0;
+  `,
+  ApplicantSection: styled.div`
+    padding: 32px;
+    background-color: ${({ theme }) => theme.color.white};
+    border-radius: ${({ theme }) => theme.borderRadius.medium};
+    box-shadow: ${({ theme }) => theme.shadow.default};
   `,
 };
 

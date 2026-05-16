@@ -1,6 +1,7 @@
 import { authClient } from "shared/api/httpClient";
 import type { CursorParams } from "shared/api/types";
 import type { ApplicantListCursor, ApplicantResponse, ApplicationListCursor } from "../model/types/application.type";
+import mockApplicantData from "shared/mocks/data/mockApplicantData.json";
 
 
 // 공고 지원 (구직자, auth)
@@ -79,5 +80,15 @@ export const fetchWorkerSchedule = async (fromDate: string, toDate: string) => {
   });
   return response.data;
 }
+
+
+//=========================mock API 함수 ======================================
+
+// 지원자 목록 mock 조회
+export const fetchMockApplicants = (_jobPostId: number): Promise<ApplicantResponse[]> => {
+  return new Promise((resolve) => {
+    resolve(mockApplicantData as ApplicantResponse[]);
+  });
+};
 
 
