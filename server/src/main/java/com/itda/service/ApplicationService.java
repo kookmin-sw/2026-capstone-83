@@ -15,6 +15,7 @@ import com.itda.enums.ApplicationStatus;
 import com.itda.enums.InitiatedBy;
 import com.itda.enums.NotificationType;
 import com.itda.repository.ApplicationRepository;
+import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
 import com.itda.exception.DuplicateException;
 import com.itda.exception.NotFoundException;
@@ -37,6 +38,7 @@ public class ApplicationService {
 
     private final ApplicationRepository applicationRepository;
     private final JobPostRepository jobPostRepository;
+    private final JobPostLikeRepository jobPostLikeRepository;
     private final NotificationService notificationService;
 
     // ─── 구직자 API ───────────────────────────────────────────
@@ -110,9 +112,12 @@ public class ApplicationService {
         return saved;
     }
 
-    // 내 지원 목록 (지원자) - 커서 페이지네이션 + ApplicationResponse DTO
+    // 내 지원 목록 (지원자) - 커서 페이지네이션 + 공고 카드 포함 (N+1 방지)
+    // liked 포함: 로그인 유저가 각 공고에 좋아요했는지 여부 함께 반환
     public CursorPageResponse<ApplicationResponse> getMyApplications(Long applicantUserId, Long cursor, int size) {
         int fetchSize = size + 1;
+
+        // JOIN FETCH로 jobPost, workplace 한 번에 조회 (N+1 방지)
         List<Application> applications = applicationRepository.findByApplicantUserIdWithCursor(
                 applicantUserId, cursor, PageRequest.of(0, fetchSize));
 
@@ -121,20 +126,41 @@ public class ApplicationService {
             applications = applications.subList(0, size);
         }
 
+        // 좋아요한 공고 ID 목록을 한 번에 조회
+        List<Long> likedJobPostIds = jobPostLikeRepository.findByUserId(applicantUserId)
+                .stream()
+                .map(like -> like.getJobPost().getId())
+                .toList();
+
         List<ApplicationResponse> content = applications.stream()
-                .map(ApplicationResponse::from)
+                .map(a -> ApplicationResponse.from(
+                        a,
+                        likedJobPostIds.contains(a.getJobPost().getId())
+                ))
                 .toList();
 
         Long nextCursor = hasNext ? content.get(content.size() - 1).applicationId() : null;
         return CursorPageResponse.of(content, nextCursor, hasNext);
     }
 
-    // 내 지원 목록 (지원자) - status 필터 선택적
-    public List<Application> getMyApplicationsByStatus(Long applicantUserId, ApplicationStatus status) {
-        if (status != null) {
-            return applicationRepository.findByApplicantUserIdAndStatus(applicantUserId, status);
-        }
-        return applicationRepository.findByApplicantUserId(applicantUserId);
+    // 내 지원 목록 (지원자) - status 필터 선택적 + 공고 카드 포함
+    public List<ApplicationResponse> getMyApplicationsByStatus(Long applicantUserId, ApplicationStatus status) {
+        List<Application> applications = (status != null)
+                ? applicationRepository.findByApplicantUserIdAndStatus(applicantUserId, status)
+                : applicationRepository.findByApplicantUserId(applicantUserId);
+
+        // 좋아요한 공고 ID 목록을 한 번에 조회
+        List<Long> likedJobPostIds = jobPostLikeRepository.findByUserId(applicantUserId)
+                .stream()
+                .map(like -> like.getJobPost().getId())
+                .toList();
+
+        return applications.stream()
+                .map(a -> ApplicationResponse.from(
+                        a,
+                        likedJobPostIds.contains(a.getJobPost().getId())
+                ))
+                .toList();
     }
 
     // 구직자 근무 일정 조회

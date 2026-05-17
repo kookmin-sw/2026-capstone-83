@@ -7,4 +7,5 @@ public enum NotificationType {
     HIRED,             // 채용 확정 (구직자에게)
     REJECTED,          // 거절됨 (구직자에게)
     WORK_COMPLETED     // 근무 완료 (구직자에게)
+
 }

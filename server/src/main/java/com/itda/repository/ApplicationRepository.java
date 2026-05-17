@@ -28,10 +28,15 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     // 지원자별 지원 목록
     List<Application> findByApplicantUserId(Long applicantUserId);
 
-    // 지원자별 지원 목록 (커서 페이지네이션)
-    @Query("SELECT a FROM Application a WHERE a.applicantUser.id = :userId " +
-            "AND (:cursor IS NULL OR a.id < :cursor) " +
-            "ORDER BY a.id DESC")
+    // 지원자별 지원 목록 (커서 페이지네이션) — JOIN FETCH로 N+1 방지
+    @Query("""
+        SELECT a FROM Application a
+        JOIN FETCH a.jobPost jp
+        JOIN FETCH jp.workplace wp
+        WHERE a.applicantUser.id = :userId
+          AND (:cursor IS NULL OR a.id < :cursor)
+        ORDER BY a.id DESC
+        """)
     List<Application> findByApplicantUserIdWithCursor(
             @Param("userId") Long userId,
             @Param("cursor") Long cursor,

@@ -51,7 +51,7 @@ public class ApplicationController {
         return ResponseEntity.ok().build();
     }
 
-    // 내 지원 내역 (커서 페이지네이션)
+    // 내 지원 내역 (커서 페이지네이션) - 공고 카드 + liked 포함
     @GetMapping("/api/v1/worker/applications")
     public ResponseEntity<CursorPageResponse<ApplicationResponse>> getMyApplications(
             @RequestParam(required = false) Long cursor,
@@ -60,18 +60,13 @@ public class ApplicationController {
         return ResponseEntity.ok(applicationService.getMyApplications(user.getId(), cursor, size));
     }
 
-    // 내 지원 내역 (status 필터)
+    // 내 지원 내역 (status 필터) - 공고 카드 + liked 포함
     @GetMapping("/api/v1/worker/applications/filter")
     public ResponseEntity<List<ApplicationResponse>> getMyApplicationsByStatus(
             @RequestParam(required = false) String status,
             @AuthenticationPrincipal User user) {
         ApplicationStatus statusEnum = (status != null) ? ApplicationStatus.valueOf(status) : null;
-        List<ApplicationResponse> result = applicationService
-                .getMyApplicationsByStatus(user.getId(), statusEnum)
-                .stream()
-                .map(ApplicationResponse::from)
-                .toList();
-        return ResponseEntity.ok(result);
+        return ResponseEntity.ok(applicationService.getMyApplicationsByStatus(user.getId(), statusEnum));
     }
 
     // 근무 일정 조회

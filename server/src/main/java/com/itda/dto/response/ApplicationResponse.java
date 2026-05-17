@@ -4,24 +4,21 @@ import com.itda.entity.Application;
 
 /**
  * 지원 내역 응답 DTO (구직자용)
- * 내 지원 목록 조회에서 사용
+ * - 프론트에서 추가 조회 없이 공고 카드 렌더링 가능하도록 JobPostCardResponse 포함
+ * - liked: 로그인 유저의 해당 공고 좋아요 여부
  */
 public record ApplicationResponse(
         Long applicationId,
-        Long jobPostId,
-        String title,
-        String company,
-        String status,
-        String appliedAt
+        String status,      // ApplicationStatus (APPLIED / OFFERED / PENDING / HIRED / REJECTED / COMPLETED)
+        String appliedAt,
+        JobPostCardResponse jobPost  // 공고 카드 DTO 재활용 (liked 포함)
 ) {
-    public static ApplicationResponse from(Application application) {
+    public static ApplicationResponse from(Application application, boolean liked) {
         return new ApplicationResponse(
                 application.getId(),
-                application.getJobPost().getId(),
-                application.getJobPost().getTitle(),
-                application.getJobPost().getWorkplace().getCompanyName(),
                 application.getStatus().name(),
-                application.getAppliedAt() != null ? application.getAppliedAt().toString() : null
+                application.getAppliedAt() != null ? application.getAppliedAt().toString() : null,
+                JobPostCardResponse.from(application.getJobPost(), liked)
         );
     }
 }
