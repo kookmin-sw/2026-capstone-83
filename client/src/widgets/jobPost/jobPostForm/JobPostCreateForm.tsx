@@ -20,8 +20,11 @@ import { ButtonGroup } from 'shared/ui/Input/InputStyle';
 import { ImageUploadButton } from 'features/control-Image/UploadButton';
 import { ImageRemoveButton } from 'features/control-Image/RemoveButton';
 import { AddressSearchButton } from 'features/search-address/AddressSearchButton';
-import { splitByComma } from 'shared/lib/transformString';
+import { JobPostSubmitCard } from 'features/jobPost/create-jobPost/JobPostSubmitCard';
+import { TemplateSection } from 'features/jobPost/create-jobPost/TemplateSection';
+import type { JobPostTemplateResponse } from 'entities/jobPost/model/types/template.type';
 import { useCreateJobPost } from 'features/jobPost/hooks/useCreateJobPost';
+import { splitByComma } from 'shared/lib/transformString';
 import CreateJobPostButton from 'features/jobPost/create-jobPost/CreateJobPostButton';
 
 export const JobPostCreateForm = () => {
@@ -102,6 +105,38 @@ export const JobPostCreateForm = () => {
     triggerUpload: triggerDescUpload
   } = useImageUpload((file) => setValue('descriptionImage', file));
 
+  // 템플릿 관련 헬퍼 함수
+  const getTemplateFormValues = () => {
+    const values = watch();
+    return {
+      templateName: '',
+      title: values.title,
+      wage: values.wage,
+      wageType: values.wageType,
+      workStart: values.workStart,
+      workEnd: values.workEnd,
+      totalSlots: values.totalSlots,
+      description: values.description,
+      requirements: values.requirements as unknown as string[],
+      benefits: values.benefits as unknown as string[],
+      tasks: values.tasks as unknown as string[],
+      items: values.items as unknown as string[],
+    };
+  };
+
+  const handleLoadTemplate = (tpl: JobPostTemplateResponse) => {
+    if (tpl.title) setValue('title', tpl.title);
+    if (tpl.wage) setValue('wage', tpl.wage);
+    if (tpl.wageType) setValue('wageType', tpl.wageType as JobPostCreate['wageType']);
+    if (tpl.workStart) setValue('workStart', tpl.workStart);
+    if (tpl.workEnd) setValue('workEnd', tpl.workEnd);
+    if (tpl.totalSlots) setValue('totalSlots', tpl.totalSlots);
+    if (tpl.description) setValue('description', tpl.description);
+    if (tpl.requirements) setValue('requirements', tpl.requirements as unknown as string[]);
+    if (tpl.benefits) setValue('benefits', tpl.benefits as unknown as string[]);
+    if (tpl.tasks) setValue('tasks', tpl.tasks as unknown as string[]);
+    if (tpl.items) setValue('items', tpl.items as unknown as string[]);
+  };
 
 
   return (
@@ -117,6 +152,14 @@ export const JobPostCreateForm = () => {
             showAll={false}
           />
         )}
+
+        {/* 태블릿: 템플릿 섹션 (데스크톱에서는 숨김) */}
+        <MobileTemplateSection>
+          <TemplateSection
+            getFormValues={getTemplateFormValues}
+            onLoadTemplate={handleLoadTemplate}
+          />
+        </MobileTemplateSection>
 
         <FormContainer onSubmit={handleSubmit(onSubmit)}>
           {/* 좌측: 엔티티들의 집합 */}
@@ -164,11 +207,10 @@ export const JobPostCreateForm = () => {
 
           {/* 우측: 스티키 피처 영역 */}
           <StickySection>
-            {/* <JobPostSubmitCard
-              onSave={methods.handleSubmit(onSave)}
-              onTemporarySave={onTemporarySave}
-            /> */}
-            <CreateJobPostButton />
+            <JobPostSubmitCard
+              getFormValues={getTemplateFormValues}
+              onLoadTemplate={handleLoadTemplate}
+            />
           </StickySection>
 
         </FormContainer>
@@ -210,5 +252,16 @@ const SubmitBlockSection = styled.div`
   @media (${({ theme }) => theme.mediaQuery.tablet_large}) {
     display: flex;
     flex-direction: column;
+  }
+`;
+
+const MobileTemplateSection = styled.div`
+  display: none;
+  @media (${({ theme }) => theme.mediaQuery.tablet_large}) {
+    display: block;
+    padding: 16px;
+    background: ${({ theme }) => theme.color.white};
+    border-radius: ${({ theme }) => theme.borderRadius.medium};
+    box-shadow: ${({ theme }) => theme.shadow.default};
   }
 `;

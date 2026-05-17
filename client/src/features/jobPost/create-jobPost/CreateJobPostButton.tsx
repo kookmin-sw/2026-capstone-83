@@ -13,7 +13,7 @@ const CreateJobPostButton = ({ style }: CreateJobPostButtonProps) => {
       buttonSize="smallMedium"
       style={{ width: '100%', ...style }}
     >
-      공고 등록
+      + 공고 등록
     </Button>
   );
 };
