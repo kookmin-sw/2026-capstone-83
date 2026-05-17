@@ -2,6 +2,7 @@ import type { BadgeScheme } from "shared/types/theme";
 import type { ApplyStatus, PostStatus } from "./types/jobPost.type";
 
 export const PAGE_SIZE = 12; // 페이지당 공고 수
+export const SECTION_SIZE = 6; // 메인 섹션 미리보기 수
 
 interface StatusInfo {
   label: string;
