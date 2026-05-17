@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { Home, Building2, CalendarDays, Users, Settings, FileText, UserRoundPlus, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import styled from 'styled-components';
@@ -28,7 +28,6 @@ const APPLICANT_NAV: NavItem[] = [
 ];
 
 const DashboardSidebar = () => {
-  const navigate = useNavigate();
   const { pathname } = useLocation();
   const role = useAuthStore((s) => s.role);
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -55,17 +54,17 @@ const DashboardSidebar = () => {
       {/* 네비게이션 */}
       <S.NavList>
         {navItems.map(({ label, path, icon }) => (
-          <S.NavItem
+          <S.NavLink
             key={path}
+            to={path}
             $active={pathname === path}
             $collapsed={isCollapsed}
-            onClick={() => navigate(path)}
             title={isCollapsed ? label : undefined}
           >
             <span className="icon">{icon}</span>
             {!isCollapsed && <span className="label">{label}</span>}
             {isCollapsed && <S.Tooltip>{label}</S.Tooltip>}
-          </S.NavItem>
+          </S.NavLink>
         ))}
       </S.NavList>
 
@@ -127,7 +126,7 @@ const S = {
     gap: 4px;
     flex: 1;
   `,
-  NavItem: styled.button<{ $active: boolean; $collapsed: boolean }>`
+  NavLink: styled(Link) <{ $active: boolean; $collapsed: boolean }>`
     position: relative;
     display: flex;
     align-items: center;
@@ -135,7 +134,7 @@ const S = {
     padding: 12px ${({ $collapsed }) => ($collapsed ? '0' : '16px')};
     justify-content: ${({ $collapsed }) => ($collapsed ? 'center' : 'flex-start')};
     border-radius: ${({ theme }) => theme.borderRadius.medium};
-    border: none;
+    text-decoration: none;
     background-color: ${({ theme, $active }) =>
       $active ? theme.color.secondary : 'transparent'};
     color: ${({ theme, $active }) =>
@@ -158,13 +157,10 @@ const S = {
     }
 
     .label {
-          color: ${({ theme, $active }) =>
+      color: ${({ theme, $active }) =>
       $active ? theme.color.tertiary : theme.color.text};
     }
 
-    /* &:hover {
-      background-color: ${({ theme }) => theme.color.background};
-    } */
     ${hoverOverlay}
 
     /* 접힌 상태에서 호버 시 툴팁 표시 */
