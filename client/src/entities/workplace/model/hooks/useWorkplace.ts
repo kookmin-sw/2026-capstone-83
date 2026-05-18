@@ -1,6 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { createWorkplace, updateWorkplace, deleteWorkplace, fetchUserWorkplaces, fetchWorkplaceById } from 'entities/workplace/api/workplace.api';
-import type { Workplace, WorkplaceCreate } from '../types/workplace.type';
+import type {
+  Workplace,
+  WorkplaceCreatePayload,
+  WorkplaceUpdatePayload,
+} from '../types/workplace.type';
 
 /**
  * 내 작업장 목록 조회
@@ -32,7 +36,7 @@ export const useCreateWorkplace = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: WorkplaceCreate) => createWorkplace(data),
+    mutationFn: (payload: WorkplaceCreatePayload) => createWorkplace(payload),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['workplaces'] });
     },
@@ -46,7 +50,7 @@ export const useUpdateWorkplace = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: Workplace) => updateWorkplace(data),
+    mutationFn: (payload: WorkplaceUpdatePayload) => updateWorkplace(payload),
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ['workplaces'] });
       queryClient.invalidateQueries({ queryKey: ['workplace', variables.id] });

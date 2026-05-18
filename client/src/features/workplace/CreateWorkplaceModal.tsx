@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
-import type { Workplace, WorkplaceCreate } from 'entities/workplace/model/types/workplace.type';
+import type { Workplace, WorkplaceFormData } from 'entities/workplace/model/types/workplace.type';
 import { useCreateWorkplace, useUpdateWorkplace } from 'entities/workplace/model/hooks/useWorkplace';
 import { useImageUpload } from 'features/control-Image/hooks/useImageUpload';
 import { ImageUploadButton } from 'features/control-Image/UploadButton';
@@ -24,7 +24,9 @@ export const CreateWorkplaceModal = ({ isOpen, onClose, initialData }: Props) =>
   const { mutate: updateMutate, isPending: isUpdating } = useUpdateWorkplace();
   const isPending = isCreating || isUpdating;
 
-  const { register, handleSubmit, setValue, reset, formState: { errors } } = useForm<WorkplaceCreate>();
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const { register, handleSubmit, setValue, reset, formState: { errors } } =
+    useForm<WorkplaceFormData>();
 
   // 수정 모드일 때 초기값 세팅
   useEffect(() => {
@@ -33,9 +35,9 @@ export const CreateWorkplaceModal = ({ isOpen, onClose, initialData }: Props) =>
       setValue('companyName', initialData.companyName);
       setValue('businessNumber', initialData.businessNumber);
       setValue('address', initialData.address);
-      setValue('companyLogoUrl', initialData.companyLogoUrl);
     } else if (isOpen && !initialData) {
       reset();
+      setLogoFile(null);
     }
   }, [isOpen, initialData, setValue, reset]);
 
@@ -46,30 +48,41 @@ export const CreateWorkplaceModal = ({ isOpen, onClose, initialData }: Props) =>
     clearFile,
     triggerUpload,
   } = useImageUpload((file) => {
-    if (file) {
-      setValue('companyLogoUrl', URL.createObjectURL(file));
-    }
+    setLogoFile(file);
   });
 
-  const onSubmit = (data: WorkplaceCreate) => {
+  const handleClearLogo = () => {
+    clearFile();
+    setLogoFile(null);
+  };
+
+  const onSubmit = (formData: WorkplaceFormData) => {
+    const payload = {
+      data: formData,
+      companyLogoImage: logoFile ?? undefined,
+    };
+
     if (isEditMode && initialData) {
-      updateMutate({ ...data, id: initialData.id }, {
-        onSuccess: () => {
-          alert('작업장이 수정되었습니다.');
-          reset();
-          clearFile();
-          onClose();
-        },
-        onError: () => {
-          alert('작업장 수정에 실패했습니다.');
-        },
-      });
+      updateMutate(
+        { ...payload, id: initialData.id },
+        {
+          onSuccess: () => {
+            alert('작업장이 수정되었습니다.');
+            reset();
+            handleClearLogo();
+            onClose();
+          },
+          onError: () => {
+            alert('작업장 수정에 실패했습니다.');
+          },
+        }
+      );
     } else {
-      createMutate(data, {
+      createMutate(payload, {
         onSuccess: () => {
           alert('작업장이 등록되었습니다.');
           reset();
-          clearFile();
+          handleClearLogo();
           onClose();
         },
         onError: () => {
@@ -164,7 +177,9 @@ export const CreateWorkplaceModal = ({ isOpen, onClose, initialData }: Props) =>
               onChange={handleFileChange}
               triggerUpload={triggerUpload}
             />
-            {(preview || initialData?.companyLogoUrl) && <ImageRemoveButton onDelete={clearFile} />}
+            {(preview || initialData?.companyLogoUrl) && (
+              <ImageRemoveButton onDelete={handleClearLogo} />
+            )}
           </ButtonGroup>
         </S.ImageSection>
       </S.FormContent>
