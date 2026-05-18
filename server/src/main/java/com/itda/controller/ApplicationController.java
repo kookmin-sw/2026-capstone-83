@@ -8,6 +8,8 @@ import com.itda.entity.Application;
 import com.itda.entity.User;
 import com.itda.enums.ApplicationStatus;
 import com.itda.service.ApplicationService;
+import com.itda.repository.UserRepository;
+import com.itda.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -21,6 +23,7 @@ import java.util.Map;
 public class ApplicationController {
 
     private final ApplicationService applicationService;
+    private final UserRepository userRepository;
 
     // ─── 구직자 API ───────────────────────────────────────────
 
@@ -79,6 +82,20 @@ public class ApplicationController {
     }
 
     // ─── 고용주 API ───────────────────────────────────────────
+
+
+    // 고용주 → 구직자 채용 제안
+    // POST /api/v1/job-posts/{jobPostId}/offer/{userId}
+    @PostMapping("/api/v1/job-posts/{jobPostId}/offer/{userId}")
+    public ResponseEntity<Map<String, Long>> offer(
+            @PathVariable Long jobPostId,
+            @PathVariable Long userId,
+            @AuthenticationPrincipal User user) {
+        com.itda.entity.User applicant = userRepository.findById(userId)
+                .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
+        Application application = applicationService.offer(jobPostId, applicant);
+        return ResponseEntity.status(201).body(Map.of("applicationId", application.getId()));
+    }
 
     // 지원자 목록 조회 (소유권 검증 + 커서 페이지네이션)
     @GetMapping("/api/v1/job-posts/{id}/applicants")
