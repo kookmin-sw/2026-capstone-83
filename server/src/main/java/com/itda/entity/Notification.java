@@ -34,9 +34,9 @@ public class Notification {
     @Column(name = "related_id")
     private Long relatedId;
 
-    // 읽음 여부
+    // 읽음 여부 — 필드명을 'read'로 하여 Lombok getter가 isRead()를 생성하도록 함
     @Column(name = "is_read", nullable = false)
-    private boolean isRead;
+    private boolean read;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -44,10 +44,10 @@ public class Notification {
     @PrePersist
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
-        this.isRead = false;
+        this.read = false;
     }
 
     public void markAsRead() {
-        this.isRead = true;
+        this.read = true;
     }
 }

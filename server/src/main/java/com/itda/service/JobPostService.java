@@ -106,13 +106,13 @@ public class JobPostService {
             String sortType,
             User user,
             String requestId) {
-        if (response == null || response.jobPosts() == null || response.jobPosts().isEmpty()) {
+        if (response == null || response.contents() == null || response.contents().isEmpty()) {
             return;
         }
-        List<InteractionEvents.Impression> impressions = new ArrayList<>(response.jobPosts().size());
-        for (int i = 0; i < response.jobPosts().size(); i++) {
+        List<InteractionEvents.Impression> impressions = new ArrayList<>(response.contents().size());
+        for (int i = 0; i < response.contents().size(); i++) {
             impressions.add(new InteractionEvents.Impression(
-                    response.jobPosts().get(i).id(),
+                    response.contents().get(i).id(),
                     i + 1                       // 1-based position
             ));
         }
