@@ -219,21 +219,8 @@ public class ApplicationService {
         verifyOwnership(application, userId);
 
         JobPost jobPost = application.getJobPost();
-        jobPostRepository.save(JobPost.builder()
-                .id(jobPost.getId())
-                .workplace(jobPost.getWorkplace())
-                .title(jobPost.getTitle())
-                .s3ContentUrl(jobPost.getS3ContentUrl())
-                .wage(jobPost.getWage())
-                .wageType(jobPost.getWageType())
-                .workDate(jobPost.getWorkDate())
-                .workStart(jobPost.getWorkStart())
-                .workEnd(jobPost.getWorkEnd())
-                .totalSlots(jobPost.getTotalSlots())
-                .filledSlots(jobPost.getFilledSlots() + 1)
-                .status(jobPost.getStatus())
-                .deadline(jobPost.getDeadline())
-                .build());
+        jobPost.confirmHire();
+        jobPostRepository.save(jobPost);
 
         Application saved = applicationRepository.save(Application.builder()
                 .id(application.getId())

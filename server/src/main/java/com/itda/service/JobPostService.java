@@ -273,28 +273,8 @@ public class JobPostService {
             throw new IllegalStateException("본인의 공고만 마감 처리할 수 있습니다.");
         }
 
-        jobPostRepository.save(JobPost.builder()
-                .id(jobPost.getId())
-                .workplace(jobPost.getWorkplace())
-                .title(jobPost.getTitle())
-                .s3ContentUrl(jobPost.getS3ContentUrl())
-                .wage(jobPost.getWage())
-                .wageType(jobPost.getWageType())
-                .workDate(jobPost.getWorkDate())
-                .workStart(jobPost.getWorkStart())
-                .workEnd(jobPost.getWorkEnd())
-                .totalSlots(jobPost.getTotalSlots())
-                .filledSlots(jobPost.getFilledSlots())
-                .status(JobPostStatus.CLOSED) // 상태를 CLOSED로 변경
-                .deadline(jobPost.getDeadline())
-                .jobCategory(jobPost.getJobCategory())
-                .jobSubcategory(jobPost.getJobSubcategory())
-                .description(jobPost.getDescription())
-                .requirements(jobPost.getRequirements())
-                .benefits(jobPost.getBenefits())
-                .tasks(jobPost.getTasks())
-                .items(jobPost.getItems())
-                .build());
+        jobPost.closeByEmployer();
+        jobPostRepository.save(jobPost);
     }
 
     // 공고 소유권 검증
