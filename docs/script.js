@@ -1,5 +1,7 @@
 // Scroll-based reveal animations
 document.addEventListener('DOMContentLoaded', () => {
+  document.documentElement.classList.add('js-scroll-reveal');
+
   const observerOptions = {
     threshold: 0.1,
     rootMargin: '0px 0px -50px 0px',
@@ -22,6 +24,18 @@ document.addEventListener('DOMContentLoaded', () => {
     '.feature-card, .feature-showcase, .arch-card, .stack-category, .team-role-box, .problem-block'
   );
   animatableElements.forEach((el) => observer.observe(el));
+
+  const revealShowcasesInView = () => {
+    document.querySelectorAll('.feature-showcase:not(.visible)').forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      if (rect.top < window.innerHeight * 0.92) {
+        el.classList.add('visible');
+      }
+    });
+  };
+  revealShowcasesInView();
+  window.addEventListener('load', revealShowcasesInView);
+  window.addEventListener('hashchange', () => setTimeout(revealShowcasesInView, 500));
 
   // Navbar scroll effect
   const navbar = document.querySelector('.navbar');

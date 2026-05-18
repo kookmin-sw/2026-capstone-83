@@ -1,7 +1,6 @@
 
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import { useJobPost } from 'entities/jobPost/model/hooks/useJobPost';
-import { JobPostOwnerActions } from 'features/jobPost/JobPostOwnerActions';
 import { JobPostDescriptionSection } from 'entities/jobPost/ui/detailSections/JobPostDescriptionSection';
 import { JobPostDetailOverviewSection } from 'entities/jobPost/ui/detailSections/JobPostDetailOverviewSection';
 import { JobPostLocationSection } from 'entities/jobPost/ui/detailSections/JobPostLocationSection';
@@ -39,7 +38,6 @@ export const JobPostDetailContent = ({ postId }: Props) => {
         {/* 1. 상단 개요 섹션 (비즈니스 로직인 버튼 포함) */}
         <JobPostDetailOverviewSection
           data={post}
-          headerActions={isEmployer ? <JobPostOwnerActions jobPostId={post.id} /> : undefined}
           actions={
             !isEmployer ? (
               <>

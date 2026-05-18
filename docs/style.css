@@ -513,9 +513,8 @@ ul {
   align-items: center;
   padding: 56px 0;
   border-bottom: 1px solid rgba(206, 206, 206, 0.35);
-  opacity: 0;
-  transform: translateY(30px);
-  transition: opacity 0.6s ease, transform 0.6s ease;
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .feature-showcase:last-child {
@@ -527,7 +526,13 @@ ul {
   padding-top: 0;
 }
 
-.feature-showcase.visible {
+.js-scroll-reveal .feature-showcase {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.js-scroll-reveal .feature-showcase.visible {
   opacity: 1;
   transform: translateY(0);
 }
@@ -885,7 +890,6 @@ ul {
 }
 
 .feature-card.visible,
-.feature-showcase.visible,
 .arch-card.visible,
 .stack-category.visible,
 .team-role-box.visible,
