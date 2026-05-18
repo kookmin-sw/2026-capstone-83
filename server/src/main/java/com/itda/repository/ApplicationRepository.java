@@ -56,6 +56,11 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             Long applicantUserId, ApplicationStatus status, LocalDate from, LocalDate to
     );
 
+    // 구직자 근무 일정 조회 (다중 상태 + 기간 필터)
+    List<Application> findByApplicantUserIdAndStatusInAndJobPost_WorkDateBetween(
+            Long applicantUserId, List<ApplicationStatus> statuses, LocalDate from, LocalDate to
+    );
+
     // 유저의 매칭 횟수 (HIRED + COMPLETED 건수)
     long countByApplicantUserIdAndStatusIn(Long applicantUserId, List<ApplicationStatus> statuses);
 }
