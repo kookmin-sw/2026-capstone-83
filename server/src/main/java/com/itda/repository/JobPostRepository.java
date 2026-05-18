@@ -19,24 +19,24 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JobPost
     // 사업장 단위 공고 개수 — 사업장 삭제 가능 여부 판단에 사용
     long countByWorkplaceId(Long workplaceId);
 
-    // 고용주 공고 목록 조회
-    @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.id = :employerId")
-    List<JobPost> findByEmployerId(@Param("employerId") Long employerId);
+    // 고용주 공고 목록 조회 (user.id 기준)
+    @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.user.id = :userId")
+    List<JobPost> findByEmployerId(@Param("userId") Long userId);
 
-    // 고용주 공고 목록 조회 (커서 페이지네이션)
-    @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.id = :employerId " +
+    // 고용주 공고 목록 조회 (커서 페이지네이션, user.id 기준)
+    @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.user.id = :userId " +
             "AND (:cursor IS NULL OR j.id < :cursor) " +
             "ORDER BY j.id DESC")
     List<JobPost> findByEmployerIdWithCursor(
-            @Param("employerId") Long employerId,
+            @Param("userId") Long userId,
             @Param("cursor") Long cursor,
             org.springframework.data.domain.Pageable pageable);
 
-    // 캘린더용 날짜 범위 조회
-    @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.id = :employerId " +
+    // 캘린더용 날짜 범위 조회 (user.id 기준)
+    @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.user.id = :userId " +
             "AND j.workDate BETWEEN :start AND :end")
     List<JobPost> findByEmployerIdAndWorkDateBetween(
-            @Param("employerId") Long employerId,
+            @Param("userId") Long userId,
             @Param("start") LocalDate start,
             @Param("end") LocalDate end);
     // liked 공고 ID 목록 기준 조회
