@@ -6,10 +6,11 @@ import type { ApplicantResponse } from '../model/types/application.type';
 interface Props {
   data: ApplicantResponse;
   actions?: React.ReactNode;
+  reviewSlot?: React.ReactNode;
   onClick?: () => void;
 }
 
-export const ApplicantCard = ({ data, actions, onClick }: Props) => {
+export const ApplicantCard = ({ data, actions, reviewSlot, onClick }: Props) => {
   const { name, profileImageUrl, gender, age, location, matchCount, appliedAt } = data;
   const genderLabel = gender === 'MALE' ? '남' : '여';
 
@@ -41,6 +42,13 @@ export const ApplicantCard = ({ data, actions, onClick }: Props) => {
         </S.MetaRow>
 
         <S.AppliedDate>지원일: {appliedAt}</S.AppliedDate>
+
+        {/* 리뷰 슬롯 — 카드 클릭(이력서 모달)과 분리 */}
+        {reviewSlot && (
+          <S.ReviewSlot onClick={(e) => e.stopPropagation()}>
+            {reviewSlot}
+          </S.ReviewSlot>
+        )}
       </S.Content>
     </S.Card>
   );
@@ -116,5 +124,8 @@ const S = {
   AppliedDate: styled.span`
     font-size: ${({ theme }) => theme.fontSize.xsmall};
     color: ${({ theme }) => theme.color.thirdText};
+  `,
+  ReviewSlot: styled.div`
+    width: 100%;
   `,
 };

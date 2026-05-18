@@ -13,6 +13,7 @@ import Modal from 'shared/ui/Modal/Modal';
 import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
 import Empty from 'shared/ui/Empty/Empty';
+import { EmployerReviewSection } from 'features/review/EmployerReviewSection';
 import type { BadgeScheme } from 'shared/types/theme';
 
 interface Props {
@@ -107,6 +108,7 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
                     key={applicant.userId}
                     data={applicant}
                     actions={renderActions(key, applicant)}
+                    reviewSlot={<EmployerReviewSection applicationId={applicant.userId} />}
                     onClick={() => handleCardClick(applicant)}
                   />
                 ))}

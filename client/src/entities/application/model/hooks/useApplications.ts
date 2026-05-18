@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchApplications, fetchMockApplications } from 'entities/application/api/application.api';
-import type { ApplicationWithJobPost } from '../types/application.type';
+import { toApplicationWithJobPost, type ApplicationWithJobPost } from '../types/application.type';
 import { USE_MOCK } from 'shared/config/env';
 
 /**
@@ -11,9 +11,8 @@ export const useApplications = () => {
   return useQuery<ApplicationWithJobPost[]>({
     queryKey: ['applications'],
     queryFn: async () => {
-      const real = await fetchApplications()
-        .then((res) => res.contents as unknown as ApplicationWithJobPost[])
-        .catch(() => []);
+      const page = await fetchApplications();
+      const real = page.contents.map(toApplicationWithJobPost);
 
       if (USE_MOCK) {
         const mock = await fetchMockApplications();

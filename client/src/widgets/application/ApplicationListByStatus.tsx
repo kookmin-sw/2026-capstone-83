@@ -19,7 +19,7 @@ export const ApplicationListByStatus = () => {
     const pending: ApplicationWithJobPost[] = [];
     applications.forEach((app) => {
       if (app.applicationStatus === 'APPLIED') applied.push(app);
-      else if (app.applicationStatus === 'PENDING') pending.push(app);
+      else if (app.applicationStatus === 'PENDING' || app.applicationStatus === 'OFFERED') pending.push(app);
     });
     return { applied, pending };
   }, [applications]);
@@ -63,10 +63,12 @@ export const ApplicationListByStatus = () => {
                 <JobPostCard
                   data={app}
                   bottomActions={
-                    <>
-                      <AcceptOfferButton applicationId={app.applicationId} />
-                      <RejectOfferButton applicationId={app.applicationId} />
-                    </>
+                    app.applicationStatus === 'OFFERED' ? (
+                      <>
+                        <AcceptOfferButton applicationId={app.applicationId} />
+                        <RejectOfferButton applicationId={app.applicationId} />
+                      </>
+                    ) : undefined
                   }
                 />
               </S.CardItem>

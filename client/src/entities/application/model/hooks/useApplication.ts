@@ -8,7 +8,11 @@ import {
   fetchApplications,
   acceptOffer,
 } from 'entities/application/api/application.api';
-import type { ApplicantResponse, ApplicationResponse } from '../types/application.type';
+import {
+  toApplicationWithJobPost,
+  type ApplicantResponse,
+  type ApplicationWithJobPost,
+} from '../types/application.type';
 
 /**
  * 지원자 목록 조회 (고용주용)
@@ -41,12 +45,12 @@ export const useWorkers = (jobPostId: number) => {
  * 지원 내역 조회 (구직자용)
  */
 export const useApplications = () => {
-  return useQuery<ApplicationResponse[]>({
+  return useQuery<ApplicationWithJobPost[]>({
     queryKey: ['applications'],
     staleTime: 1000 * 60 * 5,
     queryFn: async () => {
       const data = await fetchApplications();
-      return data.contents;
+      return data.contents.map(toApplicationWithJobPost);
     },
   });
 };
