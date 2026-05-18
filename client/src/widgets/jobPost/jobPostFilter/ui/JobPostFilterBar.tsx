@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import { Search, SlidersHorizontal, X } from 'lucide-react';
+import { RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react';
 import type { GetJobPostsParams, TimeTag, WageType } from 'entities/jobPost/model/types/jobPost.type';
 import type { CertificateType } from 'shared/types/certificate';
 import { CERTIFICATE_LABEL } from 'shared/types/certificate';
@@ -31,6 +31,30 @@ const CERT_OPTIONS = (Object.keys(CERTIFICATE_LABEL) as CertificateType[]).map((
   label: CERTIFICATE_LABEL[key],
   value: key,
 }));
+
+const DEFAULT_SORT: GetJobPostsParams['sortType'] = 'RECOMMENDED';
+
+const RESET_FILTER_PARAMS: Partial<GetJobPostsParams> = {
+  keyword: undefined,
+  location: undefined,
+  locations: undefined,
+  jobCategory: undefined,
+  jobSubcategory: undefined,
+  jobCategories: undefined,
+  minWage: undefined,
+  wageType: undefined,
+  timeTags: undefined,
+  certRequirements: undefined,
+  ageRequirements: undefined,
+  benefits: undefined,
+  weekdays: undefined,
+  workDate: undefined,
+  workDateFrom: undefined,
+  workDateTo: undefined,
+  timeFrom: undefined,
+  timeTo: undefined,
+  sortType: undefined,
+};
 
 interface Props {
   activeFilters: GetJobPostsParams;
@@ -85,6 +109,39 @@ export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
     setDraftWageType((prev) => (prev === type ? undefined : type));
   };
 
+  const clearDraftFilters = () => {
+    setKeyword('');
+    setDraftLocation('');
+    setDraftMinWage('');
+    setDraftWageType(undefined);
+    setDraftTimeTags([]);
+    setDraftCerts([]);
+  };
+
+  const handleReset = () => {
+    clearDraftFilters();
+    onFilterChange(RESET_FILTER_PARAMS);
+  };
+
+  const hasAppliedFilters =
+    !!activeFilters.keyword ||
+    !!activeFilters.location ||
+    activeFilters.minWage != null ||
+    !!activeFilters.wageType ||
+    (activeFilters.timeTags?.length ?? 0) > 0 ||
+    (activeFilters.certRequirements?.length ?? 0) > 0 ||
+    (activeFilters.sortType != null && activeFilters.sortType !== DEFAULT_SORT);
+
+  const hasDraftFilters =
+    !!keyword ||
+    !!draftLocation ||
+    !!draftMinWage ||
+    !!draftWageType ||
+    draftTimeTags.length > 0 ||
+    draftCerts.length > 0;
+
+  const canReset = hasAppliedFilters || hasDraftFilters;
+
   const activeFilterCount = [
     draftTimeTags.length > 0,
     draftCerts.length > 0,
@@ -126,19 +183,35 @@ export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
 
       {/* 정렬 (즉시 반영) */}
       <S.SortRow>
-        {SORT_OPTIONS.map((opt) => (
-          <Button
-            key={opt.value}
-            type="button"
-            scheme={activeFilters.sortType === opt.value ? 'optionActive' : 'option'}
-            buttonSize="xsmall"
-            fontSize="xsmall"
-            borderRadius="round"
-            onClick={() => handleSortChange(opt.value)}
-          >
-            {opt.label}
-          </Button>
-        ))}
+        <S.SortOptions>
+          {SORT_OPTIONS.map((opt) => (
+            <Button
+              key={opt.value}
+              type="button"
+              scheme={(activeFilters.sortType ?? DEFAULT_SORT) === opt.value ? 'optionActive' : 'option'}
+              buttonSize="xsmall"
+              fontSize="xsmall"
+              borderRadius="round"
+              onClick={() => handleSortChange(opt.value)}
+            >
+              {opt.label}
+            </Button>
+          ))}
+        </S.SortOptions>
+        <Button
+          type="button"
+          scheme="secondary"
+          buttonSize="xsmall"
+          fontSize="xsmall"
+          borderRadius="round"
+          onClick={handleReset}
+          disabled={!canReset}
+        >
+          <S.ResetButtonContent>
+            <RotateCcw size={14} />
+            초기화
+          </S.ResetButtonContent>
+        </Button>
       </S.SortRow>
 
       {/* 필터 패널 (로컬 state, 검색 버튼으로 반영) */}
@@ -223,8 +296,17 @@ export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
             </S.TagGroup>
           </S.FilterSection>
 
-          {/* 필터 적용 버튼 */}
+          {/* 필터 적용 / 초기화 */}
           <S.FilterActions>
+            <Button
+              type="button"
+              scheme="secondary"
+              buttonSize="small"
+              onClick={handleReset}
+              disabled={!canReset}
+            >
+              초기화
+            </Button>
             <Button scheme="primary" buttonSize="small" onClick={handleSearch}>
               필터 적용
             </Button>
@@ -314,7 +396,19 @@ const S = {
   `,
   SortRow: styled.div`
     display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  `,
+  SortOptions: styled.div`
+    display: flex;
+    flex-wrap: wrap;
     gap: 6px;
+  `,
+  ResetButtonContent: styled.span`
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
   `,
   FilterPanel: styled.div`
     display: grid;
@@ -375,6 +469,7 @@ const S = {
     grid-column: 1 / -1;
     display: flex;
     justify-content: flex-end;
+    gap: 8px;
     padding-top: 8px;
     border-top: 1px solid ${({ theme }) => theme.color.border};
   `,

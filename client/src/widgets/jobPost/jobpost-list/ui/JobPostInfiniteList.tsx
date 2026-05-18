@@ -32,6 +32,12 @@ export const JobPostInfiniteList = ({ filterParams }: { filterParams: GetJobPost
   if (status === 'pending') return <Loading message="공고 불러오는 중..." />;
   if (status === 'error') return <Empty message="데이터를 불러오는 데 실패했습니다." />;
 
+  const visiblePosts = data?.pages.flatMap((page) => page.contents) ?? [];
+
+  if (visiblePosts.length === 0 && !hasNextPage) {
+    return <Empty message="표시할 공고가 없습니다." />;
+  }
+
   return (
     <S.ListContainer>
       {/* 3. 2차원 배열(pages)을 1차원으로 펼쳐서 렌더링 */}

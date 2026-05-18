@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchJobPosts, fetchMockJobPosts } from '../../api/jobPost.api';
+import { filterActiveDeadlineJobPosts } from '../../lib/filterActiveDeadlineJobPosts';
 import type { GetJobPostsParams, JobPost, JobPostListCursor } from '../types/jobPost.type';
 import { USE_MOCK } from 'shared/config/env';
 
@@ -22,11 +23,14 @@ export const useJobPosts = (params: GetJobPostsParams = {}) => {
         const mock = await fetchMockJobPosts();
         return {
           ...real,
-          contents: [...mock, ...real.contents],
+          contents: filterActiveDeadlineJobPosts([...mock, ...real.contents]),
         };
       }
 
-      return real;
+      return {
+        ...real,
+        contents: filterActiveDeadlineJobPosts(real.contents),
+      };
     },
   });
 };

@@ -4,6 +4,7 @@ import styled from 'styled-components';
 import { Search, ChevronRight } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { fetchJobPosts } from 'entities/jobPost/api/jobPost.api';
+import { filterActiveDeadlineJobPosts } from 'entities/jobPost/lib/filterActiveDeadlineJobPosts';
 import { SECTION_SIZE } from 'entities/jobPost/model/constants';
 import { JobPostCard } from 'entities/jobPost/ui/JobPostCard';
 import LikeJobPostButton from 'features/like/LikeJobPostButton';
@@ -29,7 +30,7 @@ const MainPage = () => {
     if (e.key === 'Enter') handleSearch();
   };
 
-  const jobPosts = data?.contents || [];
+  const jobPosts = filterActiveDeadlineJobPosts(data?.contents || []);
 
   return (
     <S.Page>
