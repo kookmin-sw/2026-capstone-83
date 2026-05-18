@@ -164,12 +164,12 @@ public class ApplicationService {
                 .toList();
     }
 
-    // 구직자 근무 일정 조회 (HIRED: 확정된 근무 / PENDING: 채용 대기중)
+    // 구직자 근무 일정 조회 (APPLIED: 지원중 / HIRED: 확정된 근무 / PENDING: 채용 대기중)
     public EmployeeScheduleResponse getEmployeeSchedules(Long applicantUserId, LocalDate fromDate, LocalDate toDate) {
         List<Application> applications = applicationRepository
                 .findByApplicantUserIdAndStatusInAndJobPost_WorkDateBetween(
                         applicantUserId,
-                        List.of(ApplicationStatus.HIRED, ApplicationStatus.PENDING),
+                        List.of(ApplicationStatus.APPLIED, ApplicationStatus.HIRED, ApplicationStatus.PENDING),
                         fromDate, toDate);
 
         Map<String, List<EmployeeScheduleItem>> schedules = applications.stream()
