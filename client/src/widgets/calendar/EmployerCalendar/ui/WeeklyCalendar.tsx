@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import styled from 'styled-components';
 import {
   DndContext,
   closestCenter,
@@ -19,7 +18,7 @@ import { CSS } from '@dnd-kit/utilities';
 import type { Schedule } from 'entities/schedule/model/types/schedule.type';
 import { WeeklyScheduleCard } from 'entities/schedule/ui/WeeklyScheduleCard';
 import { ViewToggle } from './ViewToggle';
-import { hoverOverlay } from 'shared/styles/hoverOverlay';
+import * as CS from 'widgets/calendar/styles/calendar.styled';
 
 type ViewMode = 'monthly' | 'weekly';
 
@@ -106,18 +105,18 @@ export const WeeklyCalendar = ({ schedules, currentDate, onPrev, onNext, viewMod
 
   return (
     <>
-      <S.Header>
-        <S.NavRow>
-          <S.NavButton onClick={onPrev}><ChevronLeft size={20} /></S.NavButton>
-          <S.MonthTitle>
+      <CS.CalendarHeader>
+        <CS.NavRow>
+          <CS.NavButton onClick={onPrev}><ChevronLeft size={20} /></CS.NavButton>
+          <CS.CalendarTitle>
             {currentDate.getFullYear()}년 {currentDate.getMonth() + 1}월 {weekNum}주차
-          </S.MonthTitle>
-          <S.NavButton onClick={onNext}><ChevronRight size={20} /></S.NavButton>
-        </S.NavRow>
+          </CS.CalendarTitle>
+          <CS.NavButton onClick={onNext}><ChevronRight size={20} /></CS.NavButton>
+        </CS.NavRow>
         <ViewToggle viewMode={viewMode} onViewChange={onViewChange} />
-      </S.Header>
+      </CS.CalendarHeader>
 
-      <S.WeekGrid>
+      <CS.WeekGrid>
         {weekDays.map((day, idx) => {
           const dateStr = formatDateStr(day);
           const orderedSchedules = getOrderedSchedules(dateStr);
@@ -125,13 +124,13 @@ export const WeeklyCalendar = ({ schedules, currentDate, onPrev, onNext, viewMod
           const isSunday = idx === 6;
 
           return (
-            <S.DayColumn key={dateStr}>
-              <S.DayHeader $isSaturday={isSaturday} $isSunday={isSunday}>
+            <CS.DayColumn key={dateStr}>
+              <CS.DayHeader $isSaturday={isSaturday} $isSunday={isSunday}>
                 <span className="label">{DAYS_KR[idx]}</span>
                 <span className="date">{day.getDate()}</span>
-              </S.DayHeader>
+              </CS.DayHeader>
 
-              <S.DayContent>
+              <CS.DayContent>
                 <DndContext
                   sensors={sensors}
                   collisionDetection={closestCenter}
@@ -147,103 +146,15 @@ export const WeeklyCalendar = ({ schedules, currentDate, onPrev, onNext, viewMod
                   </SortableContext>
                 </DndContext>
 
-                <S.AddButton onClick={() => window.open(`/jobpost/create?workDate=${dateStr}`, '_blank')}>
+                <CS.AddButton onClick={() => window.open(`/jobpost/create?workDate=${dateStr}`, '_blank')}>
                   <span>+ 공고 추가</span>
-                </S.AddButton>
-              </S.DayContent>
-            </S.DayColumn>
+                </CS.AddButton>
+              </CS.DayContent>
+            </CS.DayColumn>
           );
         })}
-      </S.WeekGrid>
+      </CS.WeekGrid>
     </>
   );
 };
 
-const S = {
-  Header: styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  `,
-  NavRow: styled.div`
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  `,
-  MonthTitle: styled.h2`
-    font-size: ${({ theme }) => theme.fontSize.large};
-    font-weight: ${({ theme }) => theme.fontWeight.bold};
-  `,
-  NavButton: styled.button`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    color: ${({ theme }) => theme.color.text};
-    padding: 4px;
-    border-radius: 50%;
-    &:hover { background-color: ${({ theme }) => theme.color.background}; }
-  `,
-  WeekGrid: styled.div`
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 8px;
-  `,
-  DayColumn: styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  `,
-  DayHeader: styled.div<{ $isSaturday: boolean; $isSunday: boolean }>`
-    text-align: center;
-    padding: 8px 0;
-    background-color: ${({ theme }) => theme.color.background};
-    border-radius: ${({ theme }) => theme.borderRadius.small};
-    .label {
-      display: block;
-      font-size: ${({ theme }) => theme.fontSize.xsmall};
-      color: ${({ theme, $isSaturday, $isSunday }) =>
-      $isSunday ? theme.color.error : $isSaturday ? theme.color.primary : theme.color.subText};
-    }
-    .date {
-      display: block;
-      font-size: ${({ theme }) => theme.fontSize.large};
-      font-weight: ${({ theme }) => theme.fontWeight.bold};
-      color: ${({ theme, $isSaturday, $isSunday }) =>
-      $isSunday ? theme.color.error : $isSaturday ? theme.color.primary : theme.color.text};
-    }
-  `,
-  DayContent: styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    min-height: 200px;
-  `,
-  AddButton: styled.button`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 16px 8px;
-    border: 2px dashed ${({ theme }) => theme.color.border};
-    border-radius: ${({ theme }) => theme.borderRadius.medium};
-    background: transparent;
-    color: ${({ theme }) => theme.color.subText};
-    font-size: ${({ theme }) => theme.fontSize.xsmall};
-    cursor: pointer;
-    transition: all 0.15s ease;
-    position: relative;
-    z-index: 2;
-
-    ${hoverOverlay}
-
-    &:hover {
-      border-color: ${({ theme }) => theme.color.primary};
-      color: ${({ theme }) => theme.color.primary};
-    }
-  `,
-};

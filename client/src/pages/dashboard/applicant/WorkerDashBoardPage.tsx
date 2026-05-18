@@ -6,6 +6,7 @@ import { ApplicantCalendarWidget } from 'widgets/calendar/ApplicantCalendar/ui/A
 import { HiredWeeklyTimetable } from 'widgets/calendar/ApplicantCalendar/ui/HiredWeeklyTimetable';
 import { ApplicationListByStatus } from 'widgets/application/ApplicationListByStatus';
 import SelectedJobPostSection from 'entities/jobPost/ui/SelectedJobPostSection';
+import { CalendarSurface } from 'widgets/calendar/styles/calendar.styled';
 
 const WorkerDashBoardPage = () => {
   const schedules = useScheduleStore((s) => s.schedules);
@@ -34,14 +35,14 @@ const WorkerDashBoardPage = () => {
       <ApplicantCalendarWidget />
 
       {/* 근무 시간표 (항상 표시) */}
-      <S.TimetableWrapper>
+      <CalendarSurface>
         <HiredWeeklyTimetable
           schedules={schedules as Record<string, ApplicantSchedule[]>}
           currentDate={timetableDate}
           onPrev={handleTimetablePrev}
           onNext={handleTimetableNext}
         />
-      </S.TimetableWrapper>
+      </CalendarSurface>
 
       {/* 선택된 공고 정보 */}
       {selectedJobPostId !== null && (
@@ -63,12 +64,6 @@ const S = {
     display: flex;
     flex-direction: column;
     gap: 24px;
-  `,
-  TimetableWrapper: styled.div`
-    padding: 32px;
-    background-color: ${({ theme }) => theme.color.white};
-    border-radius: ${({ theme }) => theme.borderRadius.medium};
-    box-shadow: ${({ theme }) => theme.shadow.default};
   `,
   SectionLabel: styled.h2`
     font-size: ${({ theme }) => theme.fontSize.large};

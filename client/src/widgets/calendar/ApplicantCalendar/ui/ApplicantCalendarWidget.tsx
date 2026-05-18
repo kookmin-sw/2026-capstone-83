@@ -7,6 +7,7 @@ import type { Schedule, ApplicantSchedule } from 'entities/schedule/model/types/
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import { ScheduleChip } from 'entities/schedule/ui/ScheduleChip';
 import { BaseMonthlyCalendar } from 'widgets/calendar/BaseMonthlyCalendar';
+import { CalendarSurface } from 'widgets/calendar/styles/calendar.styled';
 import { ApplicantWeeklyCalendarCards } from './ApplicantWeeklyCalendarCards';
 import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
@@ -142,14 +143,14 @@ export const ApplicantCalendarWidget = () => {
 
   if (loadError && !USE_MOCK) {
     return (
-      <S.Wrapper>
+      <CalendarSurface>
         <Empty message={loadError} />
-      </S.Wrapper>
+      </CalendarSurface>
     );
   }
 
   return (
-    <S.Wrapper>
+    <CalendarSurface>
       {loadError && USE_MOCK && <S.ErrorBanner role="alert">{loadError}</S.ErrorBanner>}
       {viewMode === 'monthly' ? (
         <BaseMonthlyCalendar
@@ -160,13 +161,14 @@ export const ApplicantCalendarWidget = () => {
           onNavigate={setCurrentDate}
           viewMode={viewMode}
           onViewChange={setViewMode}
-          renderChip={(schedule, { isOtherMonth, fullDate }) => {
+          renderChip={(schedule, { isOtherMonth, fullDate, surface }) => {
             const applicantSchedule = schedule as ApplicantSchedule;
             const statusInfo = CALENDAR_APPLY_STATUS[applicantSchedule.applyStatus || 'NONE'];
 
             return (
               <ScheduleChip
                 schedule={schedule}
+                density={surface === 'modal' ? 'full' : 'compact'}
                 badge={statusInfo ? (
                   <Badge scheme={statusInfo.scheme}>
                     {statusInfo.label}
@@ -190,17 +192,11 @@ export const ApplicantCalendarWidget = () => {
           onViewChange={setViewMode}
         />
       )}
-    </S.Wrapper>
+    </CalendarSurface>
   );
 };
 
 const S = {
-  Wrapper: styled.div`
-    padding: 32px;
-    background-color: ${({ theme }) => theme.color.white};
-    border-radius: ${({ theme }) => theme.borderRadius.medium};
-    box-shadow: ${({ theme }) => theme.shadow.default};
-  `,
   ErrorBanner: styled.p`
     margin: 0 0 16px;
     padding: 12px 16px;

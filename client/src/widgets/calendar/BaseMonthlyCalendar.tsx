@@ -2,6 +2,7 @@ import { type ReactNode, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import styled from 'styled-components';
 import type { Schedule } from 'entities/schedule/model/types/schedule.type';
+import { DayScheduleDots } from 'entities/schedule/ui/DayScheduleDots';
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import { ViewToggle } from './EmployerCalendar/ui/ViewToggle';
 import Modal from 'shared/ui/Modal/Modal';
@@ -17,7 +18,10 @@ interface Props {
   onNavigate: (date: Date) => void;
   viewMode: ViewMode;
   onViewChange: (mode: ViewMode) => void;
-  renderChip: (schedule: Schedule, options: { isOtherMonth: boolean; fullDate: string }) => ReactNode;
+  renderChip: (
+    schedule: Schedule,
+    options: { isOtherMonth: boolean; fullDate: string; surface: 'cell' | 'modal' }
+  ) => ReactNode;
   renderEmptyCell?: (fullDate: string) => ReactNode;
   renderModalFooter?: (fullDate: string) => ReactNode;
 }
@@ -129,13 +133,18 @@ export const BaseMonthlyCalendar = ({
                   {date}
                 </S.DateNumber>
                 {daySchedules.length > 1 && (
-                  <S.ExtraCount>+{daySchedules.length - 1}</S.ExtraCount>
+                  <S.ExtraCount aria-label={`외 ${daySchedules.length - 1}건`}>
+                    +{daySchedules.length - 1}
+                  </S.ExtraCount>
                 )}
               </S.CellHeader>
 
               {displaySchedule ? (
                 <S.ChipArea>
-                  {renderChip(displaySchedule, { isOtherMonth, fullDate })}
+                  <DayScheduleDots schedules={daySchedules} />
+                  <S.DesktopChip>
+                    {renderChip(displaySchedule, { isOtherMonth, fullDate, surface: 'cell' })}
+                  </S.DesktopChip>
                 </S.ChipArea>
               ) : (
                 !isOtherMonth && renderEmptyCell && renderEmptyCell(fullDate)
@@ -155,7 +164,7 @@ export const BaseMonthlyCalendar = ({
 
           {detailSchedules.map((s) => (
             <div key={s.jobPostId}>
-              {renderChip(s, { isOtherMonth: false, fullDate: detailDate! })}
+              {renderChip(s, { isOtherMonth: false, fullDate: detailDate!, surface: 'modal' })}
             </div>
           ))}
 
@@ -171,16 +180,28 @@ const S = {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
     margin-bottom: 16px;
+
+    @media (${({ theme }) => theme.mediaQuery.tablet_small}) {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   `,
   NavRow: styled.div`
     display: flex;
     align-items: center;
     gap: 12px;
+    min-width: 0;
   `,
   MonthTitle: styled.h2`
     font-size: ${({ theme }) => theme.fontSize.large};
     font-weight: ${({ theme }) => theme.fontWeight.bold};
+    white-space: nowrap;
+
+    @media (${({ theme }) => theme.mediaQuery.mobile}) {
+      font-size: ${({ theme }) => theme.fontSize.medium};
+    }
   `,
   NavButton: styled.button`
     display: flex;
@@ -192,6 +213,7 @@ const S = {
     color: ${({ theme }) => theme.color.text};
     padding: 4px;
     border-radius: 50%;
+    flex-shrink: 0;
     &:hover { background-color: ${({ theme }) => theme.color.background}; }
   `,
   Grid: styled.div`
@@ -200,6 +222,7 @@ const S = {
     border: 1px solid color-mix(in srgb, ${({ theme }) => theme.color.border}, transparent 40%);
     border-radius: ${({ theme }) => theme.borderRadius.medium};
     overflow: hidden;
+    min-width: 0;
   `,
   DayHeader: styled.div<{ $isSunday: boolean; $isSaturday: boolean }>`
     padding: 10px 0;
@@ -209,6 +232,11 @@ const S = {
     background-color: ${({ theme }) => theme.color.secondary};
     color: ${({ theme, $isSunday, $isSaturday }) =>
       $isSunday ? theme.color.error : $isSaturday ? theme.color.primary : theme.color.text};
+
+    @media (${({ theme }) => theme.mediaQuery.tablet_small}) {
+      padding: 6px 0;
+      font-size: 10px;
+    }
   `,
   Cell: styled.div<{ $isOtherMonth: boolean }>`
     min-height: 100px;
@@ -220,6 +248,7 @@ const S = {
     gap: 8px;
     cursor: pointer;
     transition: transform 0.15s ease;
+    min-width: 0;
 
     &:hover {
       transform: scale(1.03);
@@ -228,7 +257,27 @@ const S = {
 
     ${hoverOverlay}
 
-    /* 칩이나 추가 버튼 위에 커서가 있으면 셀 오버레이 해제 */
+    @media (${({ theme }) => theme.mediaQuery.tablet_large}) {
+      min-height: 84px;
+      padding: 10px 6px;
+      gap: 6px;
+    }
+
+    @media (${({ theme }) => theme.mediaQuery.tablet_small}) {
+      min-height: 56px;
+      padding: 6px 4px;
+      gap: 4px;
+
+      &:hover {
+        transform: none;
+      }
+    }
+
+    @media (${({ theme }) => theme.mediaQuery.mobile}) {
+      min-height: 48px;
+      padding: 4px 2px;
+    }
+
     &:has(> div > div:hover)::after,
     &:has(> button:hover)::after {
       opacity: 0 !important;
@@ -266,13 +315,25 @@ const S = {
     color: ${({ theme }) => theme.color.thirdText};
     position: relative;
     z-index: 2;
-    margin-right: 8px;
+    margin-right: 4px;
+
+    @media (${({ theme }) => theme.mediaQuery.tablet_small}) {
+      display: none;
+    }
   `,
   ChipArea: styled.div`
     display: flex;
     flex-direction: column;
     gap: 4px;
     flex: 1;
+    min-width: 0;
+  `,
+  DesktopChip: styled.div`
+    min-width: 0;
+
+    @media (${({ theme }) => theme.mediaQuery.tablet_small}) {
+      display: none;
+    }
   `,
   ModalContent: styled.div`
     display: flex;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { fetchSchedules, fetchMockSchedules } from 'entities/schedule/api/schedule.api';
+import { CalendarSurface } from 'widgets/calendar/styles/calendar.styled';
 import type { Schedule } from 'entities/schedule/model/types/schedule.type';
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import { useWorkplaceStore } from 'entities/workplace/model/store/workplaceStore';
@@ -31,6 +32,10 @@ const AddButton = styled.button`
 
   div:hover > & {
     display: flex;
+  }
+
+  @media (${({ theme }) => theme.mediaQuery.tablet_small}) {
+    display: none !important;
   }
 
   &:hover {
@@ -125,7 +130,7 @@ export const EmployerCalendarWidget = () => {
   if (isLoading) return <Loading message="캘린더를 불러오는 중..." />;
 
   return (
-    <S.Wrapper>
+    <CalendarSurface>
       {viewMode === 'monthly' ? (
         <BaseMonthlyCalendar
           schedules={schedules}
@@ -135,11 +140,12 @@ export const EmployerCalendarWidget = () => {
           onNavigate={setCurrentDate}
           viewMode={viewMode}
           onViewChange={setViewMode}
-          renderChip={(schedule, { isOtherMonth, fullDate }) => {
+          renderChip={(schedule, { isOtherMonth, fullDate, surface }) => {
             const isClosed = schedule.postStatus === 'CLOSED';
             return (
               <ScheduleChip
                 schedule={schedule}
+                density={surface === 'modal' ? 'full' : 'compact'}
                 badge={
                   <Badge scheme={isClosed ? 'warning' : 'primary'}>
                     {isClosed ? '모집완료' : '모집중'}
@@ -180,15 +186,7 @@ export const EmployerCalendarWidget = () => {
           onViewChange={setViewMode}
         />
       )}
-    </S.Wrapper>
+    </CalendarSurface>
   );
 };
 
-const S = {
-  Wrapper: styled.div`
-    padding: 32px;
-    background-color: ${({ theme }) => theme.color.white};
-    border-radius: ${({ theme }) => theme.borderRadius.medium};
-    box-shadow: ${({ theme }) => theme.shadow.default};
-  `,
-};

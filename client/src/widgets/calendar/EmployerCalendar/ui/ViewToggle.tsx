@@ -28,11 +28,19 @@ const S = {
     border-radius: ${({ theme }) => theme.borderRadius.round};
     overflow: hidden;
     width: fit-content;
+    flex-shrink: 0;
+    align-self: flex-start;
   `,
   Button: styled.button<{ $active: boolean }>`
     padding: 8px 20px;
     border: none;
     font-size: ${({ theme }) => theme.fontSize.small};
+    white-space: nowrap;
+
+    @media (${({ theme }) => theme.mediaQuery.tablet_small}) {
+      padding: 6px 14px;
+      font-size: ${({ theme }) => theme.fontSize.xsmall};
+    }
     font-weight: ${({ theme, $active }) =>
       $active ? theme.fontWeight.semibold : theme.fontWeight.regular};
     background-color: ${({ theme, $active }) =>
