@@ -1,19 +1,22 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { closeJobPost } from 'entities/jobPost/api/jobPost.api';
+import { closeJobPost, deleteJobPost } from 'entities/jobPost/api/jobPost.api';
 
-/**
- * 공고 수정 (서버에 PUT 엔드포인트 없음 - 추후 추가 시 활성화)
- */
-// export const useUpdateJobPost = () => { ... };
+export const useDeleteJobPost = () => {
+  const queryClient = useQueryClient();
 
-/**
- * 공고 삭제 (서버에 DELETE 엔드포인트 없음 - 추후 추가 시 활성화)
- */
-// export const useDeleteJobPost = () => { ... };
+  return useMutation({
+    mutationFn: (id: number) => deleteJobPost(id),
+    onSuccess: (_data, id) => {
+      queryClient.invalidateQueries({ queryKey: ['jobPosts'] });
+      queryClient.removeQueries({ queryKey: ['jobPost', id] });
+    },
+    onError: (error: unknown) => {
+      console.error('공고 삭제 실패:', error);
+      alert('공고 삭제 중 오류가 발생했습니다. 채용 확정 지원자가 있으면 삭제할 수 없습니다.');
+    },
+  });
+};
 
-/**
- * 공고 마감 처리
- */
 export const useCloseJobPost = () => {
   const queryClient = useQueryClient();
 

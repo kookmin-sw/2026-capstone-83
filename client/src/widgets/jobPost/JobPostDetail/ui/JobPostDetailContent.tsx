@@ -1,5 +1,7 @@
 
+import { useAuthStore } from 'entities/auth/model/store/authStore';
 import { useJobPost } from 'entities/jobPost/model/hooks/useJobPost';
+import { JobPostOwnerActions } from 'features/jobPost/JobPostOwnerActions';
 import { JobPostDescriptionSection } from 'entities/jobPost/ui/detailSections/JobPostDescriptionSection';
 import { JobPostDetailOverviewSection } from 'entities/jobPost/ui/detailSections/JobPostDetailOverviewSection';
 import { JobPostLocationSection } from 'entities/jobPost/ui/detailSections/JobPostLocationSection';
@@ -21,6 +23,8 @@ interface Props {
 export const JobPostDetailContent = ({ postId }: Props) => {
 
   const { data: post, isLoading, isError } = useJobPost(postId);
+  const role = useAuthStore((s) => s.role);
+  const isEmployer = role === 'EMPLOYER';
 
   if (isLoading) return <Loading message="공고 내용을 불러오는 중입니다..." />;
   if (isError || !post) return <Empty message="공고를 찾을 수 없습니다." />;
@@ -35,11 +39,14 @@ export const JobPostDetailContent = ({ postId }: Props) => {
         {/* 1. 상단 개요 섹션 (비즈니스 로직인 버튼 포함) */}
         <JobPostDetailOverviewSection
           data={post}
+          headerActions={isEmployer ? <JobPostOwnerActions jobPostId={post.id} /> : undefined}
           actions={
-            <>
-              <LikeJobPostButton jobPostId={post.id} liked={post.liked} variant="bordered" />
-              <ApplyButton jobPostId={post.id} />
-            </>
+            !isEmployer ? (
+              <>
+                <LikeJobPostButton jobPostId={post.id} liked={post.liked} variant="bordered" />
+                <ApplyButton jobPostId={post.id} />
+              </>
+            ) : undefined
           }
         />
 
@@ -54,10 +61,12 @@ export const JobPostDetailContent = ({ postId }: Props) => {
       </Article>
 
       {/* 하단 Sticky 지원 바 */}
-      <StickyBar>
-        <LikeJobPostButton jobPostId={post.id} liked={post.liked} variant="bordered" />
-        <ApplyButton jobPostId={post.id} />
-      </StickyBar>
+      {!isEmployer && (
+        <StickyBar>
+          <LikeJobPostButton jobPostId={post.id} liked={post.liked} variant="bordered" />
+          <ApplyButton jobPostId={post.id} />
+        </StickyBar>
+      )}
     </Main>
   );
 };

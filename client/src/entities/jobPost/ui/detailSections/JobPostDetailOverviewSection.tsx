@@ -10,10 +10,11 @@ import Loading from 'shared/ui/Loading/Loading';
 
 interface Props {
   data: JobPostOverviewProps | null;
+  headerActions?: React.ReactNode;
   actions?: React.ReactNode;
 }
 
-export const JobPostDetailOverviewSection = ({ data, actions }: Props) => {
+export const JobPostDetailOverviewSection = ({ data, headerActions, actions }: Props) => {
 
   if (!data) {
     return <Loading message="공고 개요를 불러오는 중..." />;
@@ -41,7 +42,10 @@ export const JobPostDetailOverviewSection = ({ data, actions }: Props) => {
         <S.TopRow>
           <S.TextContent>
             <S.Header>
-              <S.MainTitle>{title}</S.MainTitle>
+              <S.TitleRow>
+                <S.MainTitle>{title}</S.MainTitle>
+                {headerActions && <S.HeaderActions>{headerActions}</S.HeaderActions>}
+              </S.TitleRow>
               <S.CompanyInfo>
                 <span className="name">{company}</span>
                 <span className="date">{createdAt}</span>
@@ -113,10 +117,25 @@ const S = {
     margin-bottom: 32px;
     gap: 8px;
   `,
+  TitleRow: styled.div`
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+  `,
   MainTitle: styled.h1`
+    flex: 1;
+    min-width: 0;
     font-size: ${({ theme }) => theme.fontSize.xlarge};
     font-weight: ${({ theme }) => theme.fontWeight.bold};
     line-height: 1.4;
+    margin: 0;
+  `,
+  HeaderActions: styled.div`
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
   `,
   InfoList: styled.div`
     display: flex;

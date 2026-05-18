@@ -1,6 +1,13 @@
 import { authClient, httpClient } from "shared/api/httpClient";
 import { useAuthStore } from "entities/auth/model/store/authStore";
-import type { GetJobPostsParams, JobPost, JobPostCreate, JobPostDetail, JobPostListCursor } from "../model/types/jobPost.type";
+import type {
+  GetJobPostsParams,
+  JobPost,
+  JobPostCreate,
+  JobPostDetail,
+  JobPostListCursor,
+  JobPostUpdatePayload,
+} from "../model/types/jobPost.type";
 import mockJobPostData from "shared/mocks/data/mockJobPostData.json";
 import { toFormData } from "shared/lib/toFormData";
 
@@ -44,19 +51,27 @@ export const createJobPost = async (data: JobPostCreate) => {
   return response.data;
 };
 
-//공고 수정 (서버에 PUT 엔드포인트 없음 - 추후 추가 시 활성화)
-// export const updateJobPost = async (data: JobPostUpdate) => {
-//   const { id, ...updateFields } = data;
-//   const formData = toFormData(updateFields);
-//   const response = await authClient.put(`/api/v1/job-posts/${id}`, formData);
-//   return response.data;
-// }
+// 공고 수정 — multipart: data(JSON) + descriptionImage(선택)
+export const updateJobPost = async (
+  id: number,
+  payload: JobPostUpdatePayload
+): Promise<JobPostDetail> => {
+  const formData = new FormData();
+  formData.append(
+    'data',
+    new Blob([JSON.stringify(payload.data)], { type: 'application/json' })
+  );
+  if (payload.descriptionImage) {
+    formData.append('descriptionImage', payload.descriptionImage);
+  }
+  const response = await authClient.put<JobPostDetail>(`/api/v1/job-posts/${id}`, formData);
+  return response.data;
+};
 
-//공고 삭제 (서버에 DELETE 엔드포인트 없음 - 추후 추가 시 활성화)
-// export const deleteJobPost = async (id: number) => {
-//   const response = await authClient.delete(`/api/v1/job-posts/${id}`);
-//   return response.data;
-// }
+// 공고 삭제
+export const deleteJobPost = async (id: number): Promise<void> => {
+  await authClient.delete(`/api/v1/job-posts/${id}`);
+};
 
 //공고 마감 처리
 export const closeJobPost = async (id: number) => {

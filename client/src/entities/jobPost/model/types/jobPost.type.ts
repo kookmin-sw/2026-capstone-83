@@ -25,12 +25,16 @@ export interface JobPostDetail extends JobPost {
   companyLogoUrl?: string; // 회사 로고 이미지 URL
   description?: string; // 공고 상세 정보
   descriptionUrl?: string; // 상세 정보 이미지 URL
+  s3ContentUrl?: string;
+  jobCategory?: string;
+  jobSubcategory?: string;
   createdAt: string; // 생성일
   updatedAt: string; // 수정일
   requirements?: string[]; // 지원 자격
   benefits?: string[]; // 우대사항
   tasks: string[]; // 업무 내용
   items?: string[]; // 준비물
+  ageRequirements?: string[];
 }
 
 export type JobPostOverviewProps = Pick<
@@ -96,27 +100,29 @@ export interface JobPostCreateResponse {
 }
 
 
-export interface JobPostUpdate {
-  id: number;
-  workplaceId?: number;
-  title: string;
-  company: string;
-  companyLogoImage?: File | null;
-  location: string;
-  wage: number;
-  wageType: WageType;
-  totalSlots: number;
-  filledSlots: number;
-  workDate: string;
-  workStart: string;
-  workEnd: string;
-  deadline: string;
+/** PUT /api/v1/job-posts/{id} — data 파트 (null 필드는 서버에서 기존 값 유지) */
+export interface JobPostUpdateRequest {
+  title?: string;
+  jobCategory?: string;
+  jobSubcategory?: string;
+  wage?: number;
+  wageType?: WageType;
+  workDate?: string;
+  workStart?: string;
+  workEnd?: string;
+  totalSlots?: number;
+  deadline?: string;
   description?: string;
-  descriptionImage?: File | null;
   requirements?: string[];
   benefits?: string[];
-  tasks: string[];
+  tasks?: string[];
   items?: string[];
+  ageRequirements?: string[];
+}
+
+export interface JobPostUpdatePayload {
+  data: JobPostUpdateRequest;
+  descriptionImage?: File | null;
 }
 
 

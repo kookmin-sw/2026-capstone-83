@@ -2,6 +2,8 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Calendar, Clock, MapPin } from 'lucide-react';
+import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
+import { JobPostOwnerActions } from 'features/jobPost/JobPostOwnerActions';
 import { useJobPost } from '../model/hooks/useJobPost';
 import Section from 'shared/ui/Layout/Section';
 import ProgressBar from 'shared/ui/ProgressBar/ProgressBar';
@@ -14,6 +16,7 @@ interface Props {
 
 const SelectedJobPostSection = ({ postId }: Props) => {
   const navigate = useNavigate();
+  const setSelectedJobPostId = useScheduleStore((s) => s.setSelectedJobPostId);
   const { data: jobPost, isLoading } = useJobPost(postId);
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -28,12 +31,18 @@ const SelectedJobPostSection = ({ postId }: Props) => {
   return (
     <Section>
       <S.Container>
-        {/* 타이틀 + 화살표 */}
-        <S.TitleRow onClick={() => navigate(`/jobpost/${postId}`)}>
-          <S.Title>{jobPost.title}</S.Title>
-          <S.ArrowButton>
-            <ArrowRight size={20} />
-          </S.ArrowButton>
+        {/* 타이틀(상세 링크) + 수정/삭제 */}
+        <S.TitleRow>
+          <S.TitleLink onClick={() => navigate(`/jobpost/${postId}`)}>
+            <S.Title>{jobPost.title}</S.Title>
+            <S.ArrowButton>
+              <ArrowRight size={20} />
+            </S.ArrowButton>
+          </S.TitleLink>
+          <JobPostOwnerActions
+            jobPostId={postId}
+            onDeleted={() => setSelectedJobPostId(null)}
+          />
         </S.TitleRow>
 
         {/* 프로그레스바 */}
@@ -103,6 +112,15 @@ const S = {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
+  `,
+  TitleLink: styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex: 1;
+    min-width: 0;
+    gap: 8px;
     cursor: pointer;
 
     &:hover {
@@ -114,6 +132,9 @@ const S = {
     font-weight: ${({ theme }) => theme.fontWeight.bold};
     color: ${({ theme }) => theme.color.text};
     margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   `,
   ArrowButton: styled.div`
     display: flex;

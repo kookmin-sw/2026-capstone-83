@@ -6,21 +6,30 @@ import Button from 'shared/ui/Button/Button';
 interface Props {
   getFormValues: () => Partial<JobPostTemplateRequest>;
   onLoadTemplate: (template: JobPostTemplateResponse) => void;
+  submitLabel?: string;
+  showTemplates?: boolean;
+  isSubmitting?: boolean;
 }
 
-export const JobPostSubmitCard = ({ getFormValues, onLoadTemplate }: Props) => {
+export const JobPostSubmitCard = ({
+  getFormValues,
+  onLoadTemplate,
+  submitLabel = '+ 공고 등록',
+  showTemplates = true,
+  isSubmitting = false,
+}: Props) => {
   return (
     <S.Card>
-      {/* 공고 등록 버튼 */}
-      <Button type="submit" scheme="primary" buttonSize="large">
-        + 공고 등록
+      <Button type="submit" scheme="primary" buttonSize="large" disabled={isSubmitting}>
+        {submitLabel}
       </Button>
 
-      {/* 템플릿 섹션 */}
-      <TemplateSection
-        getFormValues={getFormValues}
-        onLoadTemplate={onLoadTemplate}
-      />
+      {showTemplates && (
+        <TemplateSection
+          getFormValues={getFormValues}
+          onLoadTemplate={onLoadTemplate}
+        />
+      )}
     </S.Card>
   );
 };
