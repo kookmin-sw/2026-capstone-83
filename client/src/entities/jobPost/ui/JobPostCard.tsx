@@ -16,8 +16,9 @@ interface JobPostCardProps {
   bottomActions?: React.ReactNode;
 }
 
-export const JobPostCard = ({ data, extraActions, bottomActions }: JobPostCardProps) => {
+const INFO_ICON_SIZE = 15;
 
+export const JobPostCard = ({ data, extraActions, bottomActions }: JobPostCardProps) => {
   const {
     id,
     title,
@@ -75,28 +76,33 @@ export const JobPostCard = ({ data, extraActions, bottomActions }: JobPostCardPr
         {/* 3. 하단: 상세 정보 (Grid 레이아웃) */}
         <S.InfoGrid>
           <S.InfoItem>
-            <S.Icon><Banknote /></S.Icon>
+            <S.Icon><Banknote size={INFO_ICON_SIZE} /></S.Icon>
             <span>
               {wageType === 'DAILY' ? '일급' : '시급'} <strong>{wage.toLocaleString()}원</strong>
             </span>
           </S.InfoItem>
           <S.InfoItem>
-            <S.Icon><Calendar /></S.Icon>
+            <S.Icon><Calendar size={INFO_ICON_SIZE} /></S.Icon>
             <span>{workDate}</span>
           </S.InfoItem>
           <S.InfoItem>
-            <S.Icon><MapPin /></S.Icon>
+            <S.Icon><MapPin size={INFO_ICON_SIZE} /></S.Icon>
             <span>{location}</span>
           </S.InfoItem>
           <S.InfoItem>
-            <S.Icon><Clock /></S.Icon>
+            <S.Icon><Clock size={INFO_ICON_SIZE} /></S.Icon>
             <span>{workStart} - {workEnd}</span>
           </S.InfoItem>
         </S.InfoGrid>
 
         {/* 4. 최하단: 모집 현황 프로그레스 바 */}
         <S.ProgressSection>
-          <ProgressBar total={totalSlots} current={filledSlots} />
+          <ProgressBar
+            total={totalSlots}
+            current={filledSlots}
+            height="10px"
+            fontSize="14px"
+          />
         </S.ProgressSection>
 
         {/* 5. 하단 액션 (있을 때만) */}

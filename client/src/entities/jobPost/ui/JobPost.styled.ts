@@ -3,12 +3,12 @@ import styled from 'styled-components';
 
 export const CardContainer = styled.div`
   background: #ffffff;
-  border-radius: 16px;
-  padding: 20px;
+  border-radius: 14px;
+  padding: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 12px;
   border: 1px solid ${({ theme }) => theme.color.border};
   ${hoverOverlay}
 `;
@@ -21,14 +21,19 @@ export const Header = styled.div`
 
 export const BadgeGroup = styled.div`
   display: flex;
-  gap: 6px;
+  gap: 4px;
+  flex-wrap: wrap;
+
+  span {
+    padding: 3px 10px;
+  }
 `;
 
 export const ActionGroup = styled.div`
   display: flex;
-  gap: 12px;
+  gap: 8px;
   color: #bbbbbb;
-  font-size: 20px;
+  font-size: 18px;
 `;
 
 export const TitleSection = styled.div`
@@ -38,38 +43,47 @@ export const TitleSection = styled.div`
 `;
 
 export const Title = styled.h3`
-  font-size: 20px;
+  font-size: 17px;
   font-weight: 700;
   color: #1a1a1a;
   margin: 0;
-  line-height: 1.4;
+  line-height: 1.35;
 `;
 
 export const DDay = styled.span`
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 800;
   color: #000000;
+  flex-shrink: 0;
+  margin-left: 8px;
 `;
 
 export const Company = styled.p`
-  font-size: 14px;
+  font-size: 13px;
   color: #666666;
-  margin: -8px 0 0 0;
+  margin: -4px 0 0 0;
 `;
 
 export const InfoGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px 20px;
-  margin-top: 8px;
+  gap: 8px 14px;
+  margin-top: 4px;
 `;
 
 export const InfoItem = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 15px;
+  gap: 6px;
+  font-size: 13px;
   color: #333333;
+  min-width: 0;
+
+  span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
 
   strong {
     font-weight: 700;
@@ -77,24 +91,30 @@ export const InfoItem = styled.div`
 `;
 
 export const Icon = styled.span`
-  font-size: 16px;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
   opacity: 0.6;
+
+  svg {
+    width: 15px;
+    height: 15px;
+  }
 `;
 
 export const ProgressSection = styled.div`
-  margin-top: 10px;
+  margin-top: 4px;
 `;
 
 export const BottomActions = styled.div`
   display: flex;
   gap: 8px;
-  padding-top: 12px;
-  /* border-top: 1px solid ${({ theme }) => theme.color.border}; */
-  margin-top: 4px;
+  padding-top: 8px;
+  margin-top: 2px;
 
   & > button {
     flex: 1;
-    padding-top: 12px;
-    padding-bottom: 12px;
+    padding-top: 10px;
+    padding-bottom: 10px;
   }
 `;
