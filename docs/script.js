@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Observe all animatable elements
   const animatableElements = document.querySelectorAll(
-    '.feature-card, .arch-card, .stack-category, .team-role-box, .problem-block'
+    '.feature-card, .feature-showcase, .arch-card, .stack-category, .team-role-box, .problem-block'
   );
   animatableElements.forEach((el) => observer.observe(el));
 
