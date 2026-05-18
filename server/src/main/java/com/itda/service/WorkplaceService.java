@@ -10,6 +10,8 @@ import com.itda.exception.NotFoundException;
 import com.itda.repository.EmployerRepository;
 import com.itda.repository.JobPostRepository;
 import com.itda.repository.WorkplaceRepository;
+import com.itda.service.S3Service;
+import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -25,6 +27,7 @@ public class WorkplaceService {
     private final WorkplaceRepository workplaceRepository;
     private final JobPostRepository jobPostRepository;
     private final EmployerRepository employerRepository;
+    private final S3Service s3Service;
 
     /**
      * 내 사업장 목록 조회 (로그인 사용자의 Employer 기준)
@@ -48,8 +51,13 @@ public class WorkplaceService {
      * 사업장 등록
      */
     @Transactional
-    public WorkplaceResponse createWorkplace(WorkplaceCreateRequest request, User user) {
+    public WorkplaceResponse createWorkplace(WorkplaceCreateRequest request, MultipartFile companyLogoImage, User user) {
         Employer employer = getEmployerByUser(user);
+
+        // 로고 이미지가 있으면 S3에 업로드
+        String companyLogoUrl = (companyLogoImage != null && !companyLogoImage.isEmpty())
+                ? s3Service.upload(companyLogoImage, "uploads/logos")
+                : null;
 
         Workplace saved = workplaceRepository.save(Workplace.builder()
                 .employer(employer)
@@ -57,7 +65,7 @@ public class WorkplaceService {
                 .companyName(request.companyName())
                 .businessNumber(request.businessNumber())
                 .address(request.address())
-                .companyLogoUrl(request.companyLogoUrl())
+                .companyLogoUrl(companyLogoUrl)
                 .build());
 
         return WorkplaceResponse.from(saved);
@@ -67,8 +75,15 @@ public class WorkplaceService {
      * 사업장 수정 (부분 수정 — null 필드는 기존 값 유지)
      */
     @Transactional
-    public WorkplaceResponse updateWorkplace(Long workplaceId, WorkplaceUpdateRequest request, User user) {
+    public WorkplaceResponse updateWorkplace(Long workplaceId, WorkplaceUpdateRequest request, MultipartFile companyLogoImage, User user) {
         Workplace workplace = findOwnedWorkplace(workplaceId, user);
+
+        // 새 로고 이미지가 있으면 기존 이미지 삭제 후 새로 업로드
+        String companyLogoUrl = workplace.getCompanyLogoUrl();
+        if (companyLogoImage != null && !companyLogoImage.isEmpty()) {
+            s3Service.delete(companyLogoUrl);
+            companyLogoUrl = s3Service.upload(companyLogoImage, "uploads/logos");
+        }
 
         Workplace updated = workplaceRepository.save(Workplace.builder()
                 .id(workplace.getId())
@@ -77,7 +92,7 @@ public class WorkplaceService {
                 .companyName(request.companyName() != null ? request.companyName() : workplace.getCompanyName())
                 .businessNumber(request.businessNumber() != null ? request.businessNumber() : workplace.getBusinessNumber())
                 .address(request.address() != null ? request.address() : workplace.getAddress())
-                .companyLogoUrl(request.companyLogoUrl() != null ? request.companyLogoUrl() : workplace.getCompanyLogoUrl())
+                .companyLogoUrl(companyLogoUrl)
                 .createdAt(workplace.getCreatedAt())
                 .build());
 

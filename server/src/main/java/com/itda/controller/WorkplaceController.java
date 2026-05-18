@@ -10,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -42,35 +43,39 @@ public class WorkplaceController {
     }
 
     /**
-     * 사업장 등록
+     * 사업장 등록 (multipart/form-data)
      * POST /api/v1/workplaces
+     * - data: WorkplaceCreateRequest JSON
+     * - companyLogoImage: 로고 이미지 파일 (선택)
      */
-    @PostMapping
+    @PostMapping(consumes = "multipart/form-data")
     public ResponseEntity<WorkplaceResponse> createWorkplace(
-            @RequestBody WorkplaceCreateRequest request,
+            @RequestPart("data") WorkplaceCreateRequest request,
+            @RequestPart(value = "companyLogoImage", required = false) MultipartFile companyLogoImage,
             @AuthenticationPrincipal User user) {
-        WorkplaceResponse created = workplaceService.createWorkplace(request, user);
+        WorkplaceResponse created = workplaceService.createWorkplace(request, companyLogoImage, user);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * 사업장 수정 (부분 수정)
+     * 사업장 수정 (multipart/form-data, 부분 수정)
      * PUT /api/v1/workplaces/{id}
+     * - data: WorkplaceUpdateRequest JSON (null 필드는 기존 값 유지)
+     * - companyLogoImage: 새 로고 이미지 파일 (선택, 없으면 기존 유지)
      */
-    @PutMapping("/{id}")
+    @PutMapping(value = "/{id}", consumes = "multipart/form-data")
     public ResponseEntity<WorkplaceResponse> updateWorkplace(
             @PathVariable Long id,
-            @RequestBody WorkplaceUpdateRequest request,
+            @RequestPart("data") WorkplaceUpdateRequest request,
+            @RequestPart(value = "companyLogoImage", required = false) MultipartFile companyLogoImage,
             @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(workplaceService.updateWorkplace(id, request, user));
+        return ResponseEntity.ok(workplaceService.updateWorkplace(id, request, companyLogoImage, user));
     }
 
     /**
      * 사업장 삭제
      * DELETE /api/v1/workplaces/{id}
-     *
-     * - 인증 필요 (Authorization: Bearer ...)
-     * - 본인 소유 사업장만 삭제 가능 → 그렇지 않으면 403
+     * - 본인 소유 사업장만 삭제 가능 → 403
      * - 연결된 공고가 있으면 409
      * - 성공 시 204 No Content
      */
