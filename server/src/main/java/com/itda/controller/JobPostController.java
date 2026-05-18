@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/job-posts")
@@ -35,20 +36,36 @@ public class JobPostController {
     //공고 목록 통합 조회 (필터 + 커서 페이지네이션)
     //지원자/고용주 공통 사용 - 버튼은 프론트에서 role 기준으로 처리
     //GET /api/v1/job-posts?cursor=&size=&keyword=&jobCategory=&location=&sortType=
+    //
+    // 응답 헤더 X-Request-Id : 해당 응답의 노출 묶음 식별자(UUID).
+    //   프론트는 사용자가 카드 클릭 시 같은 값을 X-Request-Id 헤더로 되돌려 보내
+    //   클릭과 노출을 정확히 묶을 수 있게 한다 (NDCG@10 계산용).
+    // Cache-Control: no-store
+    //   request_id 가 응답과 함께 캐시되어 잘못 재사용되는 사고 방지.
     @GetMapping
     public ResponseEntity<CursorPageResponse<JobPostCardResponse>> getJobPosts(
             @ModelAttribute JobPostFilterRequest filter,
             @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(jobPostService.getJobPosts(filter, user));
+        String requestId = UUID.randomUUID().toString();
+        CursorPageResponse<JobPostCardResponse> body =
+                jobPostService.getJobPosts(filter, user, requestId);
+        return ResponseEntity.ok()
+                .header("X-Request-Id", requestId)
+                .header("Cache-Control", "no-store")
+                .body(body);
     }
 
 
     //공고 상세 조회
+    // X-Request-Id, X-Referrer-Sort-Type : 노출 ↔ 클릭 매핑용 (있으면 정확, 없어도 시간 윈도우 조인으로 동작)
     @GetMapping("/{id}")
     public ResponseEntity<JobPostDetailResponse> getJobPost(
             @PathVariable Long id,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(jobPostService.getJobPost(id, user));
+            @AuthenticationPrincipal User user,
+            @RequestHeader(value = "X-Request-Id", required = false) String requestId,
+            @RequestHeader(value = "X-Referrer-Sort-Type", required = false) String referrerSortType) {
+        return ResponseEntity.ok(
+                jobPostService.getJobPost(id, user, requestId, referrerSortType));
     }
 
 

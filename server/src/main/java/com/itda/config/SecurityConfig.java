@@ -79,6 +79,9 @@ public class SecurityConfig {
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
+        // 응답에서 FE 가 읽을 수 있도록 명시 노출.
+        // - X-Request-Id: 공고 목록 응답 → 클릭 시 같은 값을 X-Request-Id 헤더로 되돌려 보내 NDCG@10 정확도 향상
+        config.setExposedHeaders(List.of("X-Request-Id"));
         config.setAllowCredentials(true); // credentials: include 필수
         config.setMaxAge(3600L);
 

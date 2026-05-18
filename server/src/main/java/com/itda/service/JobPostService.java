@@ -14,13 +14,16 @@ import com.itda.exception.NotFoundException;
 import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
 import com.itda.repository.WorkplaceRepository;
+import com.itda.service.event.InteractionEvents;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -34,43 +37,50 @@ public class JobPostService {
     private final S3Service s3Service;                   // S3 업로드 서비스 주입
     private final WorkplaceRepository workplaceRepository; // 로고 URL 저장용
     private final JobPostRankingService rankingService;    // 개인화 추천
+    private final ApplicationEventPublisher eventPublisher; // impression/click 이벤트 발행
 
     // 공고 목록 통합 조회 (필터 + 커서 페이지네이션)
     // 지원자/고용주 공통 사용 - 모든 필터(다중 태그/범위 포함)를 JobPostRepositoryCustom으로 위임
-    public CursorPageResponse<JobPostCardResponse> getJobPosts(JobPostFilterRequest filter, User user) {
-        // 추천 정렬: APPLICANT 로그인 사용자만 개인화 랭킹. 태그 필터는 무시.
+    // requestId: 컨트롤러에서 생성한 UUID. 노출 로그를 한 응답으로 묶기 위한 식별자.
+    public CursorPageResponse<JobPostCardResponse> getJobPosts(
+            JobPostFilterRequest filter, User user, String requestId) {
+
+        CursorPageResponse<JobPostCardResponse> response;
+
         if ("RECOMMENDED".equalsIgnoreCase(filter.sortType())
                 && user != null
                 && user.getRole() == UserRole.APPLICANT) {
-            return rankingService.recommend(user, filter.cursor(), filter.getSize());
+            // 추천 정렬: APPLICANT 로그인 사용자만 개인화 랭킹. 태그 필터는 무시.
+            response = rankingService.recommend(user, filter.cursor(), filter.getSize());
+        } else {
+            int fetchSize = filter.getSize() + 1;
+            List<JobPost> posts = jobPostRepository.findByDynamicFilter(filter, fetchSize);
+
+            boolean hasNext = posts.size() > filter.getSize();
+            if (hasNext) {
+                posts = posts.subList(0, filter.getSize());
+            }
+
+            List<Long> likedIds = (user != null)
+                    ? likeService.getLikedJobPostIds(user.getId())
+                    : List.of();
+
+            List<JobPostCardResponse> jobPosts = posts.stream()
+                    .map(j -> JobPostCardResponse.from(j, likedIds.contains(j.getId())))
+                    .toList();
+
+            Long nextCursor = hasNext ? jobPosts.get(jobPosts.size() - 1).id() : null;
+            response = CursorPageResponse.of(jobPosts, nextCursor, hasNext);
         }
 
-        int fetchSize = filter.getSize() + 1;
-
-        List<JobPost> posts = jobPostRepository.findByDynamicFilter(filter, fetchSize);
-
-        boolean hasNext = posts.size() > filter.getSize();
-        if (hasNext) {
-            posts = posts.subList(0, filter.getSize());
-        }
-
-        // liked 공고 ID 목록
-        List<Long> likedIds = (user != null)
-                ? likeService.getLikedJobPostIds(user.getId())
-                : List.of();
-
-        // liked 표시 포함하여 DTO 변환
-        List<JobPostCardResponse> jobPosts = posts.stream()
-                .map(j -> JobPostCardResponse.from(j, likedIds.contains(j.getId())))
-                .toList();
-
-        Long nextCursor = hasNext ? jobPosts.get(jobPosts.size() - 1).id() : null;
-
-        return CursorPageResponse.of(jobPosts, nextCursor, hasNext);
+        publishImpressionEvent(response, filter.sortType(), user, requestId);
+        return response;
     }
 
     // 공고 상세 조회 — liked 포함
-    public JobPostDetailResponse getJobPost(Long id, User user) {
+    // requestId, referrerSortType : 클라이언트가 X-Request-Id / X-Referrer-Sort-Type 헤더로 전달
+    public JobPostDetailResponse getJobPost(Long id, User user,
+                                            String requestId, String referrerSortType) {
         JobPost post = jobPostRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
 
@@ -78,7 +88,41 @@ public class JobPostService {
         boolean liked = (user != null)
                 && jobPostLikeRepository.existsByUserIdAndJobPostId(user.getId(), id);
 
+        eventPublisher.publishEvent(new InteractionEvents.ClickEvent(
+                requestId,
+                user != null ? user.getId() : null,
+                id,
+                referrerSortType,
+                LocalDateTime.now()
+        ));
+
         return JobPostDetailResponse.from(post, liked);
+    }
+
+    // 응답에 포함된 공고들을 ImpressionBatchEvent 로 묶어 발행.
+    // 비어 있으면 발행하지 않음.
+    private void publishImpressionEvent(
+            CursorPageResponse<JobPostCardResponse> response,
+            String sortType,
+            User user,
+            String requestId) {
+        if (response == null || response.jobPosts() == null || response.jobPosts().isEmpty()) {
+            return;
+        }
+        List<InteractionEvents.Impression> impressions = new ArrayList<>(response.jobPosts().size());
+        for (int i = 0; i < response.jobPosts().size(); i++) {
+            impressions.add(new InteractionEvents.Impression(
+                    response.jobPosts().get(i).id(),
+                    i + 1                       // 1-based position
+            ));
+        }
+        eventPublisher.publishEvent(new InteractionEvents.ImpressionBatchEvent(
+                requestId,
+                user != null ? user.getId() : null,
+                sortType,
+                impressions,
+                LocalDateTime.now()
+        ));
     }
 
     // 고용주 본인 공고 목록 조회 (커서 페이지네이션)
