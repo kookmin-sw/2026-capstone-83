@@ -14,7 +14,7 @@ export interface SignupRequest {
 }
 
 export interface LoginRequest {
-  role: UserType;
+  role?: UserType;
   email: string;
   password: string;
 }

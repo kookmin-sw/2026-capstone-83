@@ -1,7 +1,10 @@
 
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
-import { login, logout, refresh, signup } from 'entities/auth/api/auth.api';
+import { logout, refresh, signup } from 'entities/auth/api/auth.api';
+import { loginWithFallback } from 'entities/auth/lib/loginWithFallback';
+import { loadUserProfile } from 'entities/user/lib/loadUserProfile';
+import { useUserProfileStore } from 'entities/user/model/store/userProfileStore';
 import { useAuthStore } from '../store/authStore';
 
 
@@ -25,13 +28,19 @@ export const useLogin = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
 
   return useMutation({
-    mutationFn: login,
-    onSuccess: (data) => {
-      // 1. 응답받은 accessToken과 role을 전역 상태에 저장 (데이터 무결성 확보)
+    mutationFn: loginWithFallback,
+    onSuccess: async (data) => {
       setAuth(data.accessToken, data.role);
-
-      console.log('로그인 성공');
-      navigate('/'); // 메인 또는 대시보드로 이동
+      try {
+        await loadUserProfile();
+      } catch (error) {
+        console.error('프로필 조회 실패:', error);
+      }
+      if (data.role === 'MANAGER') {
+        navigate('/admin');
+        return;
+      }
+      navigate('/');
     },
     onError: (error) => {
       alert('로그인 정보가 일치하지 않습니다.');
@@ -66,12 +75,9 @@ export const useLogout = () => {
   return useMutation({
     mutationFn: logout,
     onSettled: () => {
-      // 성공 여부와 상관없이 프론트엔드 정보를 지워 무결성을 유지합니다.
       clearAuth();
-
-      // 캐시된 모든 쿼리 무효화 (이전 사용자의 데이터 유출 방지)
+      useUserProfileStore.getState().clearProfile();
       queryClient.clear();
-
     },
   });
 };

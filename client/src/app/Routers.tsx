@@ -22,6 +22,13 @@ import ApplicationsPage from 'pages/dashboard/applicant/ApplicationsPage';
 import CalendarPage from 'pages/dashboard/common/CalendarPage';
 import SettingsPage from 'pages/dashboard/common/SettingsPage';
 import NotificationsPage from 'pages/dashboard/common/NotificationsPage';
+import ManagerLayout from './layouts/ManagerLayout';
+import ManagerGuard from './guards/ManagerGuard';
+import AdminDashboardPage from 'pages/admin/AdminDashboardPage';
+import AdminUsersPage from 'pages/admin/AdminUsersPage';
+import AdminUserDetailPage from 'pages/admin/AdminUserDetailPage';
+import AdminReportsPage from 'pages/admin/AdminReportsPage';
+import AdminReportDetailPage from 'pages/admin/AdminReportDetailPage';
 
 
 const Routers = () => {
@@ -62,7 +69,16 @@ const Routers = () => {
         <Route path="/signup" element={<SignupPage />} />
       </Route>
 
-
+      {/* 관리자 레이아웃 (ROLE_MANAGER) */}
+      <Route element={<ManagerGuard />}>
+        <Route element={<ManagerLayout />}>
+          <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />} />
+          <Route path="/admin/users/:id" element={<AdminUserDetailPage />} />
+          <Route path="/admin/reports" element={<AdminReportsPage />} />
+          <Route path="/admin/reports/:id" element={<AdminReportDetailPage />} />
+        </Route>
+      </Route>
 
       <Route path="/test" element={<TestPage />} />
     </Routes>

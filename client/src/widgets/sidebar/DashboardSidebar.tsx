@@ -2,6 +2,10 @@ import { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Home, Building2, CalendarDays, Users, Settings, FileText, UserRoundPlus, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
+import {
+  getProfileAvatarUrl,
+  useUserProfileStore,
+} from 'entities/user/model/store/userProfileStore';
 import styled from 'styled-components';
 import { hoverOverlay } from 'shared/styles/hoverOverlay';
 
@@ -30,25 +34,27 @@ const APPLICANT_NAV: NavItem[] = [
 const DashboardSidebar = () => {
   const { pathname } = useLocation();
   const role = useAuthStore((s) => s.role);
+  const profile = useUserProfileStore((s) => s.profile);
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  const displayName = profile?.name ?? (role === 'EMPLOYER' ? '고용주' : '구직자');
+  const avatarUrl = getProfileAvatarUrl(profile);
 
   const navItems = role === 'EMPLOYER' ? EMPLOYER_NAV : APPLICANT_NAV;
 
   return (
     <S.Sidebar $collapsed={isCollapsed}>
       {/* 프로필 영역 */}
-      <S.ProfileArea $collapsed={isCollapsed}>
+      <S.ProfileArea
+        as={Link}
+        to="/dashboard/settings"
+        $collapsed={isCollapsed}
+        title={isCollapsed ? displayName : undefined}
+      >
         <S.Avatar>
-          <img
-            src="https://api.dicebear.com/7.x/identicon/svg?seed=user1"
-            alt="프로필"
-          />
+          <img src={avatarUrl} alt={`${displayName} 프로필`} />
         </S.Avatar>
-        {!isCollapsed && (
-          <S.ProfileName>
-            {role === 'EMPLOYER' ? '(주) 미래건설' : '김철수'}
-          </S.ProfileName>
-        )}
+        {!isCollapsed && <S.ProfileName>{displayName}</S.ProfileName>}
       </S.ProfileArea>
 
       {/* 네비게이션 */}
@@ -95,12 +101,19 @@ const S = {
     overflow-x: hidden;
     overflow-y: auto;
   `,
-  ProfileArea: styled.div<{ $collapsed: boolean }>`
+  ProfileArea: styled(Link)<{ $collapsed: boolean }>`
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 0 ${({ $collapsed }) => ($collapsed ? '0' : '8px')};
+    padding: 8px ${({ $collapsed }) => ($collapsed ? '0' : '8px')};
     justify-content: ${({ $collapsed }) => ($collapsed ? 'center' : 'flex-start')};
+    text-decoration: none;
+    border-radius: ${({ theme }) => theme.borderRadius.medium};
+    transition: background-color 0.15s ease;
+
+    &:hover {
+      background-color: ${({ theme }) => theme.color.background};
+    }
   `,
   Avatar: styled.div`
     width: 36px;

@@ -81,24 +81,26 @@ const Header = () => {
 
           {/* 오른쪽: 공고 생성 + 알림 + 유저 */}
           <S.RightSection>
-            <S.CreateLink
-              to="/jobpost/create"
-              onClick={(e) => {
-                if (!isLoggedIn || role !== 'EMPLOYER') {
-                  e.preventDefault();
-                  setIsRoleModalOpen(true);
-                }
-              }}
-            >
-              <Button
-                scheme="primary"
-                buttonSize="small"
-                fontSize='xsmall'
-                borderRadius="medium"
+            {role !== 'MANAGER' && (
+              <S.CreateLink
+                to="/jobpost/create"
+                onClick={(e) => {
+                  if (!isLoggedIn || role !== 'EMPLOYER') {
+                    e.preventDefault();
+                    setIsRoleModalOpen(true);
+                  }
+                }}
               >
-                + 공고 등록
-              </Button>
-            </S.CreateLink>
+                <Button
+                  scheme="primary"
+                  buttonSize="small"
+                  fontSize='xsmall'
+                  borderRadius="medium"
+                >
+                  + 공고 등록
+                </Button>
+              </S.CreateLink>
+            )}
 
             {/* 알림 드롭다운 */}
             <S.DropdownWrapper ref={notiRef}>
@@ -134,9 +136,16 @@ const Header = () => {
                 <S.DropdownMenu>
                   {isLoggedIn ? (
                     <>
-                      <S.DropdownItem onClick={() => { navigate('/dashboard/settings'); setIsUserOpen(false); }}>
-                        회원 정보
-                      </S.DropdownItem>
+                      {role === 'MANAGER' && (
+                        <S.DropdownItem onClick={() => { navigate('/admin'); setIsUserOpen(false); }}>
+                          관리자 페이지
+                        </S.DropdownItem>
+                      )}
+                      {role !== 'MANAGER' && (
+                        <S.DropdownItem onClick={() => { navigate('/dashboard/settings'); setIsUserOpen(false); }}>
+                          회원 정보
+                        </S.DropdownItem>
+                      )}
                       <S.DropdownDivider />
                       <S.DropdownItem onClick={() => { logoutMutate(); setIsUserOpen(false); }}>
                         로그아웃
