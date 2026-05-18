@@ -126,4 +126,30 @@ public class JobPost {
     protected void onCreate() {
         this.createdAt = LocalDateTime.now();
     }
+
+    // ─── 상태 변경 메서드 ───────────────────────────────────────
+
+    /**
+     * 채용 확정 시 filledSlots 증가 + 인원 마감 시 자동 CLOSED
+     */
+    public void confirmHire() {
+        this.filledSlots += 1;
+        if (this.filledSlots >= this.totalSlots) {
+            this.status = JobPostStatus.CLOSED;
+        }
+    }
+
+    /**
+     * 기간 만료에 의한 자동 마감 (스케줄러)
+     */
+    public void closeByExpiry() {
+        this.status = JobPostStatus.CLOSED;
+    }
+
+    /**
+     * 고용주에 의한 수동 마감
+     */
+    public void closeByEmployer() {
+        this.status = JobPostStatus.CLOSED;
+    }
 }

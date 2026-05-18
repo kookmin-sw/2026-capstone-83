@@ -164,12 +164,12 @@ public class ApplicationService {
                 .toList();
     }
 
-    // 구직자 근무 일정 조회 (HIRED: 확정된 근무 / PENDING: 채용 대기중)
+    // 구직자 근무 일정 조회 (APPLIED: 지원중 / HIRED: 확정된 근무 / PENDING: 채용 대기중)
     public EmployeeScheduleResponse getEmployeeSchedules(Long applicantUserId, LocalDate fromDate, LocalDate toDate) {
         List<Application> applications = applicationRepository
                 .findByApplicantUserIdAndStatusInAndJobPost_WorkDateBetween(
                         applicantUserId,
-                        List.of(ApplicationStatus.HIRED, ApplicationStatus.PENDING),
+                        List.of(ApplicationStatus.APPLIED, ApplicationStatus.HIRED, ApplicationStatus.PENDING),
                         fromDate, toDate);
 
         Map<String, List<EmployeeScheduleItem>> schedules = applications.stream()
@@ -219,21 +219,8 @@ public class ApplicationService {
         verifyOwnership(application, userId);
 
         JobPost jobPost = application.getJobPost();
-        jobPostRepository.save(JobPost.builder()
-                .id(jobPost.getId())
-                .workplace(jobPost.getWorkplace())
-                .title(jobPost.getTitle())
-                .s3ContentUrl(jobPost.getS3ContentUrl())
-                .wage(jobPost.getWage())
-                .wageType(jobPost.getWageType())
-                .workDate(jobPost.getWorkDate())
-                .workStart(jobPost.getWorkStart())
-                .workEnd(jobPost.getWorkEnd())
-                .totalSlots(jobPost.getTotalSlots())
-                .filledSlots(jobPost.getFilledSlots() + 1)
-                .status(jobPost.getStatus())
-                .deadline(jobPost.getDeadline())
-                .build());
+        jobPost.confirmHire();
+        jobPostRepository.save(jobPost);
 
         Application saved = applicationRepository.save(Application.builder()
                 .id(application.getId())

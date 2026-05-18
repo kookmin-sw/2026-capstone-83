@@ -2,6 +2,7 @@ package com.itda.controller;
 
 import com.itda.dto.request.JobPostFilterRequest;
 import com.itda.dto.request.JobPostCreateRequest;
+import com.itda.dto.request.JobPostUpdateRequest;
 import com.itda.dto.response.CursorPageResponse;
 import com.itda.dto.response.JobPostCardResponse;
 import com.itda.dto.response.JobPostDetailResponse;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import java.time.LocalDate;
@@ -69,15 +71,15 @@ public class JobPostController {
     }
 
 
-     // 고용주 본인 공고 목록 조회 (커서 페이지네이션)
-     // GET /api/v1/employer/job-posts?cursor=&size=10
-     @GetMapping("/employer")
-     public ResponseEntity<CursorPageResponse<JobPostCardResponse>> getJobPostsByEmployer(
-             @RequestParam(required = false) Long cursor,
-             @RequestParam(defaultValue = "10") int size,
-             @AuthenticationPrincipal User user) {
-         return ResponseEntity.ok(jobPostService.getJobPostsByEmployer(user.getId(), cursor, size));
-     }
+    // 고용주 본인 공고 목록 조회 (커서 페이지네이션)
+    // GET /api/v1/employer/job-posts?cursor=&size=10
+    @GetMapping("/employer")
+    public ResponseEntity<CursorPageResponse<JobPostCardResponse>> getJobPostsByEmployer(
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(jobPostService.getJobPostsByEmployer(user.getId(), cursor, size));
+    }
 
     // 캘린더용 날짜 범위 공고 조회
     // GET /api/v1/job-posts/employer/calendar?start=&end=
@@ -90,8 +92,8 @@ public class JobPostController {
     }
 
 
-     //공고 등록 POST /api/v1/job-posts?workplaceId=1
-     //multipart/form-data 각 필드를 JobPostCreateRequest DTO에 자동 매핑
+    //공고 등록 POST /api/v1/job-posts?workplaceId=1
+    //multipart/form-data 각 필드를 JobPostCreateRequest DTO에 자동 매핑
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<JobPostDetailResponse> createJobPost(
@@ -114,4 +116,34 @@ public class JobPostController {
         jobPostService.closeJobPost(id, user.getId());
         return ResponseEntity.ok().build();
     }
+
+    /**
+     * 공고 수정 (multipart/form-data, 부분 수정)
+     * PUT /api/v1/job-posts/{id}
+     * - data: JobPostUpdateRequest JSON (null 필드는 기존 값 유지)
+     * - descriptionImage: 새 상세 이미지 (선택, 없으면 기존 유지)
+     */
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<JobPostDetailResponse> updateJobPost(
+            @PathVariable Long id,
+            @RequestPart("data") JobPostUpdateRequest request,
+            @RequestPart(value = "descriptionImage", required = false) MultipartFile descriptionImage,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(jobPostService.updateJobPost(id, request, descriptionImage, user.getId()));
+    }
+
+    /**
+     * 공고 삭제
+     * DELETE /api/v1/job-posts/{id}
+     * - 본인 공고만 삭제 가능
+     * - 채용 확정된 지원자가 있으면 삭제 불가 (409)
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteJobPost(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        jobPostService.deleteJobPost(id, user.getId());
+        return ResponseEntity.noContent().build();
+    }
+
 }
