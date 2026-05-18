@@ -134,7 +134,7 @@ const Header = () => {
                 <S.DropdownMenu>
                   {isLoggedIn ? (
                     <>
-                      <S.DropdownItem onClick={() => { navigate('/mypage'); setIsUserOpen(false); }}>
+                      <S.DropdownItem onClick={() => { navigate('/dashboard/settings'); setIsUserOpen(false); }}>
                         회원 정보
                       </S.DropdownItem>
                       <S.DropdownDivider />

@@ -37,7 +37,7 @@ const DashboardSidebar = () => {
   return (
     <S.Sidebar $collapsed={isCollapsed}>
       {/* 프로필 영역 */}
-      {/* <S.ProfileArea $collapsed={isCollapsed}>
+      <S.ProfileArea $collapsed={isCollapsed}>
         <S.Avatar>
           <img
             src="https://api.dicebear.com/7.x/identicon/svg?seed=user1"
@@ -49,7 +49,7 @@ const DashboardSidebar = () => {
             {role === 'EMPLOYER' ? '(주) 미래건설' : '김철수'}
           </S.ProfileName>
         )}
-      </S.ProfileArea> */}
+      </S.ProfileArea>
 
       {/* 네비게이션 */}
       <S.NavList>
