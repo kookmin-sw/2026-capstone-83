@@ -6,6 +6,6 @@ public enum NotificationType {
     OFFER_ACCEPTED,    // 제안 수락됨 (고용주에게)
     HIRED,             // 채용 확정 (구직자에게)
     REJECTED,          // 거절됨 (구직자에게)
-    WORK_COMPLETED     // 근무 완료 (구직자에게)
-
+    WORK_COMPLETED,    // 근무 완료 (구직자에게)
+    JOB_POST_DELETED   // 공고 삭제됨 (HIRED 구직자에게)
 }
