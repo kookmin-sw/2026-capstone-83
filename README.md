@@ -89,10 +89,11 @@ AI 기반 개인화 추천으로 구직자에게 최적의 공고를, 고용주�
 
 | 이름 | 역할 |
 |------|------|
-| - | Backend / AI 추천 |
-| - | Frontend |
-| - | Frontend |
-| - | Design / PM |
+| 방현식 | Backend |
+| 이재익 | Backend |
+| 이진백 | Backend |
+| 정호진 | Frontend |
+| 김세현 | Design / PM |
 
 ---
 
