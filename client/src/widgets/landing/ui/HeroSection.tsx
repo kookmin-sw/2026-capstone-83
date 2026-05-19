@@ -1,5 +1,4 @@
 import type { MouseEvent } from 'react';
-import { HeroJobSearch } from './HeroJobSearch';
 import * as L from './landing.styled';
 import * as S from './HeroSection.styled';
 
