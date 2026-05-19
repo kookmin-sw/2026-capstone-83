@@ -147,4 +147,12 @@ public class ApplicationController {
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(applicationService.complete(id, user.getId()));
     }
+
+    // 채용 취소 (고용주)
+    @PostMapping("/api/v1/applications/{id}/cancel-hire")
+    public ResponseEntity<ApplicantResponse> cancelHire(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(applicationService.cancelHire(id, user.getId()));
+    }
 }

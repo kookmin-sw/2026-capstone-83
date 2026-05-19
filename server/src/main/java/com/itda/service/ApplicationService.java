@@ -370,6 +370,38 @@ public class ApplicationService {
                 .toList();
     }
 
+    // 채용 취소 (고용주, 소유권 검증)
+    @Transactional
+    public ApplicantResponse cancelHire(Long applicationId, Long userId) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new NotFoundException("지원 내역을 찾을 수 없습니다."));
+
+        verifyOwnership(application, userId);
+
+        if (application.getStatus() != ApplicationStatus.HIRED) {
+            throw new IllegalStateException("채용 확정 상태에서만 취소할 수 있습니다.");
+        }
+
+        // filledSlots 감소 + 공고 재오픈 판단
+        JobPost jobPost = application.getJobPost();
+        jobPost.cancelHire();
+        jobPostRepository.save(jobPost);
+
+        // 상태를 CANCELLED로 변경
+        application.cancel();
+        applicationRepository.save(application);
+
+        // 알림: 구직자에게 채용 취소 알림
+        notificationService.notify(
+                application.getApplicantUser().getId(),
+                NotificationType.REJECTED,
+                "[" + jobPost.getTitle() + "] 채용이 취소되었습니다.",
+                application.getId()
+        );
+
+        return toApplicantResponse(application);
+    }
+
     // ─── 캘린더 API ───────────────────────────────────────────
 
     // 고용자 캘린더 일정 조회 (workplaceId 옵셔널 필터)
