@@ -7,11 +7,12 @@ import Footer from 'widgets/footer/Footer';
 const MainLayout = () => {
   const { pathname } = useLocation();
   const hideFooter = shouldHideFooter(pathname);
+  const flushTop = pathname === '/';
 
   return (
     <LayoutWrapper>
       <Header />
-      <Container>
+      <Container $flushTop={flushTop}>
         <Outlet />
       </Container>
       {!hideFooter && <Footer />}
@@ -25,22 +26,22 @@ const LayoutWrapper = styled.div`
   min-height: 100vh;
 `;
 
-const Container = styled.section`
+const Container = styled.section<{ $flushTop?: boolean }>`
   width: 100%;
   max-width: 1280px;
   min-width: 280px;
   margin: 0 auto;
-  padding: 3rem;
+  padding: ${({ $flushTop }) => ($flushTop ? '0 3rem 3rem' : '3rem')};
   flex: 1;
   display: flex;
   flex-direction: column;
 
   @media (${({ theme }) => theme.mediaQuery.tablet_small}) {
-    padding: 2rem 1.5rem;
+    padding: ${({ $flushTop }) => ($flushTop ? '0 1.5rem 2rem' : '2rem 1.5rem')};
   }
 
   @media (${({ theme }) => theme.mediaQuery.mobile}) {
-    padding: 1.5rem 1rem;
+    padding: ${({ $flushTop }) => ($flushTop ? '0 1rem 1.5rem' : '1.5rem 1rem')};
   }
 `;
 

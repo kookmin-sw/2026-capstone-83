@@ -8,6 +8,10 @@ const GlobalStyle = createGlobalStyle`
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+  }
+
+  /* SVG(Lucide 등)는 stroke/currentColor 사용 — svg에 color: black 적용 시 아이콘이 전부 검게 보임 */
+  *:not(svg):not(svg *) {
     color: black;
   }
 
