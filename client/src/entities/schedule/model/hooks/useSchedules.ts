@@ -1,20 +1,19 @@
 import { useQuery } from '@tanstack/react-query';
 import { fetchSchedules, fetchMockSchedules } from '../../api/schedule.api';
+import { filterSchedulesByWorkplace } from '../../lib/filterSchedulesByWorkplace';
 import type { ScheduleResponse } from '../types/schedule.type';
 import { USE_MOCK } from 'shared/config/env';
 
 /**
- * 캘린더 일정 조회 훅
- * - mock 모드: mock 데이터 + 실제 API 응답 병합 (schedules 합침)
- * - 실제 모드: 실제 API 응답만 반환
+ * 고용주 캘린더 일정 조회
+ * - API: 월 단위 전체 작업장 1회 (queryKey에 workplaceId 없음)
+ * - workplaceId: React Query select로 클라이언트 필터 (탭 전환 시 재요청 없음)
  */
 export const useSchedules = (workplaceId: number | null, fromDate: string, toDate: string) => {
   return useQuery<ScheduleResponse>({
-    queryKey: ['schedules', workplaceId, fromDate, toDate],
+    queryKey: ['schedules', fromDate, toDate],
     queryFn: async () => {
-      if (!workplaceId) throw new Error('workplaceId is required');
-
-      const real = await fetchSchedules(workplaceId, { fromDate, toDate }).catch(() => null);
+      const real = await fetchSchedules({ fromDate, toDate }).catch(() => null);
 
       if (USE_MOCK) {
         const mock = await fetchMockSchedules();
@@ -37,6 +36,11 @@ export const useSchedules = (workplaceId: number | null, fromDate: string, toDat
       if (!real) throw new Error('Failed to fetch schedules');
       return real;
     },
-    enabled: workplaceId !== null,
+    select: (data) => ({
+      ...data,
+      schedules: filterSchedulesByWorkplace(data.schedules, workplaceId),
+    }),
+    enabled: Boolean(fromDate && toDate),
+    staleTime: 1000 * 60 * 5,
   });
 };

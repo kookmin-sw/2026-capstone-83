@@ -11,6 +11,11 @@ export interface Schedule {
   filledSlots: number;
   totalSlots: number;
   postStatus?: PostStatus;
+  /** 고용주 캘린더 API */
+  workplaceId?: number;
+  workplace?: string;
+  applicantCount?: number;
+  hiredCount?: number;
 }
 
 

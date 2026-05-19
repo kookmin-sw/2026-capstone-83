@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
-import { fetchSchedules, fetchMockSchedules } from 'entities/schedule/api/schedule.api';
 import { CalendarSurface } from 'widgets/calendar/styles/calendar.styled';
 import type { Schedule } from 'entities/schedule/model/types/schedule.type';
+import { useSchedules } from 'entities/schedule/model/hooks/useSchedules';
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import { useWorkplaceStore } from 'entities/workplace/model/store/workplaceStore';
 import { ScheduleChip } from 'entities/schedule/ui/ScheduleChip';
@@ -10,7 +10,17 @@ import { BaseMonthlyCalendar } from 'widgets/calendar/BaseMonthlyCalendar';
 import { WeeklyCalendar } from './WeeklyCalendar';
 import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
-import { USE_MOCK } from 'shared/config/env';
+
+function getMonthDateRange(date: Date) {
+  const y = date.getFullYear();
+  const m = date.getMonth() + 1;
+  const lastDay = new Date(y, m, 0).getDate();
+  const pad = (n: number) => String(n).padStart(2, '0');
+  return {
+    fromDate: `${y}-${pad(m)}-01`,
+    toDate: `${y}-${pad(m)}-${pad(lastDay)}`,
+  };
+}
 
 type ViewMode = 'monthly' | 'weekly';
 
@@ -65,47 +75,24 @@ const ModalAddButton = styled.button`
 export const EmployerCalendarWidget = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('monthly');
   const [currentDate, setCurrentDate] = useState(new Date());
-  const [schedules, setSchedules] = useState<Record<string, Schedule[]>>({});
-  const [isLoading, setIsLoading] = useState(true);
   const setSelectedJobPostId = useScheduleStore((s) => s.setSelectedJobPostId);
   const selectedWpId = useWorkplaceStore((s) => s.selectedWorkplaceId);
 
+  const { fromDate, toDate } = useMemo(() => getMonthDateRange(currentDate), [currentDate]);
+  const { data, isLoading, isError } = useSchedules(selectedWpId, fromDate, toDate);
+  const schedules = (data?.schedules ?? {}) as Record<string, Schedule[]>;
+
   useEffect(() => {
-    const load = async () => {
-      // 현재 월 기준 날짜 범위 계산
-      const now = currentDate;
-      const fromDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
-      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-      const toDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(lastDay).padStart(2, '0')}`;
+    if (!data?.schedules) return;
 
-      // 실제 API 호출
-      const real = selectedWpId
-        ? await fetchSchedules(selectedWpId, { fromDate, toDate }).catch(() => null)
-        : null;
-
-      // mock 데이터
-      const mock = USE_MOCK ? await fetchMockSchedules() : null;
-
-      // 병합
-      const realSchedules = (real?.schedules || {}) as Record<string, Schedule[]>;
-      const mockSchedules = (mock?.schedules || {}) as Record<string, Schedule[]>;
-      const merged = { ...mockSchedules };
-      for (const [date, items] of Object.entries(realSchedules)) {
-        merged[date] = [...(merged[date] || []), ...items];
-      }
-
-      setSchedules(USE_MOCK ? merged : realSchedules);
-      setIsLoading(false);
-
-      const today = new Date();
-      const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
-      const todaySchedules = (USE_MOCK ? merged : realSchedules)[todayStr];
-      if (todaySchedules && todaySchedules.length > 0) {
-        setSelectedJobPostId(todaySchedules[0].jobPostId);
-      }
-    };
-    load();
-  }, [setSelectedJobPostId, selectedWpId, currentDate]);
+    const today = new Date();
+    const pad = (n: number) => String(n).padStart(2, '0');
+    const todayStr = `${today.getFullYear()}-${pad(today.getMonth() + 1)}-${pad(today.getDate())}`;
+    const todaySchedules = data.schedules[todayStr];
+    if (todaySchedules?.length) {
+      setSelectedJobPostId(todaySchedules[0].jobPostId);
+    }
+  }, [data, setSelectedJobPostId]);
 
   const handlePrev = () => {
     const next = new Date(currentDate);
@@ -128,6 +115,7 @@ export const EmployerCalendarWidget = () => {
   };
 
   if (isLoading) return <Loading message="캘린더를 불러오는 중..." />;
+  if (isError) return <Loading message="캘린더를 불러올 수 없습니다." />;
 
   return (
     <CalendarSurface>
