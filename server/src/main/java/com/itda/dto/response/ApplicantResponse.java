@@ -12,6 +12,7 @@ import java.time.Period;
 public record ApplicantResponse(
         Long applicationId,  // ✨ 추가
         Long userId,
+        Long resumeId,
         String name,
         String phone,
         String profileImageUrl,
@@ -22,7 +23,7 @@ public record ApplicantResponse(
         String status,
         String appliedAt    
 ) {
-    public static ApplicantResponse from(Application application, long matchCount) {
+    public static ApplicantResponse from(Application application, long matchCount, Long resumeId) {
         User user = application.getApplicantUser();
         int age = 0;
         if (user.getBirth() != null) {
@@ -32,6 +33,7 @@ public record ApplicantResponse(
         return new ApplicantResponse(
                 application.getId(),  // ✨ 추가
                 user.getId(),
+                resumeId,
                 user.getName(),
                 user.getPhone(),
                 user.getProfileImageUrl(),

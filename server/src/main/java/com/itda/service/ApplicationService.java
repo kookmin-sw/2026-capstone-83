@@ -18,6 +18,7 @@ import com.itda.enums.NotificationType;
 import com.itda.repository.ApplicationRepository;
 import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
+import com.itda.repository.ResumeRepository;
 import com.itda.exception.DuplicateException;
 import com.itda.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -40,6 +41,7 @@ public class ApplicationService {
     private final ApplicationRepository applicationRepository;
     private final JobPostRepository jobPostRepository;
     private final JobPostLikeRepository jobPostLikeRepository;
+    private final ResumeRepository resumeRepository;
     private final NotificationService notificationService;
 
     // ─── 구직자 API ───────────────────────────────────────────
@@ -442,6 +444,9 @@ public class ApplicationService {
         Long userId = application.getApplicantUser().getId();
         long matchCount = applicationRepository.countByApplicantUserIdAndStatusIn(
                 userId, List.of(ApplicationStatus.HIRED, ApplicationStatus.COMPLETED));
-        return ApplicantResponse.from(application, matchCount);
+        Long resumeId = resumeRepository.findByUserId(userId)
+                .map(resume -> resume.getId())
+                .orElse(null);
+        return ApplicantResponse.from(application, matchCount, resumeId);
     }
 }
