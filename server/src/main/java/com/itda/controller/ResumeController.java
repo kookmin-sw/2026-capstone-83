@@ -3,8 +3,6 @@ package com.itda.controller;
 import com.itda.dto.request.CareerRequest;
 import com.itda.dto.request.CertificateRequest;
 import com.itda.dto.request.ResumeRequest;
-import com.itda.dto.response.CursorPageResponse;
-import com.itda.dto.response.ResumeCardResponse;
 import com.itda.dto.response.ResumeResponse;
 import com.itda.entity.User;
 import com.itda.service.ResumeService;
@@ -89,14 +87,6 @@ public class ResumeController {
         return ResponseEntity.ok().build();
     }
 
-    // 인재 목록 조회
-    @GetMapping("/api/v1/resumes")
-    public ResponseEntity<CursorPageResponse<ResumeCardResponse>> getResumeList(
-            @RequestParam(required = false) Long cursor,
-            @RequestParam(defaultValue = "10") int size,
-            @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(resumeService.getResumeList(cursor, size, user));
-    }
 
     /**
      * 이력서 증명사진 등록/수정
