@@ -45,12 +45,21 @@ public class ApplicationController {
         return ResponseEntity.ok(Map.of("applied", applied));
     }
 
-    // 지원자 → 제안 수락 (OFFERED → PENDING)
+    // 지원자 → 고용주 제안 수락 (OFFERED → PENDING)
     @PostMapping("/api/v1/applications/{id}/accept-offer")
     public ResponseEntity<Void> acceptOffer(
             @PathVariable Long id,
             @AuthenticationPrincipal User user) {
         applicationService.acceptOffer(id);
+        return ResponseEntity.ok().build();
+    }
+
+    // 지원자 → 고용주 승인 후 최종 수락 (PENDING → HIRED, APPLICANT 플로우)
+    @PostMapping("/api/v1/applications/{id}/accept-approval")
+    public ResponseEntity<Void> acceptApproval(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        applicationService.acceptApproval(id);
         return ResponseEntity.ok().build();
     }
 
@@ -130,6 +139,14 @@ public class ApplicationController {
             @PathVariable Long id,
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(applicationService.hire(id, user.getId()));
+    }
+
+    // 최종 채용 확정 (OFFERED 플로우, 소유권 검증) PENDING → HIRED
+    @PostMapping("/api/v1/applications/{id}/confirm-hire")
+    public ResponseEntity<ApplicantResponse> confirmHire(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(applicationService.confirmHire(id, user.getId()));
     }
 
     // 지원자 거절 (소유권 검증)
