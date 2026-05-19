@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   acceptApplicant,
   rejectApplicant,
+  cancelHire,
   fetchApplicants,
   fetchWorkers,
   completeWork,
@@ -81,6 +82,22 @@ export const useRejectApplicant = (jobPostId: number) => {
     mutationFn: (applicationId: number) => rejectApplicant(applicationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applicants', jobPostId] });
+    },
+  });
+};
+
+/**
+ * 채용 취소 (고용주용, HIRED 상태만)
+ */
+export const useCancelHire = (jobPostId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number) => cancelHire(applicationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applicants', jobPostId] });
+      queryClient.invalidateQueries({ queryKey: ['workers', jobPostId] });
+      queryClient.invalidateQueries({ queryKey: ['jobPost', jobPostId] });
     },
   });
 };

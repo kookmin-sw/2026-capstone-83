@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Undo2 } from 'lucide-react';
 import { useTheme } from 'styled-components';
+import { useCancelHire } from 'entities/application/model/hooks/useApplication';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
 
@@ -9,9 +10,10 @@ interface Props {
   jobPostId: number;
 }
 
-/** 채용 취소 버튼 (API 미구현 — 껍데기) */
+/** 채용 취소 버튼 (고용주, HIRED 상태) */
 export const CancelHireButton = ({ applicationId, jobPostId }: Props) => {
   const theme = useTheme();
+  const { mutate, isPending } = useCancelHire(jobPostId);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
@@ -20,9 +22,9 @@ export const CancelHireButton = ({ applicationId, jobPostId }: Props) => {
   };
 
   const handleConfirm = () => {
-    // TODO: 채용 취소 API 연결
-    console.log(`채용 취소 요청 (applicationId: ${applicationId}, jobPostId: ${jobPostId})`);
-    setIsModalOpen(false);
+    mutate(applicationId, {
+      onSuccess: () => setIsModalOpen(false),
+    });
   };
 
   return (
@@ -33,6 +35,7 @@ export const CancelHireButton = ({ applicationId, jobPostId }: Props) => {
         fontSize="xsmall"
         borderRadius="medium"
         onClick={handleClick}
+        disabled={isPending}
       >
         <Undo2 size={14} color={theme.color.error} />
         채용 취소
@@ -46,7 +49,7 @@ export const CancelHireButton = ({ applicationId, jobPostId }: Props) => {
             <Button scheme="secondary" buttonSize="medium" onClick={() => setIsModalOpen(false)}>
               돌아가기
             </Button>
-            <Button scheme="primary" buttonSize="medium" onClick={handleConfirm}>
+            <Button scheme="primary" buttonSize="medium" onClick={handleConfirm} disabled={isPending}>
               채용 취소
             </Button>
           </>

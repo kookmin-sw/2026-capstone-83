@@ -24,6 +24,12 @@ export const rejectApplicant = async (id: number) => {
   return response.data;
 }
 
+// 채용 취소 (고용주)
+export const cancelHire = async (id: number) => {
+  const response = await authClient.post(`/api/v1/applications/${id}/cancel-hire`);
+  return response.data;
+}
+
 
 //지원자 목록 조회 (커서 페이지네이션)
 export const fetchApplicants = async (id: number, params?: CursorParams): Promise<ApplicantListCursor> => {

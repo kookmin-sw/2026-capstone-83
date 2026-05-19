@@ -81,6 +81,9 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
           </>
         );
       case 'PENDING':
+        return (
+          <RejectApplicantButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
+        );
       case 'HIRED':
         return (
           <CancelHireButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
