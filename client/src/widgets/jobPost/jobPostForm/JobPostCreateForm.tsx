@@ -5,7 +5,7 @@ import styled from 'styled-components';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useSearchParams } from 'react-router-dom';
-import type { JobPostCreate } from 'entities/jobPost/model/types/jobPost.type';
+import type { JobPostCreate, JobPostCreateSubmit } from 'entities/jobPost/model/types/jobPost.type';
 import { useWorkplaces } from 'entities/workplace/model/hooks/useWorkplace';
 import { WorkplaceFilterBar } from 'features/workplace/WorkplaceFilterBar';
 import { CreateWorkplaceModal } from 'features/workplace/CreateWorkplaceModal';
@@ -25,6 +25,7 @@ import { TemplateSection } from 'features/jobPost/create-jobPost/TemplateSection
 import type { JobPostTemplateResponse } from 'entities/jobPost/model/types/template.type';
 import { useCreateJobPost } from 'features/jobPost/hooks/useCreateJobPost';
 import { splitByComma } from 'shared/lib/transformString';
+import { mergeJobPostRequirements, splitJobPostRequirements } from 'entities/jobPost/lib/jobPostRequirements';
 import CreateJobPostButton from 'features/jobPost/create-jobPost/CreateJobPostButton';
 
 export const JobPostCreateForm = () => {
@@ -41,7 +42,8 @@ export const JobPostCreateForm = () => {
   const { handleSubmit, register, setValue, watch, formState } = useForm<JobPostCreate>({
     defaultValues: {
       workDate: defaultWorkDate,
-      requirements: [],
+      requirementsText: '',
+      certRequirements: [],
     },
   });
   const { mutate } = useCreateJobPost();
@@ -69,9 +71,10 @@ export const JobPostCreateForm = () => {
   const onSubmit = (data: JobPostCreate) => {
     console.log('Submitting job post:', data);
     // 서버로 보내기 전 데이터 가공
-    const requestBody = {
-      ...data,
-      requirements: splitByComma(data.requirements),
+    const { requirementsText, certRequirements, ...rest } = data;
+    const requestBody: JobPostCreateSubmit = {
+      ...rest,
+      requirements: mergeJobPostRequirements(requirementsText, certRequirements),
       benefits: splitByComma(data.benefits),
       tasks: splitByComma(data.tasks),
       items: splitByComma(data.items),
@@ -108,6 +111,10 @@ export const JobPostCreateForm = () => {
   // 템플릿 관련 헬퍼 함수
   const getTemplateFormValues = () => {
     const values = watch();
+    const requirements = mergeJobPostRequirements(
+      values.requirementsText,
+      values.certRequirements,
+    );
     return {
       templateName: '',
       title: values.title,
@@ -117,14 +124,15 @@ export const JobPostCreateForm = () => {
       workEnd: values.workEnd,
       totalSlots: values.totalSlots,
       description: values.description,
-      requirements: values.requirements as unknown as string[],
-      benefits: values.benefits as unknown as string[],
-      tasks: values.tasks as unknown as string[],
-      items: values.items as unknown as string[],
+      requirements: requirements.length ? requirements : undefined,
+      benefits: splitByComma(values.benefits),
+      tasks: splitByComma(values.tasks),
+      items: splitByComma(values.items),
     };
   };
 
   const handleLoadTemplate = (tpl: JobPostTemplateResponse) => {
+    const { requirementsText, certRequirements } = splitJobPostRequirements(tpl.requirements);
     if (tpl.title) setValue('title', tpl.title);
     if (tpl.wage) setValue('wage', tpl.wage);
     if (tpl.wageType) setValue('wageType', tpl.wageType as JobPostCreate['wageType']);
@@ -132,10 +140,11 @@ export const JobPostCreateForm = () => {
     if (tpl.workEnd) setValue('workEnd', tpl.workEnd);
     if (tpl.totalSlots) setValue('totalSlots', tpl.totalSlots);
     if (tpl.description) setValue('description', tpl.description);
-    if (tpl.requirements) setValue('requirements', tpl.requirements as unknown as string[]);
-    if (tpl.benefits) setValue('benefits', tpl.benefits as unknown as string[]);
-    if (tpl.tasks) setValue('tasks', tpl.tasks as unknown as string[]);
-    if (tpl.items) setValue('items', tpl.items as unknown as string[]);
+    setValue('requirementsText', requirementsText);
+    setValue('certRequirements', certRequirements);
+    if (tpl.benefits?.length) setValue('benefits', tpl.benefits.join(', '));
+    if (tpl.tasks?.length) setValue('tasks', tpl.tasks.join(', '));
+    if (tpl.items?.length) setValue('items', tpl.items.join(', '));
   };
 
 

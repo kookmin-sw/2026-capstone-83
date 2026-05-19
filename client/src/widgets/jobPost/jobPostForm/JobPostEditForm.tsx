@@ -21,7 +21,8 @@ import { JobPostSubmitCard } from 'features/jobPost/create-jobPost/JobPostSubmit
 import { TemplateSection } from 'features/jobPost/create-jobPost/TemplateSection';
 import UpdateJobPostButton from 'features/jobPost/create-jobPost/UpdateJobPostButton';
 import { useUpdateJobPostMutation } from 'features/jobPost/hooks/useUpdateJobPost';
-import { splitByComma } from 'shared/lib/transformString';
+import { splitByComma, joinByComma } from 'shared/lib/transformString';
+import { mergeJobPostRequirements, splitJobPostRequirements } from 'entities/jobPost/lib/jobPostRequirements';
 import Main from 'shared/ui/Layout/Main';
 import Article from 'shared/ui/Layout/Article';
 import Loading from 'shared/ui/Loading/Loading';
@@ -56,6 +57,8 @@ export const JobPostEditForm = ({ postId }: Props) => {
   useEffect(() => {
     if (!post) return;
 
+    const { requirementsText, certRequirements } = splitJobPostRequirements(post.requirements);
+
     reset({
       title: post.title,
       company: post.company,
@@ -69,10 +72,11 @@ export const JobPostEditForm = ({ postId }: Props) => {
       workEnd: normalizeJobPostTime(post.workEnd),
       deadline: normalizeJobPostDate(post.deadline),
       description: post.description,
-      requirements: post.requirements ?? [],
-      benefits: post.benefits ?? [],
-      tasks: post.tasks ?? [],
-      items: post.items ?? [],
+      requirementsText,
+      certRequirements,
+      benefits: joinByComma(post.benefits),
+      tasks: joinByComma(post.tasks),
+      items: joinByComma(post.items),
     });
     setIsFormReady(true);
   }, [post, reset]);
@@ -110,7 +114,7 @@ export const JobPostEditForm = ({ postId }: Props) => {
       description: data.description,
       jobCategory: post.jobCategory,
       jobSubcategory: post.jobSubcategory,
-      requirements: splitByComma(data.requirements),
+      requirements: mergeJobPostRequirements(data.requirementsText, data.certRequirements),
       benefits: splitByComma(data.benefits),
       tasks: splitByComma(data.tasks),
       items: splitByComma(data.items),
@@ -128,6 +132,10 @@ export const JobPostEditForm = ({ postId }: Props) => {
 
   const getTemplateFormValues = () => {
     const values = watch();
+    const requirements = mergeJobPostRequirements(
+      values.requirementsText,
+      values.certRequirements,
+    );
     return {
       templateName: '',
       title: values.title,
@@ -137,14 +145,15 @@ export const JobPostEditForm = ({ postId }: Props) => {
       workEnd: values.workEnd,
       totalSlots: values.totalSlots,
       description: values.description,
-      requirements: values.requirements as unknown as string[],
-      benefits: values.benefits as unknown as string[],
-      tasks: values.tasks as unknown as string[],
-      items: values.items as unknown as string[],
+      requirements: requirements.length ? requirements : undefined,
+      benefits: splitByComma(values.benefits),
+      tasks: splitByComma(values.tasks),
+      items: splitByComma(values.items),
     };
   };
 
   const handleLoadTemplate = (tpl: JobPostTemplateResponse) => {
+    const { requirementsText, certRequirements } = splitJobPostRequirements(tpl.requirements);
     if (tpl.title) setValue('title', tpl.title);
     if (tpl.wage) setValue('wage', tpl.wage);
     if (tpl.wageType) setValue('wageType', tpl.wageType as JobPostCreate['wageType']);
@@ -152,10 +161,11 @@ export const JobPostEditForm = ({ postId }: Props) => {
     if (tpl.workEnd) setValue('workEnd', tpl.workEnd);
     if (tpl.totalSlots) setValue('totalSlots', tpl.totalSlots);
     if (tpl.description) setValue('description', tpl.description);
-    if (tpl.requirements) setValue('requirements', tpl.requirements as unknown as string[]);
-    if (tpl.benefits) setValue('benefits', tpl.benefits as unknown as string[]);
-    if (tpl.tasks) setValue('tasks', tpl.tasks as unknown as string[]);
-    if (tpl.items) setValue('items', tpl.items as unknown as string[]);
+    setValue('requirementsText', requirementsText);
+    setValue('certRequirements', certRequirements);
+    if (tpl.benefits?.length) setValue('benefits', tpl.benefits.join(', '));
+    if (tpl.tasks?.length) setValue('tasks', tpl.tasks.join(', '));
+    if (tpl.items?.length) setValue('items', tpl.items.join(', '));
   };
 
   if (isLoading || !isFormReady) return <Loading message="공고 정보를 불러오는 중..." />;

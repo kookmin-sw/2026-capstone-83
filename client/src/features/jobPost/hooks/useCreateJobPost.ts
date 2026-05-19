@@ -1,7 +1,7 @@
 // features/jobPost/api/useCreateJobPost.ts
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { createJobPost } from 'entities/jobPost/api/jobPost.api';
-import type { JobPostCreate } from 'entities/jobPost/model/types/jobPost.type';
+import type { JobPostCreateSubmit } from 'entities/jobPost/model/types/jobPost.type';
 import { useNavigate } from 'react-router-dom';
 
 export const useCreateJobPost = () => {
@@ -10,7 +10,7 @@ export const useCreateJobPost = () => {
 
   return useMutation({
     // 실제 생성 API 호출
-    mutationFn: (data: JobPostCreate) => createJobPost(data),
+    mutationFn: (data: JobPostCreateSubmit) => createJobPost(data),
 
     // 생성 성공 시 처리
     onSuccess: (data) => {

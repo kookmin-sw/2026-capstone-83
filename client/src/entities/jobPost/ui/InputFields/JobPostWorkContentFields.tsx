@@ -3,7 +3,7 @@ import { FormStack, SectionWrapper } from "./JobPostInputFields.styled";
 import { InputText } from "shared/ui/Input/InputText";
 import { CheckboxButtons } from "shared/ui/Input/CheckboxButtons";
 import { CERTIFICATE_LABEL } from "shared/types/certificate";
-import type { CertificateType } from "shared/types/certificate";
+import type { CertificateType } from 'shared/types/certificate';
 
 const CERTIFICATE_OPTIONS = (Object.keys(CERTIFICATE_LABEL) as CertificateType[]).map((key) => ({
   label: CERTIFICATE_LABEL[key],
@@ -11,13 +11,14 @@ const CERTIFICATE_OPTIONS = (Object.keys(CERTIFICATE_LABEL) as CertificateType[]
 }));
 
 export const JobPostWorkContentFields = ({ register, setValue, watch }: any) => {
-  const selectedCerts: string[] = watch?.('requirements') || [];
+  const selectedCerts: CertificateType[] = watch?.('certRequirements') || [];
 
-  const handleCertToggle = (value: string) => {
-    const current = selectedCerts.includes(value)
-      ? selectedCerts.filter((v: string) => v !== value)
-      : [...selectedCerts, value];
-    setValue?.('requirements', current);
+  const handleCertToggle = (value: CertificateType) => {
+    const current: CertificateType[] = selectedCerts;
+    const next = current.includes(value)
+      ? current.filter((v) => v !== value)
+      : [...current, value];
+    setValue?.('certRequirements', next);
   };
 
   return (
@@ -33,7 +34,7 @@ export const JobPostWorkContentFields = ({ register, setValue, watch }: any) => 
             label="필수 자격/인증"
             options={CERTIFICATE_OPTIONS}
             selected={selectedCerts}
-            onToggle={handleCertToggle}
+            onToggle={(value) => handleCertToggle(value as CertificateType)}
             buttonSize="xsmall"
           />
         )}

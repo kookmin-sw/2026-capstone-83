@@ -4,6 +4,7 @@ import type {
   GetJobPostsParams,
   JobPost,
   JobPostCreate,
+  JobPostCreateSubmit,
   JobPostDetail,
   JobPostListCursor,
   JobPostUpdatePayload,
@@ -37,7 +38,7 @@ export const fetchJobPost = async (id: number): Promise<JobPostDetail> => {
 };
 
 //공고 생성
-export const createJobPost = async (data: JobPostCreate) => {
+export const createJobPost = async (data: JobPostCreateSubmit) => {
   // form data 변환 유틸함수
   const formData = toFormData(data);
 

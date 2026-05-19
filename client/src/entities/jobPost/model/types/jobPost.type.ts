@@ -1,3 +1,5 @@
+import type { CursorParams, CursorResponse } from 'shared/api/types';
+import type { CertificateType } from 'shared/types/certificate';
 
 export type WageType = 'HOURLY' | 'DAILY' | 'MONTHLY';
 export type PostStatus = 'OPEN' | 'CLOSED' | 'CANCELLED';
@@ -88,12 +90,26 @@ export interface JobPostCreate {
   deadline: string;
   description?: string;
   descriptionImage?: File | null;
-  requirements?: string[];
-  benefits?: string[];
-  tasks: string[];
-  items?: string[];
+  /** 지원 조건 텍스트 (쉼표 구분) — 전송 시 requirements로 병합 */
+  requirementsText?: string;
+  /** 필수 자격/인증 — 전송 시 requirements에 CertificateType 문자열로 포함 */
+  certRequirements?: CertificateType[];
+  /** 폼 입력(쉼표 구분) — 전송 시 string[]로 변환 */
+  benefits?: string;
+  tasks?: string;
+  items?: string;
 }
 
+/** 폼 제출 후 API/multipart 전송용 (List 필드 변환 완료) */
+export type JobPostCreateSubmit = Omit<
+  JobPostCreate,
+  'requirementsText' | 'certRequirements' | 'benefits' | 'tasks' | 'items'
+> & {
+  requirements?: string[];
+  benefits?: string[];
+  tasks?: string[];
+  items?: string[];
+};
 
 export interface JobPostCreateResponse {
   newPost: JobPostDetail;
@@ -124,13 +140,6 @@ export interface JobPostUpdatePayload {
   data: JobPostUpdateRequest;
   descriptionImage?: File | null;
 }
-
-
-
-
-
-import type { CursorParams, CursorResponse } from 'shared/api/types';
-import type { CertificateType } from 'shared/types/certificate';
 
 
 //공고 목록 조회 할 때, 페이지네이션 어떻게 할 지 생각해주세요!
