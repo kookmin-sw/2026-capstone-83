@@ -4,6 +4,7 @@ import { Calendar, Clock } from 'lucide-react';
 
 import Section from 'shared/ui/Layout/Section';
 import { calculateDDay } from 'shared/lib/calculateDDay';
+import ResizedImage from 'shared/ui/ResizedImage/ResizedImage';
 import type { JobPostOverviewProps } from '../../model/types/jobPost.type';
 import Loading from 'shared/ui/Loading/Loading';
 
@@ -72,7 +73,11 @@ export const JobPostDetailOverviewSection = ({ data, headerActions, actions }: P
           </S.TextContent>
 
           <S.ImageWrapper>
-            <img src={companyLogoUrl || "https://picsum.photos/400/300"} alt="공고 이미지" />
+            <ResizedImage
+              src={companyLogoUrl}
+              variant="detail-lg"
+              alt={`${company} 로고`}
+            />
           </S.ImageWrapper>
         </S.TopRow>
 

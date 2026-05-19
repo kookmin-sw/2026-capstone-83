@@ -86,6 +86,7 @@ export interface ApplicationWithJobPost extends JobPost {
 export interface ApplicantResponse {
   applicationId: number;
   userId: number;
+  resumeId: number | null;
   name: string;
   phone: string;
   profileImageUrl: string;

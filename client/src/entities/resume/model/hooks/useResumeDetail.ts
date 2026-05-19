@@ -6,11 +6,11 @@ import { USE_MOCK } from 'shared/config/env';
 /**
  * 이력서 상세 조회 — GET /api/v1/resume/{resumeId}
  */
-export const useResumeDetail = (resumeId?: number) => {
+export const useResumeDetail = (resumeId?: number, enabled = true) => {
   return useQuery<ResumeResponse>({
     queryKey: ['resume', 'detail', resumeId],
     queryFn: async () => {
-      if (!resumeId) throw new Error('Resume id is required');
+      if (resumeId == null) throw new Error('Resume id is required');
 
       try {
         return await fetchResumeDetail(resumeId);
@@ -21,6 +21,6 @@ export const useResumeDetail = (resumeId?: number) => {
         throw new Error('Resume not found');
       }
     },
-    enabled: resumeId !== undefined && !Number.isNaN(resumeId),
+    enabled: enabled && resumeId != null,
   });
 };

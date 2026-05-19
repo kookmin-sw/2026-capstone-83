@@ -6,8 +6,7 @@ import { ApplicantCard } from 'entities/application/ui/ApplicantCard';
 import { AcceptApplicantButton } from 'features/applicant/AcceptApplicantButton';
 import { RejectApplicantButton } from 'features/applicant/RejectApplicantButton';
 import { CancelHireButton } from 'features/applicant/CancelHireButton';
-import { fetchMockResume } from 'entities/resume/api/resume.api';
-import type { ResumeResponse } from 'entities/resume/model/types/resume.type';
+import { useResumeDetail } from 'entities/resume/model/hooks/useResumeDetail';
 import { ResumeDetailView } from 'entities/resume/ui/ResumeDetailView';
 import Modal from 'shared/ui/Modal/Modal';
 import Badge from 'shared/ui/Badge/Badge';
@@ -34,9 +33,14 @@ const STATUS_SECTIONS: StatusSection[] = [
 
 export const ApplicantListByStatus = ({ jobPostId }: Props) => {
   const { data: applicants, isLoading } = useApplicants(jobPostId);
-  const [selectedResume, setSelectedResume] = useState<ResumeResponse | null>(null);
+  const [selectedResumeId, setSelectedResumeId] = useState<number | undefined>();
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
-  const [isResumeLoading, setIsResumeLoading] = useState(false);
+
+  const {
+    data: selectedResume,
+    isPending: isResumePending,
+    isError: isResumeError,
+  } = useResumeDetail(selectedResumeId, isResumeModalOpen);
 
   const grouped = useMemo(() => {
     if (!applicants) return {};
@@ -48,24 +52,14 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
     }, {});
   }, [applicants]);
 
-  const handleCardClick = async (applicant: ApplicantResponse) => {
+  const handleCardClick = (applicant: ApplicantResponse) => {
+    setSelectedResumeId(applicant.resumeId ?? undefined);
     setIsResumeModalOpen(true);
-    setIsResumeLoading(true);
-    try {
-      // mock: userId를 이력서 id 범위(1~15)로 매핑
-      const resumeId = ((applicant.userId - 1) % 15) + 1;
-      const resume = await fetchMockResume(resumeId);
-      setSelectedResume(resume);
-    } catch {
-      setSelectedResume(null);
-    } finally {
-      setIsResumeLoading(false);
-    }
   };
 
   const handleCloseModal = () => {
     setIsResumeModalOpen(false);
-    setSelectedResume(null);
+    setSelectedResumeId(undefined);
   };
 
   if (isLoading) return <Loading message="지원자 목록을 불러오는 중..." />;
@@ -123,11 +117,12 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
         );
       })}
 
-      {/* 이력서 상세 모달 */}
       <Modal isOpen={isResumeModalOpen} onClose={handleCloseModal}>
-        {isResumeLoading ? (
+        {!selectedResumeId ? (
+          <S.NoResumeText>이력서 정보를 찾을 수 없습니다.</S.NoResumeText>
+        ) : isResumePending ? (
           <Loading message="이력서를 불러오는 중..." />
-        ) : selectedResume ? (
+        ) : selectedResume && !isResumeError ? (
           <ResumeDetailView data={selectedResume} />
         ) : (
           <S.NoResumeText>이력서 정보를 찾을 수 없습니다.</S.NoResumeText>
