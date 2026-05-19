@@ -57,4 +57,23 @@ public class JobPostScheduler {
         log.info("[스케줄러] 근무 완료 자동 처리 {}건 ({})",
                 targets.size(), LocalDateTime.now());
     }
+
+    /**
+     * 근무 시작 시간 기준 공고 마감
+     * 매시 정각 실행 — 당일 workStart가 지난 OPEN 공고를 CLOSED로 전환
+     */
+    @Scheduled(cron = "0 0 * * * *")
+    @Transactional
+    public void closeStartedJobPosts() {
+        List<JobPost> started = jobPostRepository.findStartedOpenPosts(
+                LocalDate.now(), LocalTime.now());
+
+        if (started.isEmpty()) return;
+
+        started.forEach(JobPost::closeByExpiry);
+        jobPostRepository.saveAll(started);
+
+        log.info("[스케줄러] 근무 시작 공고 {}건 자동 마감 ({})",
+                started.size(), LocalDateTime.now());
+    }
 }
