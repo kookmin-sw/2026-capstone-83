@@ -69,6 +69,9 @@ public class JobPostCreateRequest {
     // 준비물 목록
     private List<String> items;
 
+    // 새 파일 업로드 없이 기존 S3 URL을 그대로 재사용할 때 (사업장 로고 재사용 등)
+    private String existingImageUrl;
+
     // S3 업로드 완료 후 contentUrl을 받아서 엔티티 생성하는 버전
     // 기존 toEntity(workplace)는 그대로 유지
     public JobPost toEntity(Workplace workplace, String contentUrl) {

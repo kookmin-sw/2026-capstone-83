@@ -103,7 +103,7 @@ public class UserService {
             s3Service.delete(user.getProfileImageUrl());
         }
 
-        String imageUrl = s3Service.upload(image, "profile/" + userId);
+        String imageUrl = s3Service.upload(image, S3Service.PATH_PROFILES);
 
         User updated = User.builder()
                 .id(user.getId())

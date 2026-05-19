@@ -16,6 +16,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class S3Service {
 
+    public static final String PATH_LOGOS     = "uploads/logos";
+    public static final String PATH_PROFILES  = "uploads/profiles";
+    public static final String PATH_JOB_POSTS = "uploads/job-posts";
+
     private final S3Client s3Client;
 
     // application.yml의 cloud.aws.s3.bucket 값 주입

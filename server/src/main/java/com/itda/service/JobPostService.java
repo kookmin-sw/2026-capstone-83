@@ -178,10 +178,17 @@ public class JobPostService {
                     .build());
         }
 
-        // 공고 상세 이미지가 있으면 S3 업로드 후 URL 추출, 없으면 null
-        String contentUrl = null;
+        // 공고 상세 이미지 처리
+        String contentUrl;
         if (descriptionImage != null && !descriptionImage.isEmpty()) {
-            contentUrl = s3Service.upload(descriptionImage, "job-posts");
+            // 새 이미지 업로드 → Lambda 리사이징 트리거
+            contentUrl = s3Service.upload(descriptionImage, S3Service.PATH_JOB_POSTS);
+        } else if (request.getExistingImageUrl() != null && !request.getExistingImageUrl().isBlank()) {
+            // 기존 URL 재사용 → 업로드/리사이징 없음 (이중 리사이징 방지)
+            contentUrl = request.getExistingImageUrl();
+        } else {
+            // 아무것도 없으면 null → 프론트가 workplace 로고로 fallback
+            contentUrl = null;
         }
 
         // contentUrl을 받는 오버로드 toEntity 사용
@@ -203,7 +210,8 @@ public class JobPostService {
         String s3ContentUrl = jobPost.getS3ContentUrl();
         if (descriptionImage != null && !descriptionImage.isEmpty()) {
             s3Service.delete(s3ContentUrl);
-            s3ContentUrl = s3Service.upload(descriptionImage, "job-posts");
+            // 변경: job-posts → uploads/job-posts (Lambda 트리거 대상)
+            s3ContentUrl = s3Service.upload(descriptionImage, S3Service.PATH_JOB_POSTS);
         }
 
         JobPost updated = jobPostRepository.save(JobPost.builder()
