@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import {
   BarChart3,
@@ -32,12 +32,38 @@ const ManagerSidebar = () => {
     return pathname.startsWith(path);
   };
 
+  const expandSidebar = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsCollapsed(false);
+  };
+
   return (
     <S.Sidebar $collapsed={isCollapsed}>
-      <S.Brand $collapsed={isCollapsed}>
-        <Shield size={22} />
-        {!isCollapsed && <span>관리자</span>}
-      </S.Brand>
+      {isCollapsed ? (
+        <S.BrandIconWrap title="관리자">
+          <S.Brand $collapsed>
+            <Shield size={22} />
+          </S.Brand>
+          <S.ExpandToggle type="button" aria-label="사이드바 펼치기" onClick={expandSidebar}>
+            <ChevronsRight size={18} />
+          </S.ExpandToggle>
+        </S.BrandIconWrap>
+      ) : (
+        <S.BrandRow>
+          <S.Brand $collapsed={false}>
+            <Shield size={22} />
+            <span>관리자</span>
+          </S.Brand>
+          <S.CollapseToggle
+            type="button"
+            aria-label="사이드바 접기"
+            onClick={() => setIsCollapsed(true)}
+          >
+            <ChevronsLeft size={18} />
+          </S.CollapseToggle>
+        </S.BrandRow>
+      )}
 
       <S.NavList>
         {MANAGER_NAV.map(({ label, path, icon }) => (
@@ -50,14 +76,10 @@ const ManagerSidebar = () => {
           >
             <span className="icon">{icon}</span>
             {!isCollapsed && <span className="label">{label}</span>}
+            {isCollapsed && <S.Tooltip>{label}</S.Tooltip>}
           </S.NavLink>
         ))}
       </S.NavList>
-
-      <S.ToggleButton onClick={() => setIsCollapsed((prev) => !prev)}>
-        {isCollapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
-        {!isCollapsed && <span>접기</span>}
-      </S.ToggleButton>
     </S.Sidebar>
   );
 };
@@ -65,65 +87,178 @@ const ManagerSidebar = () => {
 const S = {
   Sidebar: styled.aside<{ $collapsed: boolean }>`
     width: ${({ $collapsed }) => ($collapsed ? '72px' : '240px')};
+    min-height: calc(100vh - 60px);
+    height: calc(100vh - 60px);
+    position: sticky;
+    top: 60px;
     flex-shrink: 0;
     background: ${({ theme }) => theme.color.white};
     border-right: 1px solid ${({ theme }) => theme.color.border};
+    padding: ${({ $collapsed }) => ($collapsed ? '24px 12px' : '24px 16px')};
     display: flex;
     flex-direction: column;
+    gap: 32px;
     transition: width 0.2s ease;
-    min-height: calc(100vh - 60px);
+    overflow-x: hidden;
+    overflow-y: auto;
+  `,
+  BrandRow: styled.div`
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+  `,
+  BrandIconWrap: styled.div`
+    position: relative;
+    width: 36px;
+    height: 36px;
+    margin: 0 auto;
+
+    & > div:first-child {
+      width: 100%;
+      height: 100%;
+      padding: 0;
+      justify-content: center;
+    }
+
+    &:hover > div:first-child,
+    &:focus-within > div:first-child {
+      visibility: hidden;
+    }
+
+    &:hover button,
+    &:focus-within button {
+      opacity: 1;
+      pointer-events: auto;
+    }
   `,
   Brand: styled.div<{ $collapsed: boolean }>`
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: ${({ $collapsed }) => ($collapsed ? '24px 16px' : '24px 20px')};
+    flex: 1;
+    min-width: 0;
+    padding: 8px ${({ $collapsed }) => ($collapsed ? '0' : '8px')};
     font-size: ${({ theme }) => theme.fontSize.medium};
-    font-weight: 700;
+    font-weight: ${({ theme }) => theme.fontWeight.bold};
     color: ${({ theme }) => theme.color.primary};
     justify-content: ${({ $collapsed }) => ($collapsed ? 'center' : 'flex-start')};
+    border-radius: ${({ theme }) => theme.borderRadius.medium};
+    white-space: nowrap;
+
+    svg {
+      flex-shrink: 0;
+    }
+  `,
+  CollapseToggle: styled.button`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: ${({ theme }) => theme.color.subText};
+    border-radius: ${({ theme }) => theme.borderRadius.medium};
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background-color: ${({ theme }) => theme.color.background};
+      color: ${({ theme }) => theme.color.text};
+    }
+  `,
+  ExpandToggle: styled.button`
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: ${({ theme }) => theme.borderRadius.medium};
+    background: ${({ theme }) => theme.color.secondary};
+    color: ${({ theme }) => theme.color.primary};
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+
+    svg {
+      color: ${({ theme }) => theme.color.primary};
+      stroke: currentColor;
+    }
+
+    &:hover {
+      background: ${({ theme }) => theme.color.primary};
+      color: ${({ theme }) => theme.color.white};
+
+      svg {
+        color: ${({ theme }) => theme.color.white};
+      }
+    }
   `,
   NavList: styled.nav`
     display: flex;
     flex-direction: column;
     gap: 4px;
-    padding: 8px 12px;
     flex: 1;
   `,
   NavLink: styled(Link)<{ $active: boolean; $collapsed: boolean }>`
+    position: relative;
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: ${({ $collapsed }) => ($collapsed ? '12px' : '12px 16px')};
-    border-radius: ${({ theme }) => theme.borderRadius.medium};
+    padding: 12px ${({ $collapsed }) => ($collapsed ? '0' : '16px')};
     justify-content: ${({ $collapsed }) => ($collapsed ? 'center' : 'flex-start')};
+    border-radius: ${({ theme }) => theme.borderRadius.medium};
     color: ${({ theme, $active }) => ($active ? theme.color.primary : theme.color.text)};
     background: ${({ theme, $active }) =>
       $active ? theme.color.secondary : 'transparent'};
-    font-weight: ${({ $active }) => ($active ? 600 : 500)};
+    font-size: ${({ theme }) => theme.fontSize.small};
+    font-weight: ${({ theme, $active }) =>
+      $active ? theme.fontWeight.semibold : theme.fontWeight.regular};
     text-decoration: none;
-    position: relative;
+    width: 100%;
+    white-space: nowrap;
+    transition: all 0.15s ease;
     ${hoverOverlay}
 
     .icon {
       display: flex;
       flex-shrink: 0;
+      color: ${({ theme, $active }) =>
+        $active ? theme.color.primary : theme.color.subText};
+    }
+
+    .label {
+      color: ${({ theme, $active }) =>
+        $active ? theme.color.tertiary : theme.color.text};
+    }
+
+    &:hover > span:last-child {
+      ${({ $collapsed }) => $collapsed && 'opacity: 1; visibility: visible;'}
     }
   `,
-  ToggleButton: styled.button`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    margin: 12px;
-    padding: 10px;
-    border: 1px solid ${({ theme }) => theme.color.border};
-    border-radius: ${({ theme }) => theme.borderRadius.medium};
-    background: transparent;
-    color: ${({ theme }) => theme.color.subText};
-    cursor: pointer;
-    font-size: ${({ theme }) => theme.fontSize.small};
-    ${hoverOverlay}
+  Tooltip: styled.span`
+    position: absolute;
+    left: calc(100% + 8px);
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 6px 12px;
+    background-color: ${({ theme }) => theme.color.text};
+    color: ${({ theme }) => theme.color.white};
+    font-size: ${({ theme }) => theme.fontSize.xsmall};
+    font-weight: ${({ theme }) => theme.fontWeight.medium};
+    border-radius: ${({ theme }) => theme.borderRadius.small};
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.15s ease;
+    z-index: 100;
+    pointer-events: none;
   `,
 };
 

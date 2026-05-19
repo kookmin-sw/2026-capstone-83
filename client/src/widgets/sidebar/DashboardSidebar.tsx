@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type MouseEvent } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Home, Building2, CalendarDays, Users, Settings, FileText, UserRoundPlus, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
@@ -42,20 +42,53 @@ const DashboardSidebar = () => {
 
   const navItems = role === 'EMPLOYER' ? EMPLOYER_NAV : APPLICANT_NAV;
 
+  const expandSidebar = (e: MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsCollapsed(false);
+  };
+
   return (
     <S.Sidebar $collapsed={isCollapsed}>
-      {/* 프로필 영역 */}
-      <S.ProfileArea
-        as={Link}
-        to="/dashboard/settings"
-        $collapsed={isCollapsed}
-        title={isCollapsed ? displayName : undefined}
-      >
-        <S.Avatar>
-          <img src={avatarUrl} alt={`${displayName} 프로필`} />
-        </S.Avatar>
-        {!isCollapsed && <S.ProfileName>{displayName}</S.ProfileName>}
-      </S.ProfileArea>
+      {/* 프로필 + 접기/펼치기 */}
+      {isCollapsed ? (
+        <S.ProfileAvatarWrap title={displayName}>
+          <S.ProfileArea
+            as={Link}
+            to="/dashboard/settings"
+            $collapsed
+            aria-label={`${displayName} 설정`}
+          >
+            <S.Avatar>
+              <img src={avatarUrl} alt={`${displayName} 프로필`} />
+            </S.Avatar>
+          </S.ProfileArea>
+          <S.ExpandToggle type="button" aria-label="사이드바 펼치기" onClick={expandSidebar}>
+            <ChevronsRight size={18} />
+          </S.ExpandToggle>
+        </S.ProfileAvatarWrap>
+      ) : (
+        <S.ProfileRow>
+          <S.ProfileArea
+            as={Link}
+            to="/dashboard/settings"
+            $collapsed={false}
+            aria-label={`${displayName} 설정`}
+          >
+            <S.Avatar>
+              <img src={avatarUrl} alt={`${displayName} 프로필`} />
+            </S.Avatar>
+            <S.ProfileName>{displayName}</S.ProfileName>
+          </S.ProfileArea>
+          <S.CollapseToggle
+            type="button"
+            aria-label="사이드바 접기"
+            onClick={() => setIsCollapsed(true)}
+          >
+            <ChevronsLeft size={18} />
+          </S.CollapseToggle>
+        </S.ProfileRow>
+      )}
 
       {/* 네비게이션 */}
       <S.NavList>
@@ -73,12 +106,6 @@ const DashboardSidebar = () => {
           </S.NavLink>
         ))}
       </S.NavList>
-
-      {/* 접기/펴기 토글 */}
-      <S.ToggleButton onClick={() => setIsCollapsed((prev) => !prev)}>
-        {isCollapsed ? <ChevronsRight size={18} /> : <ChevronsLeft size={18} />}
-        {!isCollapsed && <span>접기</span>}
-      </S.ToggleButton>
     </S.Sidebar>
   );
 };
@@ -101,10 +128,44 @@ const S = {
     overflow-x: hidden;
     overflow-y: auto;
   `,
-  ProfileArea: styled(Link)<{ $collapsed: boolean }>`
+  ProfileRow: styled.div`
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-width: 0;
+  `,
+  ProfileAvatarWrap: styled.div`
+    position: relative;
+    width: 36px;
+    height: 36px;
+    margin: 0 auto;
+
+    a {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+      padding: 0;
+    }
+
+    &:hover a,
+    &:focus-within a {
+      visibility: hidden;
+    }
+
+    &:hover button,
+    &:focus-within button {
+      opacity: 1;
+      pointer-events: auto;
+    }
+  `,
+  ProfileArea: styled(Link) <{ $collapsed: boolean }>`
     display: flex;
     align-items: center;
     gap: 12px;
+    flex: 1;
+    min-width: 0;
     padding: 8px ${({ $collapsed }) => ($collapsed ? '0' : '8px')};
     justify-content: ${({ $collapsed }) => ($collapsed ? 'center' : 'flex-start')};
     text-decoration: none;
@@ -113,6 +174,56 @@ const S = {
 
     &:hover {
       background-color: ${({ theme }) => theme.color.background};
+    }
+  `,
+  CollapseToggle: styled.button`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: ${({ theme }) => theme.color.subText};
+    border-radius: ${({ theme }) => theme.borderRadius.medium};
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      background-color: ${({ theme }) => theme.color.background};
+      color: ${({ theme }) => theme.color.text};
+    }
+  `,
+  ExpandToggle: styled.button`
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    border-radius: ${({ theme }) => theme.borderRadius.medium};
+    background: ${({ theme }) => theme.color.secondary};
+    color: ${({ theme }) => theme.color.primary};
+    cursor: pointer;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, background-color 0.15s ease;
+
+    svg {
+      color: ${({ theme }) => theme.color.primary};
+      stroke: currentColor;
+    }
+
+    &:hover {
+      /* background: ${({ theme }) => theme.color.primary}; */
+      color: ${({ theme }) => theme.color.white};
+
+      svg {
+        color: ${({ theme }) => theme.color.white};
+      }
     }
   `,
   Avatar: styled.div`
@@ -198,28 +309,6 @@ const S = {
     transition: opacity 0.15s ease;
     z-index: 100;
     pointer-events: none;
-  `,
-  ToggleButton: styled.button`
-    position: sticky;
-    bottom: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 10px;
-    border: none;
-    background: ${({ theme }) => theme.color.white};
-    color: ${({ theme }) => theme.color.subText};
-    font-size: ${({ theme }) => theme.fontSize.xsmall};
-    cursor: pointer;
-    border-radius: ${({ theme }) => theme.borderRadius.medium};
-    transition: all 0.15s ease;
-    margin-top: auto;
-
-    &:hover {
-      background-color: ${({ theme }) => theme.color.background};
-      color: ${({ theme }) => theme.color.text};
-    }
   `,
 };
 
