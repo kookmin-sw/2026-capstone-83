@@ -31,9 +31,9 @@ export const HeroSection = () => {
           에이전시 없이, 더 빠르고 직관적으로.
         </S.Description>
 
-        <S.Actions>
+        {/* <S.Actions>
           <HeroJobSearch />
-        </S.Actions>
+        </S.Actions> */}
 
         <S.ScrollLink>
           <L.TextButton href={`#${FEATURES_SECTION_ID}`} onClick={scrollToFeatures}>

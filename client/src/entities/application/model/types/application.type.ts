@@ -84,6 +84,7 @@ export interface ApplicationWithJobPost extends JobPost {
 }
 
 export interface ApplicantResponse {
+  applicationId: number;
   userId: number;
   name: string;
   phone: string;

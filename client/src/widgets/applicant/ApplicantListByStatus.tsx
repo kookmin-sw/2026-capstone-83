@@ -76,14 +76,14 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
       case 'APPLIED':
         return (
           <>
-            <AcceptApplicantButton applicationId={applicant.userId} jobPostId={jobPostId} />
-            <RejectApplicantButton applicationId={applicant.userId} jobPostId={jobPostId} />
+            <AcceptApplicantButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
+            <RejectApplicantButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
           </>
         );
       case 'PENDING':
       case 'HIRED':
         return (
-          <CancelHireButton applicationId={applicant.userId} jobPostId={jobPostId} />
+          <CancelHireButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
         );
       default:
         return null;
@@ -105,10 +105,10 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
               <S.CardList>
                 {list.map((applicant) => (
                   <ApplicantCard
-                    key={applicant.userId}
+                    key={applicant.applicationId}
                     data={applicant}
                     actions={renderActions(key, applicant)}
-                    reviewSlot={<EmployerReviewSection applicationId={applicant.userId} />}
+                    reviewSlot={<EmployerReviewSection applicationId={applicant.applicationId} />}
                     onClick={() => handleCardClick(applicant)}
                   />
                 ))}
