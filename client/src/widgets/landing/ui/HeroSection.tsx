@@ -1,8 +1,4 @@
 import type { MouseEvent } from 'react';
-import { ExternalLink } from 'lucide-react';
-import { useTheme } from 'styled-components';
-import { Link } from 'react-router-dom';
-import { GITHUB_REPO_URL } from '../model/content';
 import { HeroJobSearch } from './HeroJobSearch';
 import * as L from './landing.styled';
 import * as S from './HeroSection.styled';
@@ -10,8 +6,6 @@ import * as S from './HeroSection.styled';
 const FEATURES_SECTION_ID = 'landing-features';
 
 export const HeroSection = () => {
-  const theme = useTheme();
-
   const scrollToFeatures = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     document.getElementById(FEATURES_SECTION_ID)?.scrollIntoView({ behavior: 'smooth' });
@@ -38,16 +32,6 @@ export const HeroSection = () => {
         </S.Description>
 
         <S.Actions>
-          {/* <S.ActionButtons>
-            <L.PrimaryButton as={Link} to="/jobposts">
-              <ExternalLink size={20} strokeWidth={2} color={theme.color.white} aria-hidden />
-              공고 둘러보기
-            </L.PrimaryButton>
-            <L.SecondaryButton href={GITHUB_REPO_URL} target="_blank" rel="noopener noreferrer">
-              <S.GithubIcon aria-hidden />
-              GitHub
-            </L.SecondaryButton>
-          </S.ActionButtons> */}
           <HeroJobSearch />
         </S.Actions>
 

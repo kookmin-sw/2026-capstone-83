@@ -19,10 +19,10 @@ export interface JobPost {
   applyStatus: ApplyStatus; // 지원 상태
   deadline: string; // 마감일
   liked: boolean; // 공고 좋아요 여부
+  companyLogoUrl?: string; // 사업장 로고 (목록 API)
 }
 
 export interface JobPostDetail extends JobPost {
-  companyLogoUrl?: string; // 회사 로고 이미지 URL
   description?: string; // 공고 상세 정보
   descriptionUrl?: string; // 상세 정보 이미지 URL
   s3ContentUrl?: string;

@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useApplications } from 'entities/application/model/hooks/useApplications';
 import type { ApplicationWithJobPost } from 'entities/application/model/types/application.type';
 import { JobPostCard } from 'entities/jobPost/ui/JobPostCard';
-import { DDay } from 'entities/jobPost/ui/JobPost.styled';
+import { DDayChip } from 'entities/jobPost/ui/JobPost.styled';
 import { AcceptOfferButton } from 'features/application/AcceptOfferButton';
 import { RejectOfferButton } from 'features/application/RejectOfferButton';
 import Badge from 'shared/ui/Badge/Badge';
@@ -132,8 +132,8 @@ const S = {
     }
 
     /* D-Day 텍스트 크기 유지 */
-    ${DDay} {
-      font-size: 16px;
+    ${DDayChip} {
+      font-size: 11px;
     }
   `,
   EmptyText: styled.p`

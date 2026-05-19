@@ -1,28 +1,41 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import Badge from 'shared/ui/Badge/Badge';
 import ProgressBar from 'shared/ui/ProgressBar/ProgressBar';
 import * as S from './JobPost.styled';
 import type { JobPost } from '../model/types/jobPost.type';
-import { Banknote, Calendar, Clock, MapPin } from 'lucide-react';
-import { APPLICATION_STATUS_MAP, RECRUITMENT_STATUS_MAP } from '../model/constants';
+import { MapPin } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { calculateDDay } from 'shared/lib/calculateDDay';
+import { useTheme } from 'styled-components';
+import {
+  formatScheduleLine,
+  getApplicationBadge,
+  getDDayTone,
+  getRecruitmentBadge,
+  getSlotsRemainingLabel,
+  getWageTypeLabel,
+} from '../lib/jobPostCardDisplay';
 
-interface JobPostCardProps {
+export interface JobPostCardProps {
   data: JobPost;
-  /** 우측 상단 기능 버튼들을 위한 슬롯 (LikeButton 등) */
-  extraActions?: React.ReactNode;
-  /** 카드 하단 액션 슬롯 (승인/거절 버튼 등) */
-  bottomActions?: React.ReactNode;
+  /** true: 로고 열 포함 레이아웃 (URL 없으면 이니셜 플레이스홀더) */
+  showLogo?: boolean;
+  extraActions?: ReactNode;
+  bottomActions?: ReactNode;
 }
 
-const INFO_ICON_SIZE = 15;
-
-export const JobPostCard = ({ data, extraActions, bottomActions }: JobPostCardProps) => {
+export const JobPostCard = ({
+  data,
+  showLogo = false,
+  extraActions,
+  bottomActions,
+}: JobPostCardProps) => {
+  const theme = useTheme();
   const {
     id,
     title,
     company,
+    companyLogoUrl,
     deadline,
     status,
     applyStatus,
@@ -33,85 +46,74 @@ export const JobPostCard = ({ data, extraActions, bottomActions }: JobPostCardPr
     workEnd,
     workDate,
     totalSlots,
-    filledSlots
+    filledSlots,
   } = data;
 
-  const recruitInfo = RECRUITMENT_STATUS_MAP[status];
-  const applyInfo = APPLICATION_STATUS_MAP[applyStatus];
-
-
+  const dDayLabel = calculateDDay(deadline);
+  const dDayTone = getDDayTone(dDayLabel);
+  const recruitBadge = getRecruitmentBadge(status, applyStatus);
+  const applyBadge = getApplicationBadge(applyStatus);
+  const logoUrl = showLogo ? companyLogoUrl : undefined;
+  const companyInitial = company.trim().charAt(0) || '?';
 
   return (
     <Link to={`/jobpost/${id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
       <S.CardContainer>
+        <S.TopRow $withLogo={showLogo}>
+          {showLogo && (
+            <S.LogoBox>
+              {logoUrl ? (
+                <img src={logoUrl} alt="" />
+              ) : (
+                <S.LogoFallback aria-hidden>{companyInitial}</S.LogoFallback>
+              )}
+            </S.LogoBox>
+          )}
 
-        <S.Header>
-          <S.BadgeGroup>
-            {/* 공고 상태 뱃지 */}
-            {recruitInfo && (
-              <Badge scheme={recruitInfo.scheme}>
-                {recruitInfo.label}
-              </Badge>
-            )}
+          <S.MainColumn>
+            <S.MetaRow>
+              <S.Company>{company}</S.Company>
+              {extraActions && <S.ActionGroup onClick={(e) => e.preventDefault()}>{extraActions}</S.ActionGroup>}
+            </S.MetaRow>
 
-            {/* 지원 상태 뱃지 (applyInfo가 존재할 때만 렌더링) */}
-            {applyInfo && (
-              <Badge scheme={applyInfo.scheme}>
-                {applyInfo.label}
-              </Badge>
-            )}
-          </S.BadgeGroup>
-          <S.ActionGroup>
-            {extraActions}
-          </S.ActionGroup>
-        </S.Header>
+            <S.TitleRow>
+              <S.Title>{title}</S.Title>
+              <S.DDayChip $tone={dDayTone}>{dDayLabel}</S.DDayChip>
+            </S.TitleRow>
+          </S.MainColumn>
+        </S.TopRow>
 
-        {/* 2. 중단: 타이틀 및 D-Day */}
-        <S.TitleSection>
-          <S.Title>{title}</S.Title>
-          <S.DDay>{calculateDDay(deadline)}</S.DDay>
-        </S.TitleSection>
-        <S.Company>{company}</S.Company>
+        <S.PayLine>
+          <strong>
+            {getWageTypeLabel(wageType)} {wage.toLocaleString()}원
+          </strong>
+          <span className="dot">·</span>
+          {formatScheduleLine(workDate, workStart, workEnd)}
+        </S.PayLine>
 
-        {/* 3. 하단: 상세 정보 (Grid 레이아웃) */}
-        <S.InfoGrid>
-          <S.InfoItem>
-            <S.Icon><Banknote size={INFO_ICON_SIZE} /></S.Icon>
-            <span>
-              {wageType === 'DAILY' ? '일급' : '시급'} <strong>{wage.toLocaleString()}원</strong>
-            </span>
-          </S.InfoItem>
-          <S.InfoItem>
-            <S.Icon><Calendar size={INFO_ICON_SIZE} /></S.Icon>
-            <span>{workDate}</span>
-          </S.InfoItem>
-          <S.InfoItem>
-            <S.Icon><MapPin size={INFO_ICON_SIZE} /></S.Icon>
-            <span>{location}</span>
-          </S.InfoItem>
-          <S.InfoItem>
-            <S.Icon><Clock size={INFO_ICON_SIZE} /></S.Icon>
-            <span>{workStart} - {workEnd}</span>
-          </S.InfoItem>
-        </S.InfoGrid>
+        <S.LocationLine>
+          <S.Icon>
+            <MapPin size={14} strokeWidth={2} color={theme.color.subText} aria-hidden />
+          </S.Icon>
+          <span>{location}</span>
+        </S.LocationLine>
 
-        {/* 4. 최하단: 모집 현황 프로그레스 바 */}
-        <S.ProgressSection>
-          <ProgressBar
-            total={totalSlots}
-            current={filledSlots}
-            height="10px"
-            fontSize="14px"
-          />
-        </S.ProgressSection>
+        <S.FooterRow>
+          <S.ProgressWrap>
+            <ProgressBar total={totalSlots} current={filledSlots} height="8px" fontSize="12px" />
+          </S.ProgressWrap>
+          <S.SlotsHint>{getSlotsRemainingLabel(totalSlots, filledSlots)}</S.SlotsHint>
+          {(recruitBadge || applyBadge) && (
+            <S.BadgeGroup>
+              {recruitBadge && <Badge scheme={recruitBadge.scheme}>{recruitBadge.label}</Badge>}
+              {applyBadge && <Badge scheme={applyBadge.scheme}>{applyBadge.label}</Badge>}
+            </S.BadgeGroup>
+          )}
+        </S.FooterRow>
 
-        {/* 5. 하단 액션 (있을 때만) */}
         {bottomActions && (
-          <S.BottomActions onClick={(e) => e.preventDefault()}>
-            {bottomActions}
-          </S.BottomActions>
+          <S.BottomActions onClick={(e) => e.preventDefault()}>{bottomActions}</S.BottomActions>
         )}
-
       </S.CardContainer>
     </Link>
   );

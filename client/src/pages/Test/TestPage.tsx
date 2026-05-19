@@ -1,6 +1,5 @@
 
-import { dummyJobPost } from 'entities/jobPost/ui/dummy';
-import { JobPostCard } from 'entities/jobPost/ui/JobPostCard';
+import { JobPostCardCompare } from 'pages/Test/JobPostCardCompare';
 import { showNotificationToast } from 'features/notification/showNotificationToast';
 import type { NotificationType } from 'entities/notification/model/types/notification.type';
 import Badge from 'shared/ui/Badge/Badge';
@@ -99,9 +98,7 @@ const TestPage = () => {
 
       <ProgressBar total={100} current={70} />
 
-      <JobPostCard
-        data={dummyJobPost}
-      />
+      <JobPostCardCompare />
       <br />
 
       <InputHeader title='근무내용' />
