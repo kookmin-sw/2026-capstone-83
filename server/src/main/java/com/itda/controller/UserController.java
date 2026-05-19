@@ -58,4 +58,16 @@ public class UserController {
             @RequestPart("image") MultipartFile image) {
         return ResponseEntity.ok(userService.updateProfileImage(user.getId(), image));
     }
+
+    /**
+     * 프로필 이미지 삭제
+     * DELETE /api/v1/users/me/profile-image
+     */
+    @DeleteMapping("/profile-image")
+    public ResponseEntity<Void> deleteProfileImage(
+            @AuthenticationPrincipal User user) {
+        userService.deleteProfileImage(user.getId());
+        return ResponseEntity.noContent().build();
+    }
+
 }

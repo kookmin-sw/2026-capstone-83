@@ -98,6 +98,11 @@ public class UserService {
     public UserProfileResponse updateProfileImage(Long userId, MultipartFile image) {
         User user = findUser(userId);
 
+        // 기존 이미지가 있으면 S3에서 먼저 삭제
+        if (user.getProfileImageUrl() != null) {
+            s3Service.delete(user.getProfileImageUrl());
+        }
+
         String imageUrl = s3Service.upload(image, "profile/" + userId);
 
         User updated = User.builder()
@@ -122,6 +127,44 @@ public class UserService {
                 .build();
 
         return UserProfileResponse.from(userRepository.save(updated));
+    }
+
+
+    // 프로필 이미지 삭제
+    @Transactional
+    public void deleteProfileImage(Long userId) {
+        User user = findUser(userId);
+
+        if (user.getProfileImageUrl() == null) {
+            throw new IllegalStateException("등록된 프로필 이미지가 없습니다.");
+        }
+
+        // S3에서 이미지 삭제
+        s3Service.delete(user.getProfileImageUrl());
+
+        // DB에서 URL 제거
+        User updated = User.builder()
+                .id(user.getId())
+                .oauthProvider(user.getOauthProvider())
+                .oauthProviderId(user.getOauthProviderId())
+                .loginId(user.getLoginId())
+                .password(user.getPassword())
+                .name(user.getName())
+                .email(user.getEmail())
+                .phone(user.getPhone())
+                .birth(user.getBirth())
+                .gender(user.getGender())
+                .location(user.getLocation())
+                .profileImageUrl(null)
+                .role(user.getRole())
+                .status(user.getStatus())
+                .suspendedAt(user.getSuspendedAt())
+                .suspendedUntil(user.getSuspendedUntil())
+                .suspendReason(user.getSuspendReason())
+                .createdAt(user.getCreatedAt())
+                .build();
+
+        userRepository.save(updated);
     }
 
     private User findUser(Long userId) {
