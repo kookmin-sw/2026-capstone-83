@@ -112,6 +112,156 @@ src/
     └── assets/
 ```
 
+### FSD 다이어그램
+
+> GitHub에서 Mermaid 미리보기가 안 되면 [Mermaid Live Editor](https://mermaid.live)에 붙여 넣어 확인할 수 있습니다.
+
+#### 레이어 스택 (의존 방향)
+
+상위 레이어만 하위를 import합니다. **역방향 import는 금지**입니다.
+
+```mermaid
+flowchart TB
+  subgraph L1["app — 앱 초기화"]
+    App["App.tsx · Routers · layouts · guards"]
+  end
+
+  subgraph L2["pages — 라우트 단위 화면"]
+    P["MainPage · JobPost/* · dashboard/* · admin/*"]
+  end
+
+  subgraph L3["widgets — UI 블록 조합"]
+    W["header · sidebar · jobPost · calendar · landing …"]
+  end
+
+  subgraph L4["features — 사용자 액션"]
+    F["auth · apply · like · workplace · manager …"]
+  end
+
+  subgraph L5["entities — 도메인"]
+    E["jobPost · resume · auth · application · schedule …"]
+  end
+
+  subgraph L6["shared — 공통"]
+    S["ui · api · theme · mocks · lib"]
+  end
+
+  L1 --> L2 --> L3 --> L4 --> L5 --> L6
+```
+
+#### 슬라이스 내부 세그먼트
+
+```mermaid
+flowchart LR
+  subgraph entity["entities/jobPost 예시"]
+    api["api/ — HTTP"]
+    model["model/ — types · hooks · constants"]
+    ui["ui/ — JobPostCard · 섹션"]
+    lib["lib/ — filterActiveDeadline…"]
+  end
+
+  api --> model
+  model --> ui
+  lib --> ui
+  lib --> model
+```
+
+```mermaid
+flowchart LR
+  subgraph feature["features/apply 예시"]
+    fui["ui/ 또는 루트 컴포넌트"]
+    fhook["hooks/ — mutation 래핑"]
+  end
+
+  fui --> fhook
+  fhook --> entity
+  fui --> entity
+```
+
+#### 요청 흐름 (공고 상세 예)
+
+```mermaid
+flowchart TD
+  Router["app/Routers.tsx"]
+  Page["pages/JobPost/JobPostDetailPage"]
+  Widget["widgets/jobPost/JobPostDetailContent"]
+  Feature["features/apply/ApplyButton"]
+  Entity["entities/jobPost — useJobPost · JobPostCard"]
+  Shared["shared/api/authClient · shared/ui"]
+
+  Router --> Page
+  Page --> Widget
+  Widget --> Feature
+  Widget --> Entity
+  Feature --> Entity
+  Entity --> Shared
+  Page --> Shared
+```
+
+#### 레이어별 슬라이스 맵
+
+```mermaid
+mindmap
+  root((client/src))
+    app
+      layouts
+      guards
+      config
+    pages
+      MainPage
+      JobPost
+      Resume
+      dashboard
+      admin
+      auth
+    widgets
+      header footer sidebar
+      landing jobPost calendar
+      resume workplace manager
+    features
+      auth apply like
+      jobPost workplace
+      application applicant offer
+      review manager user-profile
+    entities
+      auth user jobPost resume
+      workplace application schedule
+      notification review manager
+    shared
+      ui api theme mocks lib
+```
+
+#### 진입점 · Path alias
+
+```mermaid
+flowchart LR
+  main["main.tsx"]
+  App["app/App.tsx"]
+  Routers["app/Routers.tsx"]
+
+  main --> App --> Routers
+
+  subgraph alias["import alias"]
+    a1["app/*"]
+    a2["pages/*"]
+    a3["widgets/*"]
+    a4["features/*"]
+    a5["entities/*"]
+    a6["shared/*"]
+  end
+
+  Routers -.-> a1
+  Routers -.-> a2
+```
+
+#### import 규칙 요약
+
+| | |
+|---|---|
+| ✅ 허용 | `pages` → `widgets` → `features` → `entities` → `shared` |
+| ✅ 권장 | 같은 레이어 슬라이스 간 직접 import는 최소화 (상위 레이어에서 조합) |
+| ❌ 금지 | `entities` → `features`, `shared` → `entities` |
+
 ### Path alias (`vite.config.ts` / `tsconfig`)
 
 `app`, `pages`, `widgets`, `features`, `entities`, `shared` — import 시 레이어 이름으로 참조합니다.
