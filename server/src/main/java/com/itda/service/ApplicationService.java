@@ -372,10 +372,16 @@ public class ApplicationService {
 
     // ─── 캘린더 API ───────────────────────────────────────────
 
-    // 고용자 캘린더 일정 조회
+    // 고용자 캘린더 일정 조회 (workplaceId 옵셔널 필터)
     public EmployerScheduleResponse getEmployerSchedules(Long userId, ScheduleRequest request) {
-        List<JobPost> jobPosts = jobPostRepository.findByEmployerIdAndWorkDateBetween(
-                userId, request.getFromDate(), request.getToDate());
+        List<JobPost> jobPosts;
+        if (request.getWorkplaceId() != null) {
+            jobPosts = jobPostRepository.findByEmployerIdAndWorkplaceIdAndWorkDateBetween(
+                    userId, request.getWorkplaceId(), request.getFromDate(), request.getToDate());
+        } else {
+            jobPosts = jobPostRepository.findByEmployerIdAndWorkDateBetween(
+                    userId, request.getFromDate(), request.getToDate());
+        }
 
         Map<LocalDate, List<EmployerScheduleItem>> schedules = jobPosts.stream()
                 .collect(Collectors.groupingBy(

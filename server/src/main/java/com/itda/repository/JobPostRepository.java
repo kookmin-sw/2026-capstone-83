@@ -39,6 +39,16 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JobPost
             @Param("userId") Long userId,
             @Param("start") LocalDate start,
             @Param("end") LocalDate end);
+
+    // 캘린더용 날짜 범위 + 사업장 필터 조회 (user.id 기준)
+    @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.user.id = :userId " +
+            "AND j.workplace.id = :workplaceId " +
+            "AND j.workDate BETWEEN :start AND :end")
+    List<JobPost> findByEmployerIdAndWorkplaceIdAndWorkDateBetween(
+            @Param("userId") Long userId,
+            @Param("workplaceId") Long workplaceId,
+            @Param("start") LocalDate start,
+            @Param("end") LocalDate end);
     // liked 공고 ID 목록 기준 조회
     @Query("SELECT j FROM JobPost j WHERE j.id IN :ids ORDER BY j.id DESC")
     List<JobPost> findByIdIn(@Param("ids") List<Long> ids);
