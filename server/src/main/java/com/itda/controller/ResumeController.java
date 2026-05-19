@@ -9,9 +9,11 @@ import com.itda.dto.response.ResumeResponse;
 import com.itda.entity.User;
 import com.itda.service.ResumeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/v1/resume")
@@ -95,4 +97,28 @@ public class ResumeController {
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(resumeService.getResumeList(cursor, size, user));
     }
+
+    /**
+     * 이력서 증명사진 등록/수정
+     * POST /api/v1/resume/photo
+     */
+    @PostMapping(value = "/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Void> updateResumePhoto(
+            @AuthenticationPrincipal User user,
+            @RequestPart("photo") MultipartFile photo) {
+        resumeService.updateResumePhoto(user, photo);
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * 이력서 증명사진 삭제
+     * DELETE /api/v1/resume/photo
+     */
+    @DeleteMapping("/photo")
+    public ResponseEntity<Void> deleteResumePhoto(
+            @AuthenticationPrincipal User user) {
+        resumeService.deleteResumePhoto(user);
+        return ResponseEntity.noContent().build();
+    }
+
 }

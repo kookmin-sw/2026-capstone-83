@@ -18,6 +18,7 @@ import com.itda.repository.CareerRepository;
 import com.itda.repository.CertificateRepository;
 import com.itda.repository.ResumeRepository;
 import com.itda.repository.ResumeLikeRepository;
+import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -36,6 +37,7 @@ public class ResumeService {
     private final ApplicationRepository applicationRepository;
     private final LikeService likeService;
     private final ResumeLikeRepository resumeLikeRepository;
+    private final S3Service s3Service;
 
     // 본인 이력서 조회
     public ResumeResponse getResume(User user) {
@@ -79,6 +81,59 @@ public class ResumeService {
 
         return ResumeResponse.of(resumeUser, resume, careers, certificates, totalHired, liked);
     }
+
+    // 이력서 증명사진 등록/수정
+    @Transactional
+    public void updateResumePhoto(User user, MultipartFile photo) {
+        Resume resume = resumeRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new NotFoundException("이력서를 먼저 등록해주세요."));
+
+        // 기존 사진이 있으면 S3에서 삭제
+        if (resume.getPhotoUrl() != null) {
+            s3Service.delete(resume.getPhotoUrl());
+        }
+
+        String photoUrl = s3Service.upload(photo, "resume/photos/" + user.getId());
+
+        Resume updated = Resume.builder()
+                .id(resume.getId())
+                .user(resume.getUser())
+                .education(resume.getEducation())
+                .educationStatus(resume.getEducationStatus())
+                .major(resume.getMajor())
+                .photoUrl(photoUrl)
+                .createdAt(resume.getCreatedAt())
+                .build();
+
+        resumeRepository.save(updated);
+    }
+
+    // 이력서 증명사진 삭제
+    @Transactional
+    public void deleteResumePhoto(User user) {
+        Resume resume = resumeRepository.findByUserId(user.getId())
+                .orElseThrow(() -> new NotFoundException("이력서를 찾을 수 없습니다."));
+
+        if (resume.getPhotoUrl() == null) {
+            throw new IllegalStateException("등록된 증명사진이 없습니다.");
+        }
+
+        // S3에서 사진 삭제
+        s3Service.delete(resume.getPhotoUrl());
+
+        Resume updated = Resume.builder()
+                .id(resume.getId())
+                .user(resume.getUser())
+                .education(resume.getEducation())
+                .educationStatus(resume.getEducationStatus())
+                .major(resume.getMajor())
+                .photoUrl(null)
+                .createdAt(resume.getCreatedAt())
+                .build();
+
+        resumeRepository.save(updated);
+    }
+
     // 이력서 등록/수정
     @Transactional
     public void saveResume(User user, ResumeRequest request) {

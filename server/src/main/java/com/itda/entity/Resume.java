@@ -38,6 +38,10 @@ public class Resume {
     @Column(nullable = true)
     private String major;
 
+    // 이력서 증명사진 S3 URL
+    @Column(name = "photo_url", length = 500, nullable = true)
+    private String photoUrl;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 

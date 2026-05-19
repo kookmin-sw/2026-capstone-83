@@ -21,6 +21,7 @@ public class ResumeResponse {
     private String profileImageUrl;
 
     // ── 이력서 정보 (resumes 테이블) ──
+    private String photoUrl;        // 증명사진 S3 URL
     private String education;
     private String educationStatus;
     private String major;
