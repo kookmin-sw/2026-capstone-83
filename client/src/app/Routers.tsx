@@ -34,7 +34,7 @@ import AdminReportDetailPage from 'pages/admin/AdminReportDetailPage';
 const Routers = () => {
   return (
     <Routes>
-      {/* 헤더(+추후 푸터) 포함 레이아웃 */}
+      {/* 헤더 + 푸터 레이아웃 */}
       <Route element={<MainLayout />}>
         <Route path="/" element={<MainPage />} />
 
