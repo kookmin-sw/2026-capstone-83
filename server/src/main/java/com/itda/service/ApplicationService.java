@@ -81,36 +81,69 @@ public class ApplicationService {
                 .isPresent();
     }
 
-    // 지원자 → 제안 수락 (OFFERED → PENDING)
+    // 지원자 → 제안 수락 (OFFERED → PENDING 또는 PENDING → HIRED)
     @Transactional
     public Application acceptOffer(Long applicationId) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new NotFoundException("지원 내역을 찾을 수 없습니다."));
 
-        if (application.getStatus() != ApplicationStatus.OFFERED) {
-            throw new IllegalStateException("제안 상태가 아닙니다.");
+        ApplicationStatus current = application.getStatus();
+
+        if (current == ApplicationStatus.OFFERED) {
+            // OFFERED → PENDING (기존 플로우)
+            Application saved = applicationRepository.save(Application.builder()
+                    .id(application.getId())
+                    .jobPost(application.getJobPost())
+                    .applicantUser(application.getApplicantUser())
+                    .status(ApplicationStatus.PENDING)
+                    .initiatedBy(application.getInitiatedBy())
+                    .appliedAt(application.getAppliedAt())
+                    .build());
+
+            JobPost jobPost = application.getJobPost();
+            Long employerUserId = jobPost.getWorkplace().getEmployer().getUser().getId();
+            notificationService.notify(
+                    employerUserId,
+                    NotificationType.OFFER_ACCEPTED,
+                    application.getApplicantUser().getName() + "님이 [" + jobPost.getTitle() + "] 제안을 수락했습니다.",
+                    saved.getId()
+            );
+            return saved;
+
+        } else if (current == ApplicationStatus.PENDING) {
+            // PENDING → HIRED (구직자가 고용주 제안 수락)
+            JobPost jobPost = application.getJobPost();
+            jobPost.confirmHire();
+            jobPostRepository.save(jobPost);
+
+            Application saved = applicationRepository.save(Application.builder()
+                    .id(application.getId())
+                    .jobPost(application.getJobPost())
+                    .applicantUser(application.getApplicantUser())
+                    .status(ApplicationStatus.HIRED)
+                    .initiatedBy(application.getInitiatedBy())
+                    .appliedAt(application.getAppliedAt())
+                    .build());
+
+            Long employerUserId = jobPost.getWorkplace().getEmployer().getUser().getId();
+            notificationService.notify(
+                    employerUserId,
+                    NotificationType.OFFER_ACCEPTED,
+                    application.getApplicantUser().getName() + "님이 [" + jobPost.getTitle() + "] 채용을 수락했습니다.",
+                    saved.getId()
+            );
+
+            notificationService.notify(
+                    application.getApplicantUser().getId(),
+                    NotificationType.HIRED,
+                    "[" + jobPost.getTitle() + "] 채용이 확정되었습니다.",
+                    saved.getId()
+            );
+            return saved;
+
+        } else {
+            throw new IllegalStateException("현재 상태에서는 수락할 수 없습니다.");
         }
-
-        Application saved = applicationRepository.save(Application.builder()
-                .id(application.getId())
-                .jobPost(application.getJobPost())
-                .applicantUser(application.getApplicantUser())
-                .status(ApplicationStatus.PENDING)
-                .initiatedBy(application.getInitiatedBy())
-                .appliedAt(application.getAppliedAt())
-                .build());
-
-        // 알림: 고용주에게 제안 수락 알림
-        JobPost jobPost = application.getJobPost();
-        Long employerUserId = jobPost.getWorkplace().getEmployer().getUser().getId();
-        notificationService.notify(
-                employerUserId,
-                NotificationType.OFFER_ACCEPTED,
-                application.getApplicantUser().getName() + "님이 [" + jobPost.getTitle() + "] 제안을 수락했습니다.",
-                saved.getId()
-        );
-
-        return saved;
     }
 
     // 내 지원 목록 (지원자) - 커서 페이지네이션 + 공고 카드 포함 (N+1 방지)
@@ -239,7 +272,7 @@ public class ApplicationService {
         return saved;
     }
 
-    // 고용주 → 채용 확정 (소유권 검증)
+    // 고용주 → 채용 확정 (소유권 검증) — APPLIED → PENDING (구직자 수락 대기)
     @Transactional
     public ApplicantResponse hire(Long applicationId, Long userId) {
         Application application = applicationRepository.findById(applicationId)
@@ -247,24 +280,21 @@ public class ApplicationService {
 
         verifyOwnership(application, userId);
 
-        JobPost jobPost = application.getJobPost();
-        jobPost.confirmHire();
-        jobPostRepository.save(jobPost);
-
         Application saved = applicationRepository.save(Application.builder()
                 .id(application.getId())
                 .jobPost(application.getJobPost())
                 .applicantUser(application.getApplicantUser())
-                .status(ApplicationStatus.HIRED)
+                .status(ApplicationStatus.PENDING)
                 .initiatedBy(application.getInitiatedBy())
                 .appliedAt(application.getAppliedAt())
                 .build());
 
-        // 알림: 구직자에게 채용 확정 알림
+        // 알림: 구직자에게 채용 제안 알림
+        JobPost jobPost = application.getJobPost();
         notificationService.notify(
                 application.getApplicantUser().getId(),
-                NotificationType.HIRED,
-                "[" + jobPost.getTitle() + "] 채용이 확정되었습니다.",
+                NotificationType.OFFER_RECEIVED,
+                "[" + jobPost.getTitle() + "] 채용 제안이 왔습니다.",
                 saved.getId()
         );
 
