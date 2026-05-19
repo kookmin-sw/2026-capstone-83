@@ -47,6 +47,11 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JobPost
     @Query("SELECT j FROM JobPost j WHERE j.status = com.itda.enums.JobPostStatus.OPEN AND j.deadline < :today")
     List<JobPost> findExpiredOpenPosts(@Param("today") LocalDate today);
 
+    // 근무 시작 시간이 지난 OPEN 공고 조회 (당일 workDate + workStart < now)
+    @Query("SELECT j FROM JobPost j WHERE j.status = com.itda.enums.JobPostStatus.OPEN " +
+            "AND j.workDate = :today AND j.workStart < :now")
+    List<JobPost> findStartedOpenPosts(@Param("today") LocalDate today, @Param("now") java.time.LocalTime now);
+
     /**
      * 랭킹용 후보 풀 조회 — OPEN 상태의 공고 중 사용자의 HIRED 공고는 제외.
      * 메모리에서 점수 매기기 위해 한 번에 가져온다.
