@@ -1,27 +1,26 @@
 import { useQuery } from '@tanstack/react-query';
-import { fetchResume, fetchMockResume } from '../../api/resume.api';
+import { fetchResumeDetail, fetchMockResume } from '../../api/resume.api';
 import type { ResumeResponse } from '../types/resume.type';
 import { USE_MOCK } from 'shared/config/env';
 
 /**
- * 이력서 상세 조회 훅
- * - mock 모드: 실제 API 실패 시 mock 데이터로 fallback
- * - 실제 모드: 실제 API 응답만 반환
+ * 이력서 상세 조회 — GET /api/v1/resume/{resumeId}
  */
 export const useResumeDetail = (resumeId?: number) => {
   return useQuery<ResumeResponse>({
-    queryKey: ['resume', resumeId],
+    queryKey: ['resume', 'detail', resumeId],
     queryFn: async () => {
-      const real = await fetchResume().catch(() => null);
+      if (!resumeId) throw new Error('Resume id is required');
 
-      if (real) return real;
-
-      if (USE_MOCK && resumeId) {
-        return fetchMockResume(resumeId);
+      try {
+        return await fetchResumeDetail(resumeId);
+      } catch {
+        if (USE_MOCK) {
+          return fetchMockResume(resumeId);
+        }
+        throw new Error('Resume not found');
       }
-
-      throw new Error('Resume not found');
     },
-    enabled: resumeId !== undefined,
+    enabled: resumeId !== undefined && !Number.isNaN(resumeId),
   });
 };

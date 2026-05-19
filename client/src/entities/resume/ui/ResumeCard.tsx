@@ -1,56 +1,68 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import type { ResumeResponse } from '../model/types/resume.type';
+import type { ResumeCardItem } from '../model/types/resume.type';
 import { MapPin } from 'lucide-react';
 
 interface Props {
-  data: ResumeResponse;
+  data: ResumeCardItem;
   extraActions?: React.ReactNode;
 }
 
+const formatDuration = (years: number, months: number) => {
+  const parts: string[] = [];
+  if (years > 0) parts.push(`${years}년`);
+  if (months > 0) parts.push(`${months}개월`);
+  return parts.join(' ') || '0개월';
+};
+
+const DEFAULT_AVATAR = 'https://api.dicebear.com/7.x/identicon/svg?seed=default';
+
 export const ResumeCard = ({ data, extraActions }: Props) => {
   const navigate = useNavigate();
-  const { id, name, gender, birthDate, address, profileUrl, totalHired, careers } = data;
+  const {
+    resumeId,
+    name,
+    gender,
+    age,
+    profileImageUrl,
+    location,
+    totalHired,
+    firstCareerTitle,
+    firstCareerYears,
+    firstCareerMonths,
+  } = data;
 
   const genderLabel = gender === 'MALE' ? '남' : '여';
-  const birthYear = birthDate ? new Date(birthDate).getFullYear() : 0;
-  const age = birthYear ? new Date().getFullYear() - birthYear : '';
-
-  // 대표 경력 (첫 번째 + 기간)
-  const mainCareer = careers && careers.length > 0 ? careers[0] : null;
-  const formatDuration = (years: number, months: number) => {
-    const parts = [];
-    if (years > 0) parts.push(`${years}년`);
-    if (months > 0) parts.push(`${months}개월`);
-    return parts.join(' ') || '0개월';
-  };
+  const hasCareer = firstCareerTitle != null;
 
   return (
-    <CardWrapper onClick={() => navigate(`/resume/${id}`)}>
+    <CardWrapper onClick={() => navigate(`/resume/${resumeId}`)}>
       <ProfileImage>
         <img
-          src={profileUrl || 'https://api.dicebear.com/7.x/identicon/svg?seed=default'}
+          src={profileImageUrl || DEFAULT_AVATAR}
           alt={`${name} 프로필`}
         />
       </ProfileImage>
 
       <CardContent>
         <NameRow>
-          <Name>{name}({genderLabel}, {age}세)</Name>
+          <Name>
+            {name}({genderLabel}, {age}세)
+          </Name>
           {extraActions && <ActionGroup>{extraActions}</ActionGroup>}
         </NameRow>
 
-        {mainCareer && (
+        {hasCareer && (
           <CareerText>
-            {mainCareer.jobTitle} ({formatDuration(mainCareer.years, mainCareer.months)})
+            {firstCareerTitle} ({formatDuration(firstCareerYears, firstCareerMonths)})
           </CareerText>
         )}
 
         <MetaRow>
           <MetaItem>
             <MapPin size={12} />
-            {address}
+            {location}
           </MetaItem>
           <MetaDivider>|</MetaDivider>
           <MetaItem>누적 {totalHired}건</MetaItem>

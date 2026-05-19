@@ -57,14 +57,17 @@ export interface Career {
 import type { CertificateResponse } from 'shared/types/certificate';
 
 export interface ResumeResponse {
-  id: number;
+  id?: number;
   name: string;
   gender: string;
-  birthDate: string;
-  address: string;
+  birthDate?: string;
+  birthdate?: string;
+  address?: string;
+  location?: string;
   phone: string;
   email: string;
-  profileUrl: string;
+  profileUrl?: string;
+  profileImageUrl?: string;
   education: EducationLevel;
   educationStatus: SchoolStatus;
   major: string;

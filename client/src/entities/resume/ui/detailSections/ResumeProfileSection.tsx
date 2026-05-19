@@ -13,11 +13,14 @@ export const ResumeProfileSection = ({ data, actions }: Props) => {
     return <Loading message="프로필 정보를 불러오는 중..." />;
   }
 
-  const { name, gender, birthDate, address, phone, email, profileUrl } = data;
+  const { name, gender, phone, email } = data;
+  const birthRaw = data.birthDate ?? data.birthdate;
+  const address = data.address ?? data.location ?? '';
+  const profileUrl = data.profileUrl ?? data.profileImageUrl;
 
   const genderLabel = gender === 'MALE' ? '남' : '여';
-  const birthYear = birthDate ? new Date(birthDate).getFullYear() : '';
-  const age = birthYear ? new Date().getFullYear() - Number(birthYear) : '';
+  const birthYear = birthRaw ? new Date(birthRaw).getFullYear() : '';
+  const age = birthYear ? new Date().getFullYear() - Number(birthYear) + 1 : '';
 
   return (
     <Section>

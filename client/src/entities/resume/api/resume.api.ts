@@ -4,12 +4,17 @@ import type { Career, CareerRequest, GetResumesParams, ResumeListCursor, ResumeR
 import mockResumeData from "shared/mocks/data/mockResumeData.json";
 
 
-// 이력서 상세 조회, id 조회로 할 필요
-// 목록 조회 필요 
+/** 내 이력서 조회 (구직자 본인) */
 export const fetchResume = async (): Promise<ResumeResponse> => {
   const response = await authClient.get(`/api/v1/resume`);
   return response.data;
-}
+};
+
+/** 이력서 상세 조회 (고용주 — 목록의 resumeId) */
+export const fetchResumeDetail = async (resumeId: number): Promise<ResumeResponse> => {
+  const response = await authClient.get(`/api/v1/resume/${resumeId}`);
+  return response.data;
+};
 
 // 인재 목록 조회 (로그인 시 authClient로 liked 포함 조회)
 export const fetchResumes = async (params?: GetResumesParams): Promise<ResumeListCursor> => {
