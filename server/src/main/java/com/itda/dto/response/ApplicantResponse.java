@@ -10,6 +10,7 @@ import java.time.Period;
  * 지원자 목록 조회, 근무자 목록 조회에서 공통 사용
  */
 public record ApplicantResponse(
+        Long applicationId,  // ✨ 추가
         Long userId,
         String name,
         String phone,
@@ -19,7 +20,7 @@ public record ApplicantResponse(
         String location,
         long matchCount,
         String status,
-        String appliedAt
+        String appliedAt    
 ) {
     public static ApplicantResponse from(Application application, long matchCount) {
         User user = application.getApplicantUser();
@@ -29,6 +30,7 @@ public record ApplicantResponse(
         }
 
         return new ApplicantResponse(
+                application.getId(),  // ✨ 추가
                 user.getId(),
                 user.getName(),
                 user.getPhone(),
