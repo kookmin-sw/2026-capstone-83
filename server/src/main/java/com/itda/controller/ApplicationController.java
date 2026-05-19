@@ -81,6 +81,15 @@ public class ApplicationController {
         return ResponseEntity.ok(applicationService.getEmployeeSchedules(user.getId(), fromDate, toDate));
     }
 
+    // 지원 취소 (구직자)
+    @PostMapping("/api/v1/applications/{id}/cancel")
+    public ResponseEntity<Void> cancel(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        applicationService.cancel(id, user);
+        return ResponseEntity.ok().build();
+    }
+
     // ─── 고용주 API ───────────────────────────────────────────
 
 

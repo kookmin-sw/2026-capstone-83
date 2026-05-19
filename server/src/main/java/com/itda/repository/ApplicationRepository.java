@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.Optional;
 
 @Repository
@@ -63,4 +64,18 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
 
     // 유저의 매칭 횟수 (HIRED + COMPLETED 건수)
     long countByApplicantUserIdAndStatusIn(Long applicantUserId, List<ApplicationStatus> statuses);
+
+    /**
+     * 자동 완료 처리 대상 조회
+     * 오늘 근무하고, 근무 종료 시각이 지난 HIRED 상태 Application
+     */
+    @Query("""
+        SELECT a FROM Application a
+        WHERE a.status = 'HIRED'
+          AND a.jobPost.workDate = :today
+          AND a.jobPost.workEnd < :now
+        """)
+    List<Application> findCompletableApplications(
+            @Param("today") LocalDate today,
+            @Param("now") LocalTime now);
 }

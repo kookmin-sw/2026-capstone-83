@@ -6,5 +6,6 @@ public enum ApplicationStatus {
     PENDING,   // 지원자가 제안 수락 (고용주 최종 확정 대기)
     HIRED,     // 채용 확정
     REJECTED,  // 거절
-    COMPLETED  // 근무 완료
+    COMPLETED, // 근무 완료
+    CANCELLED  // 지원 취소
 }

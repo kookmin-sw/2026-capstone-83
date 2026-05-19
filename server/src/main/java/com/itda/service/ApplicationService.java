@@ -182,6 +182,35 @@ public class ApplicationService {
         return EmployeeScheduleResponse.of(schedules);
     }
 
+    // 지원 취소 (구직자)
+    @Transactional
+    public void cancel(Long applicationId, User applicant) {
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new NotFoundException("지원 내역을 찾을 수 없습니다."));
+
+        if (!application.getApplicantUser().getId().equals(applicant.getId())) {
+            throw new IllegalStateException("본인의 지원 내역만 취소할 수 있습니다.");
+        }
+
+        ApplicationStatus current = application.getStatus();
+        if (current == ApplicationStatus.COMPLETED
+                || current == ApplicationStatus.REJECTED
+                || current == ApplicationStatus.CANCELLED) {
+            throw new IllegalStateException("현재 상태에서는 취소할 수 없습니다.");
+        }
+
+        // HIRED 취소인 경우 → filledSlots 감소 + 공고 재오픈 판단
+        if (current == ApplicationStatus.HIRED) {
+            JobPost jobPost = application.getJobPost();
+            jobPost.cancelHire();
+            jobPostRepository.save(jobPost);
+        }
+
+        // 레코드 삭제 없이 상태만 CANCELLED로 변경
+        application.cancel();
+        applicationRepository.save(application);
+    }
+
     // ─── 고용주 API ───────────────────────────────────────────
 
     // 고용주 → 지원자에게 제안

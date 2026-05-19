@@ -152,4 +152,14 @@ public class JobPost {
     public void closeByEmployer() {
         this.status = JobPostStatus.CLOSED;
     }
+
+    /**
+     * 채용 취소 시 filledSlots 감소 + 재오픈 판단
+     */
+    public void cancelHire() {
+        this.filledSlots = Math.max(0, this.filledSlots - 1);
+        if (this.status == JobPostStatus.CLOSED && this.filledSlots < this.totalSlots) {
+            this.status = JobPostStatus.OPEN;
+        }
+    }
 }

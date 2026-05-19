@@ -51,4 +51,18 @@ public class Application {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    /**
+     * 근무 완료 자동 처리 시 호출 (스케줄러 전용)
+     */
+    public void completeWork() {
+        this.status = ApplicationStatus.COMPLETED;
+    }
+
+    /**
+     * 지원 취소 시 호출
+     */
+    public void cancel() {
+        this.status = ApplicationStatus.CANCELLED;
+    }
 }
