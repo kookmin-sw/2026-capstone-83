@@ -16,10 +16,11 @@ export const RECRUITMENT_STATUS_MAP = {
   CANCELLED: { label: '취소', scheme: 'error' },
 } as const satisfies Record<PostStatus, StatusInfo>;
 
+/** 공고 카드용 (구 ApplyStatus) — applicationStatus 없을 때 fallback */
 export const APPLICATION_STATUS_MAP = {
-  NONE: null, // 지원 안 함 (표시 안 함)
-  APPLYING: { label: '지원 중', scheme: 'neutral' },
-  SELECTED: { label: '승인 대기', scheme: 'secondary' },
+  NONE: null,
+  APPLYING: { label: '지원 완료', scheme: 'primary' },
+  SELECTED: { label: '채용 대기', scheme: 'neutral' },
   HIRED: { label: '채용 확정', scheme: 'success' },
-  REJECTED: { label: '지원 종료', scheme: 'error' },
+  REJECTED: { label: '거절', scheme: 'error' },
 } as const satisfies Record<ApplyStatus, StatusInfo | null>;

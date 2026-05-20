@@ -21,6 +21,9 @@ export interface JobPostCardProps {
   /** true: 로고 열 포함 레이아웃 (URL 없으면 이니셜 플레이스홀더) */
   showLogo?: boolean;
   extraActions?: ReactNode;
+  /** 카드 우상단(제목 행) 액션 — 지원/채용 버튼 등 */
+  headerActions?: ReactNode;
+  /** @deprecated headerActions 사용 */
   bottomActions?: ReactNode;
 }
 
@@ -28,8 +31,10 @@ export const JobPostCard = ({
   data,
   showLogo = false,
   extraActions,
+  headerActions,
   bottomActions,
 }: JobPostCardProps) => {
+  const topActions = headerActions ?? bottomActions;
   const theme = useTheme();
   const {
     id,
@@ -52,13 +57,17 @@ export const JobPostCard = ({
   const dDayLabel = calculateDDay(deadline);
   const dDayTone = getDDayTone(dDayLabel);
   const recruitBadge = getRecruitmentBadge(status, applyStatus);
-  const applyBadge = getApplicationBadge(applyStatus);
+  const applyBadge = getApplicationBadge(
+    applyStatus,
+    'applicationStatus' in data ? data.applicationStatus : undefined,
+  );
   const logoUrl = showLogo ? companyLogoUrl : undefined;
   const companyInitial = company.trim().charAt(0) || '?';
 
   return (
-    <Link to={`/jobpost/${id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
-      <S.CardContainer>
+    <S.CardOuter>
+      <Link to={`/jobpost/${id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
+        <S.CardContainer>
         <S.TopRow $withLogo={showLogo}>
           {showLogo && (
             <S.LogoBox>
@@ -73,12 +82,19 @@ export const JobPostCard = ({
           <S.MainColumn>
             <S.MetaRow>
               <S.Company>{company}</S.Company>
-              {extraActions && <S.ActionGroup onClick={(e) => e.preventDefault()}>{extraActions}</S.ActionGroup>}
+              {extraActions && (
+                <S.ActionGroup onClick={(e) => e.preventDefault()}>{extraActions}</S.ActionGroup>
+              )}
             </S.MetaRow>
 
             <S.TitleRow>
-              <S.Title>{title}</S.Title>
-              <S.DDayChip $tone={dDayTone}>{dDayLabel}</S.DDayChip>
+              <S.TitleGroup>
+                <S.Title>{title}</S.Title>
+                <S.DDayChip $tone={dDayTone}>{dDayLabel}</S.DDayChip>
+              </S.TitleGroup>
+              {topActions && (
+                <S.ActionGroup onClick={(e) => e.preventDefault()}>{topActions}</S.ActionGroup>
+              )}
             </S.TitleRow>
           </S.MainColumn>
         </S.TopRow>
@@ -111,10 +127,8 @@ export const JobPostCard = ({
           )}
         </S.FooterRow>
 
-        {bottomActions && (
-          <S.BottomActions onClick={(e) => e.preventDefault()}>{bottomActions}</S.BottomActions>
-        )}
-      </S.CardContainer>
-    </Link>
+        </S.CardContainer>
+      </Link>
+    </S.CardOuter>
   );
 };

@@ -26,7 +26,7 @@ export const ApplicantCard = ({ data, actions, reviewSlot, onClick }: Props) => 
       <S.Content>
         <S.NameRow>
           <S.Name>{name} ({genderLabel}, {age}세)</S.Name>
-          {actions && <S.ActionGroup>{actions}</S.ActionGroup>}
+          {actions}
         </S.NameRow>
 
         <S.MetaRow>
@@ -91,19 +91,14 @@ const S = {
   `,
   NameRow: styled.div`
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    gap: 8px;
   `,
   Name: styled.span`
     font-size: ${({ theme }) => theme.fontSize.medium};
     font-weight: ${({ theme }) => theme.fontWeight.semibold};
     color: ${({ theme }) => theme.color.text};
-  `,
-  ActionGroup: styled.div`
-    display: flex;
-    gap: 8px;
-    margin-left: auto;
-    flex-shrink: 0;
   `,
   MetaRow: styled.div`
     display: flex;

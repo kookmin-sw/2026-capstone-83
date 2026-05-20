@@ -1,34 +1,43 @@
 import { useState } from 'react';
+import { isAxiosError } from 'axios';
 import { Check } from 'lucide-react';
 import { useTheme } from 'styled-components';
 import {
   getApplicationMutationErrorMessage,
-  useAcceptApplicant,
+  useAcceptApproval,
 } from 'entities/application/model/hooks/useApplication';
+import { clearPendingFlowFlag } from 'entities/application/lib/pendingFlowStorage';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
 
 interface Props {
   applicationId: number;
-  jobPostId: number;
 }
 
-/** 지원자 채용 승인 버튼 */
-export const AcceptApplicantButton = ({ applicationId, jobPostId }: Props) => {
+/** 구직자 최종 수락 (PENDING → HIRED, 지원 플로우) */
+export const AcceptApprovalButton = ({ applicationId }: Props) => {
   const theme = useTheme();
-  const { mutate, isPending } = useAcceptApplicant(jobPostId);
+  const { mutate, isPending } = useAcceptApproval();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
     e.stopPropagation();
     setIsModalOpen(true);
   };
 
   const handleConfirm = () => {
     mutate(applicationId, {
-      onSuccess: () => setIsModalOpen(false),
+      onSuccess: () => {
+        clearPendingFlowFlag(applicationId);
+        setIsModalOpen(false);
+      },
       onError: (error) => {
-        alert(getApplicationMutationErrorMessage(error) ?? '승인에 실패했습니다.');
+        if (isAxiosError(error) && error.response?.status === 409) {
+          alert('고용주의 최종 확정을 기다려 주세요.');
+          return;
+        }
+        alert(getApplicationMutationErrorMessage(error) ?? '최종 수락에 실패했습니다.');
       },
     });
   };
@@ -44,7 +53,7 @@ export const AcceptApplicantButton = ({ applicationId, jobPostId }: Props) => {
         disabled={isPending}
       >
         <Check size={14} color={theme.color.white} />
-        승인
+        최종 수락
       </Button>
 
       <Modal
@@ -56,14 +65,14 @@ export const AcceptApplicantButton = ({ applicationId, jobPostId }: Props) => {
               취소
             </Button>
             <Button scheme="primary" buttonSize="medium" onClick={handleConfirm} disabled={isPending}>
-              승인
+              수락
             </Button>
           </>
         }
       >
         <ModalContent>
-          <h2>지원 승인</h2>
-          <p>지원을 승인하면 채용 대기 상태가 됩니다. 구직자의 최종 수락을 기다립니다.</p>
+          <h2>채용 최종 수락</h2>
+          <p>고용주 승인을 확인했습니다. 채용을 최종 수락하시겠습니까?</p>
         </ModalContent>
       </Modal>
     </>

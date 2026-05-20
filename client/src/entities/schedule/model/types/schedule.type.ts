@@ -1,4 +1,5 @@
-import type { ApplyStatus, PostStatus } from 'entities/jobPost/model/types/jobPost.type';
+import type { ApplicationStatus } from 'entities/application/model/types/application.type';
+import type { PostStatus } from 'entities/jobPost/model/types/jobPost.type';
 
 
 
@@ -30,7 +31,8 @@ export interface Schedule {
 export interface ApplicantSchedule extends Schedule {
   company?: string;
   location?: string;
-  applyStatus?: ApplyStatus;
+  /** 서버 worker/schedule API — ApplicationStatus (APPLIED, PENDING, HIRED 등) */
+  applyStatus?: ApplicationStatus;
 }
 
 

@@ -5,6 +5,7 @@ import type { ApplicantSchedule } from 'entities/schedule/model/types/schedule.t
 import { ApplicantCalendarWidget } from 'widgets/calendar/ApplicantCalendar/ui/ApplicantCalendarWidget';
 import { HiredWeeklyTimetable } from 'widgets/calendar/ApplicantCalendar/ui/HiredWeeklyTimetable';
 import { ApplicationListByStatus } from 'widgets/application/ApplicationListByStatus';
+import { ApplicationsRefreshButton } from 'features/application/ApplicationsRefreshButton';
 import SelectedJobPostSection from 'entities/jobPost/ui/SelectedJobPostSection';
 import { CalendarSurface } from 'widgets/calendar/styles/calendar.styled';
 
@@ -53,7 +54,10 @@ const WorkerDashBoardPage = () => {
       )}
 
       {/* 지원 이력 */}
-      <S.SectionLabel>내 지원 현황</S.SectionLabel>
+      <S.SectionHeader>
+        <S.SectionLabel>내 지원 현황</S.SectionLabel>
+        <ApplicationsRefreshButton />
+      </S.SectionHeader>
       <ApplicationListByStatus />
     </S.PageWrapper>
   );
@@ -64,6 +68,12 @@ const S = {
     display: flex;
     flex-direction: column;
     gap: 24px;
+  `,
+  SectionHeader: styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
   `,
   SectionLabel: styled.h2`
     font-size: ${({ theme }) => theme.fontSize.large};

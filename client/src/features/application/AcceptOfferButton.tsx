@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { Check } from 'lucide-react';
 import { useTheme } from 'styled-components';
-import { useAcceptOffer } from 'entities/application/model/hooks/useApplication';
+import {
+  getApplicationMutationErrorMessage,
+  useAcceptOffer,
+} from 'entities/application/model/hooks/useApplication';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
 
@@ -22,8 +25,14 @@ export const AcceptOfferButton = ({ applicationId }: Props) => {
   };
 
   const handleConfirm = () => {
-    mutate(applicationId);
-    setIsModalOpen(false);
+    mutate(applicationId, {
+      onSuccess: () => {
+        setIsModalOpen(false);
+      },
+      onError: (error) => {
+        alert(getApplicationMutationErrorMessage(error) ?? '제안 수락에 실패했습니다.');
+      },
+    });
   };
 
   return (
@@ -37,7 +46,7 @@ export const AcceptOfferButton = ({ applicationId }: Props) => {
         disabled={isPending}
       >
         <Check size={14} color={theme.color.white} />
-        승인
+        수락
       </Button>
 
       <Modal
@@ -49,14 +58,14 @@ export const AcceptOfferButton = ({ applicationId }: Props) => {
               취소
             </Button>
             <Button scheme="primary" buttonSize="medium" onClick={handleConfirm} disabled={isPending}>
-              승인 확정
+              수락
             </Button>
           </>
         }
       >
         <ModalContent>
-          <h2>채용 승인</h2>
-          <p>해당 공고의 채용을 승인하시겠습니까?</p>
+          <h2>채용 제안 수락</h2>
+          <p>채용 제안을 수락하면 채용 대기 상태가 됩니다. 수락하시겠습니까?</p>
         </ModalContent>
       </Modal>
     </>

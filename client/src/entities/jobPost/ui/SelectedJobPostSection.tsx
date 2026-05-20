@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Calendar, Clock, MapPin } from 'lucide-react';
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
+import { useAuthStore } from 'entities/auth/model/store/authStore';
 import { JobPostOwnerActions } from 'features/jobPost/JobPostOwnerActions';
 import { useJobPost } from '../model/hooks/useJobPost';
 import Section from 'shared/ui/Layout/Section';
@@ -16,6 +17,7 @@ interface Props {
 
 const SelectedJobPostSection = ({ postId }: Props) => {
   const navigate = useNavigate();
+  const role = useAuthStore((s) => s.role);
   const setSelectedJobPostId = useScheduleStore((s) => s.setSelectedJobPostId);
   const { data: jobPost, isLoading } = useJobPost(postId);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -39,10 +41,12 @@ const SelectedJobPostSection = ({ postId }: Props) => {
               <ArrowRight size={20} />
             </S.ArrowButton>
           </S.TitleLink>
-          <JobPostOwnerActions
-            jobPostId={postId}
-            onDeleted={() => setSelectedJobPostId(null)}
-          />
+          {role === 'EMPLOYER' && (
+            <JobPostOwnerActions
+              jobPostId={postId}
+              onDeleted={() => setSelectedJobPostId(null)}
+            />
+          )}
         </S.TitleRow>
 
         {/* 프로그레스바 */}

@@ -1,3 +1,4 @@
+import type { ApplicationStatus } from 'entities/application/model/types/application.type';
 import type { CursorParams, CursorResponse } from 'shared/api/types';
 import type { CertificateType } from 'shared/types/certificate';
 
@@ -18,7 +19,8 @@ export interface JobPost {
   workStart: string; // 근무 시작 시간
   workEnd: string; // 근무 종료 시간
   status: PostStatus; // 공고 상태
-  applyStatus: ApplyStatus; // 지원 상태
+  applyStatus: ApplyStatus; // 카드용 요약 (목록 API)
+  applicationStatus?: ApplicationStatus; // 지원 API status (있으면 뱃지에 우선)
   deadline: string; // 마감일
   liked: boolean; // 공고 좋아요 여부
   companyLogoUrl?: string; // 사업장 로고 (목록 API)

@@ -1,7 +1,6 @@
 import { Clock, MapPin } from 'lucide-react';
 import type { ApplicantSchedule, Schedule } from 'entities/schedule/model/types/schedule.type';
-import type { ApplyStatus } from 'entities/jobPost/model/types/jobPost.type';
-import type { BadgeScheme } from 'shared/types/theme';
+import { getApplicationStatusBadge } from 'entities/application/lib/applicationStatusLabels';
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import { BaseWeeklyCalendar } from 'widgets/calendar/BaseWeeklyCalendar';
 import * as CS from 'widgets/calendar/styles/calendar.styled';
@@ -19,14 +18,6 @@ interface Props {
   onViewChange: (mode: ViewMode) => void;
 }
 
-const CALENDAR_APPLY_STATUS: Record<ApplyStatus, { label: string; scheme: BadgeScheme } | null> = {
-  NONE: null,
-  APPLYING: { label: '지원 중', scheme: 'primary' },
-  SELECTED: { label: '승인 대기', scheme: 'neutral' },
-  HIRED: { label: '채용 확정', scheme: 'success' },
-  REJECTED: { label: '지원 종료', scheme: 'error' },
-};
-
 export const ApplicantWeeklyCalendarCards = ({ schedules, currentDate, onPrev, onNext, viewMode, onViewChange }: Props) => {
   const selectedId = useScheduleStore((s) => s.selectedJobPostId);
   const setSelectedId = useScheduleStore((s) => s.setSelectedJobPostId);
@@ -42,7 +33,7 @@ export const ApplicantWeeklyCalendarCards = ({ schedules, currentDate, onPrev, o
       renderCard={(schedule) => {
         const s = schedule as ApplicantSchedule;
         const isSelected = selectedId === s.jobPostId;
-        const statusInfo = CALENDAR_APPLY_STATUS[s.applyStatus || 'NONE'];
+        const statusInfo = s.applyStatus ? getApplicationStatusBadge(s.applyStatus) : null;
 
         return (
           <CS.ScheduleCardBase

@@ -2,15 +2,21 @@ import { hoverOverlay } from 'shared/styles/hoverOverlay';
 import styled, { css } from 'styled-components';
 import type { DDayTone } from '../lib/jobPostCardDisplay';
 
-export const CardContainer = styled.article`
+export const CardOuter = styled.div`
   background: ${({ theme }) => theme.color.white};
   border-radius: 14px;
-  padding: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  border: 1px solid ${({ theme }) => theme.color.border};
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+`;
+
+export const CardContainer = styled.article`
+  padding: 16px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  border: 1px solid ${({ theme }) => theme.color.border};
   ${hoverOverlay}
 `;
 
@@ -71,21 +77,35 @@ export const Company = styled.span`
 
 export const ActionGroup = styled.div`
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
+  justify-content: flex-end;
   gap: 6px;
   flex-shrink: 0;
+  align-self: center;
+  white-space: nowrap;
 `;
 
 export const TitleRow = styled.div`
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
   gap: 8px;
 `;
 
-export const Title = styled.h3`
+export const TitleGroup = styled.div`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
   flex: 1;
   min-width: 0;
+`;
+
+export const Title = styled.h3`
+  flex: 0 1 auto;
+  min-width: 0;
+  max-width: 100%;
   font-size: ${({ theme }) => theme.fontSize.medium};
   font-weight: ${({ theme }) => theme.fontWeight.bold};
   color: ${({ theme }) => theme.color.text};
@@ -202,14 +222,3 @@ export const BadgeGroup = styled.div`
   }
 `;
 
-export const BottomActions = styled.div`
-  display: flex;
-  gap: 8px;
-  padding-top: 4px;
-
-  & > button {
-    flex: 1;
-    padding-top: 10px;
-    padding-bottom: 10px;
-  }
-`;

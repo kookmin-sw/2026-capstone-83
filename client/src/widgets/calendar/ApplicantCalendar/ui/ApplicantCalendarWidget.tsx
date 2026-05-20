@@ -12,18 +12,15 @@ import { ApplicantWeeklyCalendarCards } from './ApplicantWeeklyCalendarCards';
 import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
 import Empty from 'shared/ui/Empty/Empty';
-import type { ApplyStatus } from 'entities/jobPost/model/types/jobPost.type';
-import type { BadgeScheme } from 'shared/types/theme';
+import type { ApplicationStatus } from 'entities/application/model/types/application.type';
+import { getApplicationStatusBadge } from 'entities/application/lib/applicationStatusLabels';
 import { USE_MOCK } from 'shared/config/env';
 
 type ViewMode = 'monthly' | 'weekly';
 
-const CALENDAR_APPLY_STATUS: Record<ApplyStatus, { label: string; scheme: BadgeScheme } | null> = {
-  NONE: null,
-  APPLYING: { label: '지원 중', scheme: 'primary' },
-  SELECTED: { label: '승인 대기', scheme: 'neutral' },
-  HIRED: { label: '채용 확정', scheme: 'success' },
-  REJECTED: { label: '지원 종료', scheme: 'error' },
+const getCalendarStatusBadge = (raw: string | undefined) => {
+  if (!raw) return null;
+  return getApplicationStatusBadge(raw as ApplicationStatus);
 };
 
 function parseWorkerScheduleResponse(data: unknown): Record<string, Schedule[]> {
@@ -163,7 +160,7 @@ export const ApplicantCalendarWidget = () => {
           onViewChange={setViewMode}
           renderChip={(schedule, { isOtherMonth, fullDate, surface }) => {
             const applicantSchedule = schedule as ApplicantSchedule;
-            const statusInfo = CALENDAR_APPLY_STATUS[applicantSchedule.applyStatus || 'NONE'];
+            const statusInfo = getCalendarStatusBadge(applicantSchedule.applyStatus);
 
             return (
               <ScheduleChip

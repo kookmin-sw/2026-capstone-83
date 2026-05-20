@@ -3,7 +3,7 @@ import { Check } from 'lucide-react';
 import { useTheme } from 'styled-components';
 import {
   getApplicationMutationErrorMessage,
-  useAcceptApplicant,
+  useConfirmHire,
 } from 'entities/application/model/hooks/useApplication';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
@@ -13,10 +13,10 @@ interface Props {
   jobPostId: number;
 }
 
-/** 지원자 채용 승인 버튼 */
-export const AcceptApplicantButton = ({ applicationId, jobPostId }: Props) => {
+/** 고용주 최종 확정 (PENDING → HIRED, 제안 플로우) */
+export const ConfirmHireButton = ({ applicationId, jobPostId }: Props) => {
   const theme = useTheme();
-  const { mutate, isPending } = useAcceptApplicant(jobPostId);
+  const { mutate, isPending } = useConfirmHire(jobPostId);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
@@ -28,7 +28,7 @@ export const AcceptApplicantButton = ({ applicationId, jobPostId }: Props) => {
     mutate(applicationId, {
       onSuccess: () => setIsModalOpen(false),
       onError: (error) => {
-        alert(getApplicationMutationErrorMessage(error) ?? '승인에 실패했습니다.');
+        alert(getApplicationMutationErrorMessage(error) ?? '최종 확정에 실패했습니다.');
       },
     });
   };
@@ -44,7 +44,7 @@ export const AcceptApplicantButton = ({ applicationId, jobPostId }: Props) => {
         disabled={isPending}
       >
         <Check size={14} color={theme.color.white} />
-        승인
+        채용 확정
       </Button>
 
       <Modal
@@ -56,14 +56,14 @@ export const AcceptApplicantButton = ({ applicationId, jobPostId }: Props) => {
               취소
             </Button>
             <Button scheme="primary" buttonSize="medium" onClick={handleConfirm} disabled={isPending}>
-              승인
+              확정
             </Button>
           </>
         }
       >
         <ModalContent>
-          <h2>지원 승인</h2>
-          <p>지원을 승인하면 채용 대기 상태가 됩니다. 구직자의 최종 수락을 기다립니다.</p>
+          <h2>최종 채용 확정</h2>
+          <p>구직자가 제안을 수락했습니다. 채용을 최종 확정하시겠습니까?</p>
         </ModalContent>
       </Modal>
     </>

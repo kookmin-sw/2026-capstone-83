@@ -60,11 +60,37 @@ export const fetchApplications = async (params?: CursorParams): Promise<Applicat
   return response.data;
 }
 
-// 채용 제안 수락
+// 채용 제안 수락 (OFFERED → PENDING)
 export const acceptOffer = async (id: number) => {
   const response = await authClient.post(`/api/v1/applications/${id}/accept-offer`);
   return response.data;
-}
+};
+
+// 구직자 최종 수락 (PENDING → HIRED, 지원 플로우)
+export const acceptApproval = async (id: number) => {
+  const response = await authClient.post(`/api/v1/applications/${id}/accept-approval`);
+  return response.data;
+};
+
+// 고용주 최종 확정 (PENDING → HIRED, 제안 플로우)
+export const confirmHire = async (id: number) => {
+  const response = await authClient.post(`/api/v1/applications/${id}/confirm-hire`);
+  return response.data;
+};
+
+// 고용주 → 구직자 채용 제안
+export const offerJobPost = async (jobPostId: number, userId: number) => {
+  const response = await authClient.post<{ applicationId: number }>(
+    `/api/v1/job-posts/${jobPostId}/offer/${userId}`,
+  );
+  return response.data;
+};
+
+// 지원/제안 취소 (구직자)
+export const cancelApplication = async (id: number) => {
+  const response = await authClient.post(`/api/v1/applications/${id}/cancel`);
+  return response.data;
+};
 
 // 지원 여부 확인
 export const checkApplied = async (jobPostId: number): Promise<{ applied: boolean }> => {

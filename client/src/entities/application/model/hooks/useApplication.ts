@@ -1,4 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { isAxiosError } from 'axios';
+import { clearPendingFlowFlag, markPendingAfterOfferAccept } from '../../lib/pendingFlowStorage';
 import {
   acceptApplicant,
   rejectApplicant,
@@ -8,6 +10,10 @@ import {
   completeWork,
   fetchApplications,
   acceptOffer,
+  acceptApproval,
+  confirmHire,
+  offerJobPost,
+  cancelApplication,
 } from 'entities/application/api/application.api';
 import {
   toApplicationWithJobPost,
@@ -125,8 +131,68 @@ export const useAcceptOffer = () => {
 
   return useMutation({
     mutationFn: (applicationId: number) => acceptOffer(applicationId),
+    onSuccess: (_data, applicationId) => {
+      markPendingAfterOfferAccept(applicationId);
+      queryClient.invalidateQueries({ queryKey: ['applications'] });
+    },
+  });
+};
+
+/** 구직자 최종 수락 — PENDING → HIRED (지원 플로우) */
+export const useAcceptApproval = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number) => acceptApproval(applicationId),
+    onSuccess: (_data, applicationId) => {
+      clearPendingFlowFlag(applicationId);
+      queryClient.invalidateQueries({ queryKey: ['applications'] });
+    },
+  });
+};
+
+/** 고용주 최종 확정 — PENDING → HIRED (제안 플로우) */
+export const useConfirmHire = (jobPostId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number) => confirmHire(applicationId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applicants', jobPostId] });
+      queryClient.invalidateQueries({ queryKey: ['workers', jobPostId] });
+      queryClient.invalidateQueries({ queryKey: ['jobPost', jobPostId] });
+    },
+  });
+};
+
+/** 고용주 채용 제안 */
+export const useOfferJobPost = (jobPostId: number) => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (userId: number) => offerJobPost(jobPostId, userId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applicants', jobPostId] });
+    },
+  });
+};
+
+/** 지원/제안 취소 (구직자) */
+export const useCancelApplication = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (applicationId: number) => cancelApplication(applicationId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications'] });
     },
   });
+};
+
+export const getApplicationMutationErrorMessage = (error: unknown): string | undefined => {
+  if (isAxiosError(error) && error.response?.data && typeof error.response.data === 'object') {
+    const message = (error.response.data as { message?: string }).message;
+    return typeof message === 'string' ? message : undefined;
+  }
+  return undefined;
 };

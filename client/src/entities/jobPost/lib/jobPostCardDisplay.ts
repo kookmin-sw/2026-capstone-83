@@ -1,3 +1,5 @@
+import type { ApplicationStatus } from 'entities/application/model/types/application.type';
+import { getApplicationStatusBadge } from 'entities/application/lib/applicationStatusLabels';
 import type { ApplyStatus, PostStatus, WageType } from '../model/types/jobPost.type';
 import { APPLICATION_STATUS_MAP, RECRUITMENT_STATUS_MAP } from '../model/constants';
 
@@ -32,5 +34,10 @@ export const getRecruitmentBadge = (status: PostStatus, applyStatus: ApplyStatus
   return RECRUITMENT_STATUS_MAP[status];
 };
 
-export const getApplicationBadge = (applyStatus: ApplyStatus) =>
-  APPLICATION_STATUS_MAP[applyStatus];
+export const getApplicationBadge = (
+  applyStatus: ApplyStatus,
+  applicationStatus?: ApplicationStatus,
+) => {
+  if (applicationStatus) return getApplicationStatusBadge(applicationStatus);
+  return APPLICATION_STATUS_MAP[applyStatus];
+};

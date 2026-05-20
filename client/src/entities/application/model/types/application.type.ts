@@ -1,7 +1,14 @@
 import type { CursorResponse } from 'shared/api/types';
 import type { ApplyStatus, JobPost, PostStatus, WageType } from 'entities/jobPost/model/types/jobPost.type';
 
-export type ApplicationStatus = 'APPLIED' | 'HIRED' | 'REJECTED' | 'OFFERED' | 'PENDING' | 'COMPLETED';
+export type ApplicationStatus =
+  | 'APPLIED'
+  | 'OFFERED'
+  | 'PENDING'
+  | 'HIRED'
+  | 'REJECTED'
+  | 'COMPLETED'
+  | 'CANCELLED';
 
 /** GET /worker/applications 응답의 jobPost 필드 */
 export interface JobPostInApplicationResponse {
@@ -44,6 +51,7 @@ export function applicationStatusToApplyStatus(status: ApplicationStatus): Apply
     case 'COMPLETED':
       return 'HIRED';
     case 'REJECTED':
+    case 'CANCELLED':
       return 'REJECTED';
     default:
       return 'NONE';

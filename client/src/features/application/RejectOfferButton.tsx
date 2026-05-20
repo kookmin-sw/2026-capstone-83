@@ -1,16 +1,44 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { useTheme } from 'styled-components';
+import {
+  getApplicationMutationErrorMessage,
+  useCancelApplication,
+} from 'entities/application/model/hooks/useApplication';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
 
+type CancelVariant = 'application' | 'hired';
+
+const COPY: Record<
+  CancelVariant,
+  { label: string; title: string; description: string; confirmLabel: string }
+> = {
+  application: {
+    label: '취소',
+    title: '지원/제안 취소',
+    description: '이 지원·제안을 취소하시겠습니까?',
+    confirmLabel: '취소 확정',
+  },
+  hired: {
+    label: '채용 취소',
+    title: '채용 취소',
+    description: '확정된 채용을 취소하시겠습니까?',
+    confirmLabel: '채용 취소',
+  },
+};
+
 interface Props {
   applicationId: number;
+  /** hired: HIRED 상태 채용 취소 (cancel API) */
+  variant?: CancelVariant;
 }
 
-/** 채용 제안 거절 버튼 (구직자용, API 미구현 — 껍데기) */
-export const RejectOfferButton = ({ applicationId }: Props) => {
+/** 지원/제안/채용 취소 (구직자, cancel API) */
+export const RejectOfferButton = ({ applicationId, variant = 'application' }: Props) => {
+  const copy = COPY[variant];
   const theme = useTheme();
+  const { mutate, isPending } = useCancelApplication();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   const handleClick = (e: React.MouseEvent) => {
@@ -20,9 +48,12 @@ export const RejectOfferButton = ({ applicationId }: Props) => {
   };
 
   const handleConfirm = () => {
-    // TODO: 채용 거절 API 연결
-    console.log(`채용 거절 요청 (applicationId: ${applicationId})`);
-    setIsModalOpen(false);
+    mutate(applicationId, {
+      onSuccess: () => setIsModalOpen(false),
+      onError: (error) => {
+        alert(getApplicationMutationErrorMessage(error) ?? '취소에 실패했습니다.');
+      },
+    });
   };
 
   return (
@@ -33,9 +64,10 @@ export const RejectOfferButton = ({ applicationId }: Props) => {
         fontSize="xsmall"
         borderRadius="medium"
         onClick={handleClick}
+        disabled={isPending}
       >
         <X size={14} color={theme.color.error} />
-        거절
+        {copy.label}
       </Button>
 
       <Modal
@@ -44,17 +76,17 @@ export const RejectOfferButton = ({ applicationId }: Props) => {
         actions={
           <>
             <Button scheme="secondary" buttonSize="medium" onClick={() => setIsModalOpen(false)}>
-              취소
+              닫기
             </Button>
-            <Button scheme="primary" buttonSize="medium" onClick={handleConfirm}>
-              거절 확정
+            <Button scheme="primary" buttonSize="medium" onClick={handleConfirm} disabled={isPending}>
+              {copy.confirmLabel}
             </Button>
           </>
         }
       >
         <ModalContent>
-          <h2>채용 거절</h2>
-          <p>해당 공고의 채용을 거절하시겠습니까?</p>
+          <h2>{copy.title}</h2>
+          <p>{copy.description}</p>
         </ModalContent>
       </Modal>
     </>

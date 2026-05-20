@@ -1,11 +1,19 @@
 import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { useApplicants } from 'entities/application/model/hooks/useApplicants';
+import {
+  APPLICATION_STATUS_LABEL,
+  APPLICATION_STATUS_BADGE_SCHEME,
+  EMPLOYER_APPLICATION_STATUS_ORDER,
+} from 'entities/application/lib/applicationStatusLabels';
 import type { ApplicantResponse, ApplicationStatus } from 'entities/application/model/types/application.type';
 import { ApplicantCard } from 'entities/application/ui/ApplicantCard';
 import { AcceptApplicantButton } from 'features/applicant/AcceptApplicantButton';
+import { ConfirmHireButton } from 'features/applicant/ConfirmHireButton';
 import { RejectApplicantButton } from 'features/applicant/RejectApplicantButton';
 import { CancelHireButton } from 'features/applicant/CancelHireButton';
+import { OfferJobButton } from 'features/offer/OfferJobButton';
+import { CardActionGroup } from 'shared/ui/CardActionGroup/CardActionGroup';
 import { useResumeDetail } from 'entities/resume/model/hooks/useResumeDetail';
 import { ResumeDetailView } from 'entities/resume/ui/ResumeDetailView';
 import Modal from 'shared/ui/Modal/Modal';
@@ -13,27 +21,15 @@ import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
 import Empty from 'shared/ui/Empty/Empty';
 import { EmployerReviewSection } from 'features/review/EmployerReviewSection';
-import type { BadgeScheme } from 'shared/types/theme';
 
 interface Props {
   jobPostId: number;
 }
 
-interface StatusSection {
-  key: ApplicationStatus;
-  label: string;
-  scheme: BadgeScheme;
-}
-
-const STATUS_SECTIONS: StatusSection[] = [
-  { key: 'APPLIED', label: '지원중', scheme: 'primary' },
-  { key: 'PENDING', label: '승인 대기', scheme: 'neutral' },
-  { key: 'HIRED', label: '채용 완료', scheme: 'success' },
-];
-
 export const ApplicantListByStatus = ({ jobPostId }: Props) => {
   const { data: applicants, isLoading } = useApplicants(jobPostId);
   const [selectedResumeId, setSelectedResumeId] = useState<number | undefined>();
+  const [selectedApplicantUserId, setSelectedApplicantUserId] = useState<number | undefined>();
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
 
   const {
@@ -54,12 +50,14 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
 
   const handleCardClick = (applicant: ApplicantResponse) => {
     setSelectedResumeId(applicant.resumeId ?? undefined);
+    setSelectedApplicantUserId(applicant.userId);
     setIsResumeModalOpen(true);
   };
 
   const handleCloseModal = () => {
     setIsResumeModalOpen(false);
     setSelectedResumeId(undefined);
+    setSelectedApplicantUserId(undefined);
   };
 
   if (isLoading) return <Loading message="지원자 목록을 불러오는 중..." />;
@@ -69,18 +67,35 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
     switch (status) {
       case 'APPLIED':
         return (
-          <>
+          <CardActionGroup>
             <AcceptApplicantButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
             <RejectApplicantButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
-          </>
+          </CardActionGroup>
+        );
+      case 'OFFERED':
+        return (
+          <CardActionGroup>
+            <RejectApplicantButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
+          </CardActionGroup>
         );
       case 'PENDING':
         return (
-          <RejectApplicantButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
+          <CardActionGroup>
+            <ConfirmHireButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
+            <RejectApplicantButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
+          </CardActionGroup>
+        );
+      case 'REJECTED':
+        return (
+          <CardActionGroup>
+            <OfferJobButton jobPostId={jobPostId} userId={applicant.userId} />
+          </CardActionGroup>
         );
       case 'HIRED':
         return (
-          <CancelHireButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
+          <CardActionGroup>
+            <CancelHireButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
+          </CardActionGroup>
         );
       default:
         return null;
@@ -89,30 +104,28 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
 
   return (
     <S.Wrapper>
-      {STATUS_SECTIONS.map(({ key, label, scheme }) => {
+      {EMPLOYER_APPLICATION_STATUS_ORDER.map((key) => {
         const list = grouped[key] || [];
+        if (list.length === 0) return null;
+
         return (
           <S.Section key={key}>
             <S.SectionHeader>
-              <S.SectionTitle>{label}</S.SectionTitle>
-              <Badge scheme={scheme}>{list.length}명</Badge>
+              <S.SectionTitle>{APPLICATION_STATUS_LABEL[key]}</S.SectionTitle>
+              <Badge scheme={APPLICATION_STATUS_BADGE_SCHEME[key]}>{list.length}명</Badge>
             </S.SectionHeader>
 
-            {list.length > 0 ? (
-              <S.CardList>
-                {list.map((applicant) => (
-                  <ApplicantCard
-                    key={applicant.applicationId}
-                    data={applicant}
-                    actions={renderActions(key, applicant)}
-                    reviewSlot={<EmployerReviewSection applicationId={applicant.applicationId} />}
-                    onClick={() => handleCardClick(applicant)}
-                  />
-                ))}
-              </S.CardList>
-            ) : (
-              <S.EmptyText>해당 상태의 지원자가 없습니다.</S.EmptyText>
-            )}
+            <S.CardList>
+              {list.map((applicant) => (
+                <ApplicantCard
+                  key={applicant.applicationId}
+                  data={applicant}
+                  actions={renderActions(key, applicant)}
+                  reviewSlot={<EmployerReviewSection applicationId={applicant.applicationId} />}
+                  onClick={() => handleCardClick(applicant)}
+                />
+              ))}
+            </S.CardList>
           </S.Section>
         );
       })}
@@ -123,7 +136,14 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
         ) : isResumePending ? (
           <Loading message="이력서를 불러오는 중..." />
         ) : selectedResume && !isResumeError ? (
-          <ResumeDetailView data={selectedResume} />
+          <ResumeDetailView
+            data={selectedResume}
+            actions={
+              selectedApplicantUserId ? (
+                <OfferJobButton jobPostId={jobPostId} userId={selectedApplicantUserId} />
+              ) : undefined
+            }
+          />
         ) : (
           <S.NoResumeText>이력서 정보를 찾을 수 없습니다.</S.NoResumeText>
         )}
@@ -158,15 +178,6 @@ const S = {
     display: flex;
     flex-direction: column;
     gap: 8px;
-  `,
-  EmptyText: styled.p`
-    font-size: ${({ theme }) => theme.fontSize.small};
-    color: ${({ theme }) => theme.color.subText};
-    padding: 16px;
-    text-align: center;
-    background-color: ${({ theme }) => theme.color.background};
-    border-radius: ${({ theme }) => theme.borderRadius.small};
-    margin: 0;
   `,
   NoResumeText: styled.p`
     text-align: center;

@@ -21,5 +21,14 @@ export const useApplications = () => {
 
       return real;
     },
+    refetchOnWindowFocus: true,
+    refetchOnMount: 'always',
+    refetchInterval: (query) => {
+      const list = query.state.data;
+      if (list?.some((a) => a.applicationStatus === 'APPLIED')) {
+        return 15_000;
+      }
+      return false;
+    },
   });
 };

@@ -1,12 +1,16 @@
 import styled from 'styled-components';
 import { ApplicationListByStatus } from 'widgets/application/ApplicationListByStatus';
+import { ApplicationsRefreshButton } from 'features/application/ApplicationsRefreshButton';
 
 const ApplicationsPage = () => {
   return (
     <S.PageWrapper>
       <S.Header>
-        <S.Title>지원 이력</S.Title>
-        <S.Description>지원한 공고의 현황을 확인할 수 있습니다.</S.Description>
+        <S.HeaderText>
+          <S.Title>지원 이력</S.Title>
+          <S.Description>지원한 공고의 현황을 확인할 수 있습니다.</S.Description>
+        </S.HeaderText>
+        <ApplicationsRefreshButton />
       </S.Header>
 
       <ApplicationListByStatus />
@@ -21,6 +25,12 @@ const S = {
     gap: 24px;
   `,
   Header: styled.div`
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  `,
+  HeaderText: styled.div`
     display: flex;
     flex-direction: column;
     gap: 4px;
