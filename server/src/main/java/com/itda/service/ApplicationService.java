@@ -509,7 +509,7 @@ public class ApplicationService {
         }
     }
 
-    // Application → ApplicantResponse 변환 (매칭 횟수 포함)
+    // Application → ApplicantResponse 변환 (매칭 횟수 + 이력서 ID 포함)
     private ApplicantResponse toApplicantResponse(Application application) {
         Long userId = application.getApplicantUser().getId();
         long matchCount = applicationRepository.countByApplicantUserIdAndStatusIn(

@@ -133,6 +133,9 @@ public class JobPost {
      * 채용 확정 시 filledSlots 증가 + 인원 마감 시 자동 CLOSED
      */
     public void confirmHire() {
+        if (this.filledSlots >= this.totalSlots) {
+            throw new IllegalStateException("모집 인원이 모두 찼습니다.");
+        }
         this.filledSlots += 1;
         if (this.filledSlots >= this.totalSlots) {
             this.status = JobPostStatus.CLOSED;
@@ -154,10 +157,12 @@ public class JobPost {
     }
 
     /**
-     * 채용 취소 시 filledSlots 감소 + 재오픈 판단
+     * 채용 취소 시 filledSlots 감소 + 공고 재오픈
      */
     public void cancelHire() {
-        this.filledSlots = Math.max(0, this.filledSlots - 1);
+        if (this.filledSlots > 0) {
+            this.filledSlots -= 1;
+        }
         if (this.status == JobPostStatus.CLOSED && this.filledSlots < this.totalSlots) {
             this.status = JobPostStatus.OPEN;
         }
