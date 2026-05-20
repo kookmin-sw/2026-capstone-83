@@ -19,7 +19,7 @@ export const RECRUITMENT_STATUS_MAP = {
 /** 공고 카드용 (구 ApplyStatus) — applicationStatus 없을 때 fallback */
 export const APPLICATION_STATUS_MAP = {
   NONE: null,
-  APPLYING: { label: '지원 완료', scheme: 'primary' },
+  APPLYING: { label: '지원 중', scheme: 'primary' },
   SELECTED: { label: '채용 대기', scheme: 'neutral' },
   HIRED: { label: '채용 확정', scheme: 'success' },
   REJECTED: { label: '거절', scheme: 'error' },

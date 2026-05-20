@@ -6,7 +6,7 @@ import type { ApplicationStatus } from '../model/types/application.type';
  * 서버 주석: APPLIED=지원중, PENDING=채용 대기중, HIRED=확정된 근무
  */
 export const APPLICATION_STATUS_LABEL: Record<ApplicationStatus, string> = {
-  APPLIED: '지원 완료',
+  APPLIED: '지원 중',
   OFFERED: '채용 제안',
   PENDING: '채용 대기',
   HIRED: '채용 확정',

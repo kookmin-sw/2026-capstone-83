@@ -6,7 +6,7 @@ import {
   APPLICATION_STATUS_BADGE_SCHEME,
   WORKER_APPLICATION_STATUS_ORDER,
 } from 'entities/application/lib/applicationStatusLabels';
-import type { ApplicationWithJobPost } from 'entities/application/model/types/application.type';
+import type { ApplicationStatus, ApplicationWithJobPost } from 'entities/application/model/types/application.type';
 import { JobPostCard } from 'entities/jobPost/ui/JobPostCard';
 import { AcceptOfferButton } from 'features/application/AcceptOfferButton';
 import { AcceptApprovalButton } from 'features/application/AcceptApprovalButton';
@@ -78,35 +78,62 @@ export const ApplicationListByStatus = () => {
     return undefined;
   };
 
+  const renderStatusSection = (status: ApplicationStatus) => {
+    const list = grouped[status] || [];
+    if (list.length === 0) return null;
+
+    return (
+      <S.Section>
+        <S.SectionHeader>
+          <S.SectionTitle>{APPLICATION_STATUS_LABEL[status]}</S.SectionTitle>
+          <Badge scheme={APPLICATION_STATUS_BADGE_SCHEME[status]}>{list.length}건</Badge>
+        </S.SectionHeader>
+
+        <S.CardList>
+          {list.map((app) => (
+            <S.CardItem key={app.applicationId}>
+              <JobPostCard data={app} headerActions={renderHeaderActions(app)} />
+            </S.CardItem>
+          ))}
+        </S.CardList>
+      </S.Section>
+    );
+  };
+
   if (isLoading) return <Loading message="지원 이력을 불러오는 중..." />;
   if (!applications || applications.length === 0) return <Empty message="지원 이력이 없습니다." />;
 
   const hasAny = WORKER_APPLICATION_STATUS_ORDER.some((key) => (grouped[key]?.length ?? 0) > 0);
   if (!hasAny) return <Empty message="지원 이력이 없습니다." />;
 
+  const appliedSection = renderStatusSection('APPLIED');
+  const pendingSection = renderStatusSection('PENDING');
+  const hiredSection = renderStatusSection('HIRED');
+  const rightColumn = (
+    <>
+      {pendingSection}
+      {hiredSection}
+    </>
+  );
+  const hasRightColumn = Boolean(pendingSection || hiredSection);
+  const showTwoColumns = Boolean(appliedSection && hasRightColumn);
+
   return (
     <S.Wrapper>
-      {WORKER_APPLICATION_STATUS_ORDER.map((key) => {
-        const list = grouped[key] || [];
-        if (list.length === 0) return null;
+      {showTwoColumns ? (
+        <S.TwoColumnRow>
+          <S.Column>{appliedSection}</S.Column>
+          <S.Column>{rightColumn}</S.Column>
+        </S.TwoColumnRow>
+      ) : (
+        <>
+          {appliedSection}
+          {rightColumn}
+        </>
+      )}
 
-        return (
-          <S.Section key={key}>
-            <S.SectionHeader>
-              <S.SectionTitle>{APPLICATION_STATUS_LABEL[key]}</S.SectionTitle>
-              <Badge scheme={APPLICATION_STATUS_BADGE_SCHEME[key]}>{list.length}건</Badge>
-            </S.SectionHeader>
-
-            <S.CardList>
-              {list.map((app) => (
-                <S.CardItem key={app.applicationId}>
-                  <JobPostCard data={app} headerActions={renderHeaderActions(app)} />
-                </S.CardItem>
-              ))}
-            </S.CardList>
-          </S.Section>
-        );
-      })}
+      {renderStatusSection('OFFERED')}
+      {renderStatusSection('REJECTED')}
     </S.Wrapper>
   );
 };
@@ -117,10 +144,27 @@ const S = {
     flex-direction: column;
     gap: 24px;
   `,
+  TwoColumnRow: styled.div`
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: start;
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+    }
+  `,
+  Column: styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    min-width: 0;
+  `,
   Section: styled.div`
     display: flex;
     flex-direction: column;
     gap: 12px;
+    min-width: 0;
   `,
   SectionHeader: styled.div`
     display: flex;
@@ -140,6 +184,7 @@ const S = {
   `,
   CardItem: styled.div`
     font-size: 16px;
+    min-width: 0;
   `,
   PendingActions: styled.div`
     display: flex;
