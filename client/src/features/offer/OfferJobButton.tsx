@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { UserRoundPlus } from 'lucide-react';
-import {
-  getApplicationMutationErrorMessage,
-  useOfferJobPost,
-} from 'entities/application/model/hooks/useApplication';
+import { useOfferJobPost } from 'entities/application/model/hooks/useApplication';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 interface Props {
   jobPostId: number;
@@ -16,6 +15,7 @@ interface Props {
 export const OfferJobButton = ({ jobPostId, userId }: Props) => {
   const { mutate, isPending } = useOfferJobPost(jobPostId);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const errorModal = useErrorAlertModal();
 
   const handleConfirm = () => {
     mutate(userId, {
@@ -23,9 +23,7 @@ export const OfferJobButton = ({ jobPostId, userId }: Props) => {
         setIsModalOpen(false);
         alert('채용 제안이 전송되었습니다.');
       },
-      onError: (error) => {
-        alert(getApplicationMutationErrorMessage(error) ?? '제안 전송에 실패했습니다.');
-      },
+      onError: errorModal.onMutationError('제안 전송에 실패했습니다.'),
     });
   };
 
@@ -77,6 +75,12 @@ export const OfferJobButton = ({ jobPostId, userId }: Props) => {
           <p>선택한 공고로 채용 제안을 보내시겠습니까?</p>
         </ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };

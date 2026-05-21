@@ -2,7 +2,9 @@ import { Camera } from 'lucide-react';
 import styled from 'styled-components';
 import { useUpdateProfileImage } from 'entities/user/model/hooks/useUserProfile';
 import { useImageUpload } from 'features/control-Image/hooks/useImageUpload';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Loading from 'shared/ui/Loading/Loading';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 interface Props {
   profileImageUrl?: string | null;
@@ -11,9 +13,14 @@ interface Props {
 
 export const ProfileImageUpload = ({ profileImageUrl, name }: Props) => {
   const { mutate: uploadImage, isPending } = useUpdateProfileImage();
+  const errorModal = useErrorAlertModal();
 
   const { fileInputRef, handleFileChange, triggerUpload } = useImageUpload((file) => {
-    if (file) uploadImage(file);
+    if (file) {
+      uploadImage(file, {
+        onError: errorModal.onMutationError('프로필 사진 변경에 실패했습니다.'),
+      });
+    }
   });
 
   const avatarSrc =
@@ -47,7 +54,12 @@ export const ProfileImageUpload = ({ profileImageUrl, name }: Props) => {
         onChange={handleFileChange}
         style={{ display: 'none' }}
       />
-      {/* <S.Hint>프로필 사진을 변경할 수 있습니다.</S.Hint> */}
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </S.Wrapper>
   );
 };

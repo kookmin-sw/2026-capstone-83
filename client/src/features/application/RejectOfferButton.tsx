@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { X } from 'lucide-react';
 import { useTheme } from 'styled-components';
-import {
-  getApplicationMutationErrorMessage,
-  useCancelApplication,
-} from 'entities/application/model/hooks/useApplication';
+import { useCancelApplication } from 'entities/application/model/hooks/useApplication';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 type CancelVariant = 'application' | 'hired';
 
@@ -40,6 +39,7 @@ export const RejectOfferButton = ({ applicationId, variant = 'application' }: Pr
   const theme = useTheme();
   const { mutate, isPending } = useCancelApplication();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const errorModal = useErrorAlertModal();
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -50,9 +50,7 @@ export const RejectOfferButton = ({ applicationId, variant = 'application' }: Pr
   const handleConfirm = () => {
     mutate(applicationId, {
       onSuccess: () => setIsModalOpen(false),
-      onError: (error) => {
-        alert(getApplicationMutationErrorMessage(error) ?? '취소에 실패했습니다.');
-      },
+      onError: errorModal.onMutationError('취소에 실패했습니다.'),
     });
   };
 
@@ -89,6 +87,12 @@ export const RejectOfferButton = ({ applicationId, variant = 'application' }: Pr
           <p>{copy.description}</p>
         </ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };

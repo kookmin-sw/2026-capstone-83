@@ -27,6 +27,8 @@ import { useCreateJobPost } from 'features/jobPost/hooks/useCreateJobPost';
 import { splitByComma } from 'shared/lib/transformString';
 import { mergeJobPostRequirements, splitJobPostRequirements } from 'entities/jobPost/lib/jobPostRequirements';
 import CreateJobPostButton from 'features/jobPost/create-jobPost/CreateJobPostButton';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 export const JobPostCreateForm = () => {
   const [searchParams] = useSearchParams();
@@ -47,6 +49,7 @@ export const JobPostCreateForm = () => {
     },
   });
   const { mutate } = useCreateJobPost();
+  const errorModal = useErrorAlertModal();
 
   // 작업장 선택 시 관련 필드 자동 채우기
   useEffect(() => {
@@ -86,9 +89,7 @@ export const JobPostCreateForm = () => {
         console.log('Job post created successfully:', response);
         // 페이지 이동 등
       },
-      onError: (error) => {
-        console.error('Error creating job post:', error);
-      }
+      onError: errorModal.onMutationError('공고 등록에 실패했습니다.'),
     });
   };
 
@@ -228,6 +229,12 @@ export const JobPostCreateForm = () => {
       <CreateWorkplaceModal
         isOpen={isCreateWpModalOpen}
         onClose={() => setIsCreateWpModalOpen(false)}
+      />
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
       />
     </Main>
   );

@@ -17,9 +17,6 @@ export const useSignup = () => {
       alert('회원가입이 완료되었습니다. 로그인해주세요.');
       navigate('/login');
     },
-    onError: (error) => {
-      console.error('회원가입 실패:', error);
-    },
   });
 };
 
@@ -41,10 +38,6 @@ export const useLogin = () => {
         return;
       }
       navigate('/');
-    },
-    onError: (error) => {
-      alert('로그인 정보가 일치하지 않습니다.');
-      console.error('로그인 실패:', error);
     },
   });
 };

@@ -3,7 +3,9 @@ import { useForm } from 'react-hook-form';
 import styled from 'styled-components';
 import type { Career, CareerRequest } from '../../model/types/resume.type';
 import { useCreateCareer, useDeleteCareer, useUpdateCareer } from '../../model/hooks/useResume';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import { InputText } from 'shared/ui/Input/InputText';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import InputHeader from 'shared/ui/Input/InputHeader';
 
@@ -18,6 +20,7 @@ export const ResumeCareerFields = ({ careers }: Props) => {
   const { mutate: createCareer } = useCreateCareer();
   const { mutate: updateCareer } = useUpdateCareer();
   const { mutate: deleteCareer } = useDeleteCareer();
+  const errorModal = useErrorAlertModal();
 
   const {
     register: registerNew,
@@ -38,6 +41,7 @@ export const ResumeCareerFields = ({ careers }: Props) => {
         resetNew();
         setIsAdding(false);
       },
+      onError: errorModal.onMutationError('경력 등록에 실패했습니다.'),
     });
   };
 
@@ -47,6 +51,13 @@ export const ResumeCareerFields = ({ careers }: Props) => {
         setEditingId(null);
         resetEdit();
       },
+      onError: errorModal.onMutationError('경력 수정에 실패했습니다.'),
+    });
+  };
+
+  const handleDelete = (id: number) => {
+    deleteCareer(id, {
+      onError: errorModal.onMutationError('경력 삭제에 실패했습니다.'),
     });
   };
 
@@ -118,7 +129,7 @@ export const ResumeCareerFields = ({ careers }: Props) => {
                   <Button type="button" scheme="secondary" buttonSize="xsmall" onClick={() => startEdit(career)}>
                     수정
                   </Button>
-                  <Button type="button" scheme="secondary" buttonSize="xsmall" onClick={() => deleteCareer(career.id)}>
+                  <Button type="button" scheme="secondary" buttonSize="xsmall" onClick={() => handleDelete(career.id)}>
                     삭제
                   </Button>
                 </S.ButtonRow>
@@ -168,6 +179,12 @@ export const ResumeCareerFields = ({ careers }: Props) => {
           + 경력 추가
         </S.AddButton>
       )}
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </div>
   );
 };

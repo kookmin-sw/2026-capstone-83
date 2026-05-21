@@ -2,11 +2,11 @@ import { useMemo, useState } from 'react';
 import { isAxiosError } from 'axios';
 import type { ApplicationStatus } from 'entities/application/model/types/application.type';
 import {
-  getApplicationMutationErrorMessage,
   useAcceptApproval,
   useAcceptOffer,
   useCancelApplication,
 } from 'entities/application/model/hooks/useApplication';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import {
   clearPendingFlowFlag,
   isPendingAfterOfferAccept,
@@ -15,6 +15,7 @@ import {
 import { CardActionsMenu, type CardMenuItem } from 'shared/ui/CardActionsMenu/CardActionsMenu';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 type ModalType = 'acceptOffer' | 'acceptApproval' | 'cancel' | null;
 
@@ -25,6 +26,7 @@ interface Props {
 
 export const WorkerApplicationActionsMenu = ({ applicationId, status }: Props) => {
   const [modal, setModal] = useState<ModalType>(null);
+  const errorModal = useErrorAlertModal();
   const { mutate: acceptOffer, isPending: isOfferPending } = useAcceptOffer();
   const { mutate: acceptApproval, isPending: isApprovalPending } = useAcceptApproval();
   const { mutate: cancelApplication, isPending: isCancelPending } = useCancelApplication();
@@ -63,9 +65,7 @@ export const WorkerApplicationActionsMenu = ({ applicationId, status }: Props) =
         markPendingAfterOfferAccept(applicationId);
         closeModal();
       },
-      onError: (error) => {
-        alert(getApplicationMutationErrorMessage(error) ?? '제안 수락에 실패했습니다.');
-      },
+      onError: errorModal.onMutationError('제안 수락에 실패했습니다.'),
     });
   };
 
@@ -77,10 +77,10 @@ export const WorkerApplicationActionsMenu = ({ applicationId, status }: Props) =
       },
       onError: (error) => {
         if (isAxiosError(error) && error.response?.status === 409) {
-          alert('고용주의 최종 확정을 기다려 주세요.');
+          errorModal.showError(error, '고용주의 최종 확정을 기다려 주세요.');
           return;
         }
-        alert(getApplicationMutationErrorMessage(error) ?? '최종 수락에 실패했습니다.');
+        errorModal.showError(error, '최종 수락에 실패했습니다.');
       },
     });
   };
@@ -88,9 +88,7 @@ export const WorkerApplicationActionsMenu = ({ applicationId, status }: Props) =
   const handleCancel = () => {
     cancelApplication(applicationId, {
       onSuccess: closeModal,
-      onError: (error) => {
-        alert(getApplicationMutationErrorMessage(error) ?? '취소에 실패했습니다.');
-      },
+      onError: errorModal.onMutationError('취소에 실패했습니다.'),
     });
   };
 
@@ -165,6 +163,12 @@ export const WorkerApplicationActionsMenu = ({ applicationId, status }: Props) =
           <p>이 지원·제안을 취소하시겠습니까?</p>
         </ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };

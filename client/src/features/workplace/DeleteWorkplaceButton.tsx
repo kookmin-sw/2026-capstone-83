@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import styled, { useTheme } from 'styled-components';
 import { useDeleteWorkplace } from 'entities/workplace/model/hooks/useWorkplace';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import { hoverOverlay } from 'shared/styles/hoverOverlay';
 import Modal from 'shared/ui/Modal/Modal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 
 interface Props {
@@ -13,6 +15,7 @@ interface Props {
 const DeleteWorkplaceButton = ({ workplaceId }: Props) => {
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const { mutate, isPending } = useDeleteWorkplace();
+  const errorModal = useErrorAlertModal();
   const theme = useTheme();
 
   const handleDelete = () => {
@@ -21,9 +24,7 @@ const DeleteWorkplaceButton = ({ workplaceId }: Props) => {
         setIsConfirmOpen(false);
         alert('작업장이 삭제되었습니다.');
       },
-      onError: () => {
-        alert('작업장 삭제에 실패했습니다.');
-      },
+      onError: errorModal.onMutationError('작업장 삭제에 실패했습니다.'),
     });
   };
 
@@ -53,6 +54,12 @@ const DeleteWorkplaceButton = ({ workplaceId }: Props) => {
           <p>삭제된 작업장은 복구할 수 없습니다.</p>
         </S.ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };

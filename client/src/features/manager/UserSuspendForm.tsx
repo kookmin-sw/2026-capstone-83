@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { useSuspendUser } from 'entities/manager/model/hooks/useManagerQueries';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 import { InputText } from 'shared/ui/Input/InputText';
 import { InputTextarea } from 'shared/ui/Input/InputTextarea';
 import { ActionRow } from 'widgets/manager/admin.styled';
@@ -14,6 +16,7 @@ const UserSuspendForm = ({ userId, onSuccess }: Props) => {
   const [days, setDays] = useState('7');
   const [reason, setReason] = useState('');
   const { mutate, isPending } = useSuspendUser(userId);
+  const errorModal = useErrorAlertModal();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,7 +41,7 @@ const UserSuspendForm = ({ userId, onSuccess }: Props) => {
           setReason('');
           onSuccess?.();
         },
-        onError: () => alert('정지 처리에 실패했습니다.'),
+        onError: errorModal.onMutationError('정지 처리에 실패했습니다.'),
       }
     );
   };
@@ -73,6 +76,12 @@ const UserSuspendForm = ({ userId, onSuccess }: Props) => {
           {isPending ? '처리 중...' : '정지 처리'}
         </Button>
       </ActionRow>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </form>
   );
 };

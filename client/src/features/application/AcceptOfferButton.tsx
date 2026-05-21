@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { Check } from 'lucide-react';
 import { useTheme } from 'styled-components';
-import {
-  getApplicationMutationErrorMessage,
-  useAcceptOffer,
-} from 'entities/application/model/hooks/useApplication';
+import { useAcceptOffer } from 'entities/application/model/hooks/useApplication';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 interface Props {
   applicationId: number;
@@ -17,6 +16,7 @@ export const AcceptOfferButton = ({ applicationId }: Props) => {
   const theme = useTheme();
   const { mutate, isPending } = useAcceptOffer();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const errorModal = useErrorAlertModal();
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -29,9 +29,7 @@ export const AcceptOfferButton = ({ applicationId }: Props) => {
       onSuccess: () => {
         setIsModalOpen(false);
       },
-      onError: (error) => {
-        alert(getApplicationMutationErrorMessage(error) ?? '제안 수락에 실패했습니다.');
-      },
+      onError: errorModal.onMutationError('제안 수락에 실패했습니다.'),
     });
   };
 
@@ -68,6 +66,12 @@ export const AcceptOfferButton = ({ applicationId }: Props) => {
           <p>채용 제안을 수락하면 채용 대기 상태가 됩니다. 수락하시겠습니까?</p>
         </ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };

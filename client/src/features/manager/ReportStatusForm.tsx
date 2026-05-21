@@ -2,7 +2,9 @@ import { useState } from 'react';
 import type { ReportStatus } from 'entities/manager/model/types/manager.type';
 import { useUpdateReportStatus } from 'entities/manager/model/hooks/useManagerQueries';
 import { REPORT_STATUS_LABEL } from 'entities/manager/lib/labels';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 import { InputSelect } from 'shared/ui/Input/InputSelect';
 import { InputTextarea } from 'shared/ui/Input/InputTextarea';
 import { ActionRow } from 'widgets/manager/admin.styled';
@@ -24,6 +26,7 @@ const ReportStatusForm = ({ reportId, currentStatus, currentNote }: Props) => {
   );
   const [adminNote, setAdminNote] = useState(currentNote ?? '');
   const { mutate, isPending } = useUpdateReportStatus(reportId);
+  const errorModal = useErrorAlertModal();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +34,7 @@ const ReportStatusForm = ({ reportId, currentStatus, currentNote }: Props) => {
       { status, adminNote: adminNote.trim() || undefined },
       {
         onSuccess: () => alert('신고 상태가 저장되었습니다.'),
-        onError: () => alert('저장에 실패했습니다.'),
+        onError: errorModal.onMutationError('저장에 실패했습니다.'),
       }
     );
   };
@@ -64,6 +67,12 @@ const ReportStatusForm = ({ reportId, currentStatus, currentNote }: Props) => {
           {isPending ? '저장 중...' : '상태 저장'}
         </Button>
       </ActionRow>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </form>
   );
 };

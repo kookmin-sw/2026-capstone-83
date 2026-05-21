@@ -15,9 +15,5 @@ export const useUpdateJobPostMutation = () => {
       queryClient.invalidateQueries({ queryKey: ['jobPosts'] });
       navigate(`/jobpost/${data.id}`);
     },
-    onError: (error: unknown) => {
-      console.error('공고 수정 실패:', error);
-      alert('공고 수정 중 오류가 발생했습니다.');
-    },
   });
 };

@@ -10,10 +10,6 @@ export const useDeleteJobPost = () => {
       queryClient.invalidateQueries({ queryKey: ['jobPosts'] });
       queryClient.removeQueries({ queryKey: ['jobPost', id] });
     },
-    onError: (error: unknown) => {
-      console.error('공고 삭제 실패:', error);
-      alert('공고 삭제 중 오류가 발생했습니다. 채용 확정 지원자가 있으면 삭제할 수 없습니다.');
-    },
   });
 };
 
@@ -25,10 +21,6 @@ export const useCloseJobPost = () => {
     onSuccess: (_response, id) => {
       queryClient.invalidateQueries({ queryKey: ['jobPost', id] });
       queryClient.invalidateQueries({ queryKey: ['jobPosts'] });
-    },
-    onError: (error) => {
-      console.error('공고 마감 실패:', error);
-      alert('공고 마감 중 오류가 발생했습니다.');
     },
   });
 };

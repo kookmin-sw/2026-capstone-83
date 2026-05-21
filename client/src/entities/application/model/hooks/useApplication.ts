@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { isAxiosError } from 'axios';
+import { getApiErrorMessage } from 'shared/lib/getApiErrorMessage';
 import { clearPendingFlowFlag, markPendingAfterOfferAccept } from '../../lib/pendingFlowStorage';
 import {
   acceptApplicant,
@@ -190,9 +190,6 @@ export const useCancelApplication = () => {
 };
 
 export const getApplicationMutationErrorMessage = (error: unknown): string | undefined => {
-  if (isAxiosError(error) && error.response?.data && typeof error.response.data === 'object') {
-    const message = (error.response.data as { message?: string }).message;
-    return typeof message === 'string' ? message : undefined;
-  }
-  return undefined;
+  const message = getApiErrorMessage(error, '');
+  return message || undefined;
 };

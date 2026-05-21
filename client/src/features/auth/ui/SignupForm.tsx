@@ -4,7 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import type { SignupRequest } from 'entities/auth/model/types/auth.type';
 import type { UserType } from 'entities/user/model/types/user.type';
 import { useSignup } from 'entities/auth/model/hooks/useAuth';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import { InputText } from 'shared/ui/Input/InputText';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import { AddressSearchButton } from 'features/search-address/AddressSearchButton';
 import FullLogo from 'shared/assets/FullLogo.svg';
@@ -28,6 +30,7 @@ const SignupForm = () => {
   const [role, setRole] = useState<UserType>('APPLICANT');
   const navigate = useNavigate();
   const { mutate, isPending } = useSignup();
+  const errorModal = useErrorAlertModal();
 
   const {
     register,
@@ -50,7 +53,9 @@ const SignupForm = () => {
   };
 
   const onSubmit = (data: SignupRequest) => {
-    mutate({ ...data, role });
+    mutate({ ...data, role }, {
+      onError: errorModal.onMutationError('회원가입에 실패했습니다.'),
+    });
   };
 
   return (
@@ -195,6 +200,12 @@ const SignupForm = () => {
         <span>이미 계정이 있으신가요?</span>
         <AuthLink onClick={() => navigate('/login')}>로그인</AuthLink>
       </AuthFooter>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </AuthCard>
   );
 };

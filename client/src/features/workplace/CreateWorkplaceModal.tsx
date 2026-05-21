@@ -7,7 +7,9 @@ import { useImageUpload } from 'features/control-Image/hooks/useImageUpload';
 import { ImageUploadButton } from 'features/control-Image/UploadButton';
 import { ImageRemoveButton } from 'features/control-Image/RemoveButton';
 import { AddressSearchButton } from 'features/search-address/AddressSearchButton';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import { InputText } from 'shared/ui/Input/InputText';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import Modal from 'shared/ui/Modal/Modal';
 import { ButtonGroup } from 'shared/ui/Input/InputStyle';
@@ -23,6 +25,7 @@ export const CreateWorkplaceModal = ({ isOpen, onClose, initialData }: Props) =>
   const { mutate: createMutate, isPending: isCreating } = useCreateWorkplace();
   const { mutate: updateMutate, isPending: isUpdating } = useUpdateWorkplace();
   const isPending = isCreating || isUpdating;
+  const errorModal = useErrorAlertModal();
 
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const { register, handleSubmit, setValue, reset, formState: { errors } } =
@@ -72,9 +75,7 @@ export const CreateWorkplaceModal = ({ isOpen, onClose, initialData }: Props) =>
             handleClearLogo();
             onClose();
           },
-          onError: () => {
-            alert('작업장 수정에 실패했습니다.');
-          },
+          onError: errorModal.onMutationError('작업장 수정에 실패했습니다.'),
         }
       );
     } else {
@@ -85,14 +86,13 @@ export const CreateWorkplaceModal = ({ isOpen, onClose, initialData }: Props) =>
           handleClearLogo();
           onClose();
         },
-        onError: () => {
-          alert('작업장 등록에 실패했습니다.');
-        },
+        onError: errorModal.onMutationError('작업장 등록에 실패했습니다.'),
       });
     }
   };
 
   return (
+    <>
     <Modal
       isOpen={isOpen}
       onClose={onClose}
@@ -184,6 +184,13 @@ export const CreateWorkplaceModal = ({ isOpen, onClose, initialData }: Props) =>
         </S.ImageSection>
       </S.FormContent>
     </Modal>
+
+    <ErrorAlertModal
+      isOpen={errorModal.isOpen}
+      message={errorModal.errorMessage}
+      onClose={errorModal.close}
+    />
+    </>
   );
 };
 

@@ -9,7 +9,9 @@ import {
   USER_STATUS_LABEL,
 } from 'entities/manager/lib/labels';
 import UserSuspendForm from 'features/manager/UserSuspendForm';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Section from 'shared/ui/Layout/Section';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 import Loading from 'shared/ui/Loading/Loading';
 import Button from 'shared/ui/Button/Button';
 import Badge from 'shared/ui/Badge/Badge';
@@ -25,12 +27,13 @@ const AdminUserDetailPage = () => {
   const userId = Number(id);
   const { data: user, isLoading, refetch } = useManagerUser(userId);
   const { mutate: activate, isPending: activating } = useActivateUser(userId);
+  const errorModal = useErrorAlertModal();
 
   const handleActivate = () => {
     if (!window.confirm('정지를 해제하시겠습니까?')) return;
     activate(undefined, {
       onSuccess: () => alert('정지가 해제되었습니다.'),
-      onError: () => alert('처리에 실패했습니다.'),
+      onError: errorModal.onMutationError('처리에 실패했습니다.'),
     });
   };
 
@@ -99,6 +102,12 @@ const AdminUserDetailPage = () => {
           <UserSuspendForm userId={userId} onSuccess={() => refetch()} />
         </Section>
       )}
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };

@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { Check } from 'lucide-react';
 import { useTheme } from 'styled-components';
-import {
-  getApplicationMutationErrorMessage,
-  useAcceptApplicant,
-} from 'entities/application/model/hooks/useApplication';
+import { useAcceptApplicant } from 'entities/application/model/hooks/useApplication';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 interface Props {
   applicationId: number;
@@ -18,6 +17,7 @@ export const AcceptApplicantButton = ({ applicationId, jobPostId }: Props) => {
   const theme = useTheme();
   const { mutate, isPending } = useAcceptApplicant(jobPostId);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const errorModal = useErrorAlertModal();
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -27,9 +27,7 @@ export const AcceptApplicantButton = ({ applicationId, jobPostId }: Props) => {
   const handleConfirm = () => {
     mutate(applicationId, {
       onSuccess: () => setIsModalOpen(false),
-      onError: (error) => {
-        alert(getApplicationMutationErrorMessage(error) ?? '승인에 실패했습니다.');
-      },
+      onError: errorModal.onMutationError('승인에 실패했습니다.'),
     });
   };
 
@@ -66,6 +64,12 @@ export const AcceptApplicantButton = ({ applicationId, jobPostId }: Props) => {
           <p>지원을 승인하면 채용 대기 상태가 됩니다. 구직자의 최종 수락을 기다립니다.</p>
         </ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };

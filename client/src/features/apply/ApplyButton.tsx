@@ -3,8 +3,10 @@ import { useNavigate } from 'react-router-dom';
 import { UserRoundPlus } from 'lucide-react';
 import { useApply } from 'entities/application/model/hooks/useApply';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 
 interface Props {
@@ -19,6 +21,7 @@ const ApplyButton = ({ jobPostId }: Props) => {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const role = useAuthStore((s) => s.role);
   const { mutate, isPending } = useApply();
+  const errorModal = useErrorAlertModal();
 
   const handleClick = () => {
     if (!isLoggedIn || role !== 'APPLICANT') {
@@ -34,9 +37,7 @@ const ApplyButton = ({ jobPostId }: Props) => {
         setIsApplyModalOpen(false);
         alert('지원이 완료되었습니다.');
       },
-      onError: () => {
-        alert('지원에 실패했습니다. 다시 시도해주세요.');
-      },
+      onError: errorModal.onMutationError('지원에 실패했습니다. 다시 시도해주세요.'),
     });
   };
 
@@ -118,6 +119,12 @@ const ApplyButton = ({ jobPostId }: Props) => {
           <p>지원하려면 구직자 회원으로 로그인해주세요.</p>
         </ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };

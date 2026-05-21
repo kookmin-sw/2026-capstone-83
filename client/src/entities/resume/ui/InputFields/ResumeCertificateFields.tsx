@@ -4,7 +4,9 @@ import type { CertificateType } from 'shared/types/certificate';
 import type { CertificateResponse } from 'shared/types/certificate';
 import { CERTIFICATE_LABEL } from 'shared/types/certificate';
 import { useCreateCertificate, useDeleteCertificate } from '../../model/hooks/useResume';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 import InputHeader from 'shared/ui/Input/InputHeader';
 import Badge from 'shared/ui/Badge/Badge';
 import { X } from 'lucide-react';
@@ -29,6 +31,7 @@ export const ResumeCertificateFields = ({ certificates }: Props) => {
   const [pendingTypes, setPendingTypes] = useState<CertificateType[]>([]);
   const { mutate: createCertificate } = useCreateCertificate();
   const { mutate: deleteCertificate } = useDeleteCertificate();
+  const errorModal = useErrorAlertModal();
 
   // 이미 등록된 타입은 제외
   const availableTypes = ALL_TYPES.filter(
@@ -37,18 +40,24 @@ export const ResumeCertificateFields = ({ certificates }: Props) => {
 
   const handleAdd = (type: CertificateType) => {
     setPendingTypes((prev) => [...prev, type]);
-    createCertificate({ type }, {
-      onSettled: () => {
-        setTimeout(() => {
-          setPendingTypes((prev) => prev.filter((t) => t !== type));
-          setIsAdding(false);
-        }, 300);
+    createCertificate(
+      { type },
+      {
+        onSettled: () => {
+          setTimeout(() => {
+            setPendingTypes((prev) => prev.filter((t) => t !== type));
+            setIsAdding(false);
+          }, 300);
+        },
+        onError: errorModal.onMutationError('자격/인증 등록에 실패했습니다.'),
       },
-    });
+    );
   };
 
   const handleDelete = (id: number) => {
-    deleteCertificate(id);
+    deleteCertificate(id, {
+      onError: errorModal.onMutationError('자격/인증 삭제에 실패했습니다.'),
+    });
   };
 
   return (
@@ -116,6 +125,12 @@ export const ResumeCertificateFields = ({ certificates }: Props) => {
           })}
         </S.TypeGrid>
       )}
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </S.Wrapper>
   );
 };

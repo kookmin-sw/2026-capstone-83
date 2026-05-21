@@ -1,23 +1,23 @@
 import { useState } from 'react';
 import { Check } from 'lucide-react';
 import { useTheme } from 'styled-components';
-import {
-  getApplicationMutationErrorMessage,
-  useConfirmHire,
-} from 'entities/application/model/hooks/useApplication';
+import { useConfirmHire } from 'entities/application/model/hooks/useApplication';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 interface Props {
   applicationId: number;
   jobPostId: number;
 }
 
-/** 고용주 최종 확정 (PENDING → HIRED, 제안 플로우) */
+/** 고용주 최종 채용 확정 버튼 (PENDING → HIRED) */
 export const ConfirmHireButton = ({ applicationId, jobPostId }: Props) => {
   const theme = useTheme();
   const { mutate, isPending } = useConfirmHire(jobPostId);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const errorModal = useErrorAlertModal();
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -27,9 +27,7 @@ export const ConfirmHireButton = ({ applicationId, jobPostId }: Props) => {
   const handleConfirm = () => {
     mutate(applicationId, {
       onSuccess: () => setIsModalOpen(false),
-      onError: (error) => {
-        alert(getApplicationMutationErrorMessage(error) ?? '최종 확정에 실패했습니다.');
-      },
+      onError: errorModal.onMutationError('최종 확정에 실패했습니다.'),
     });
   };
 
@@ -66,6 +64,12 @@ export const ConfirmHireButton = ({ applicationId, jobPostId }: Props) => {
           <p>구직자가 제안을 수락했습니다. 채용을 최종 확정하시겠습니까?</p>
         </ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };

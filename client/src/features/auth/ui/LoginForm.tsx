@@ -4,7 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import type { LoginRequest } from 'entities/auth/model/types/auth.type';
 import type { UserType } from 'entities/user/model/types/user.type';
 import { useLogin } from 'entities/auth/model/hooks/useAuth';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import { InputText } from 'shared/ui/Input/InputText';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import FullLogo from 'shared/assets/FullLogo.svg';
 import RoleTabs from './RoleTabs';
@@ -20,6 +22,7 @@ const LoginForm = () => {
   const [role, setRole] = useState<UserType>('APPLICANT');
   const navigate = useNavigate();
   const { mutate, isPending } = useLogin();
+  const errorModal = useErrorAlertModal();
 
   const {
     register,
@@ -33,7 +36,9 @@ const LoginForm = () => {
 
   const onSubmit = (data: LoginRequest) => {
     // role은 폼이 아닌 상단 RoleTabs 상태에서 가져와 합쳐 전송
-    mutate({ ...data, role });
+    mutate({ ...data, role }, {
+      onError: errorModal.onMutationError('로그인에 실패했습니다.'),
+    });
   };
 
   return (
@@ -83,6 +88,12 @@ const LoginForm = () => {
         <span>처음이신가요?</span>
         <AuthLink onClick={() => navigate('/signup')}>회원가입</AuthLink>
       </AuthFooter>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </AuthCard>
   );
 };

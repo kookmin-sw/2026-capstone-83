@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Undo2 } from 'lucide-react';
 import { useTheme } from 'styled-components';
 import { useCancelHire } from 'entities/application/model/hooks/useApplication';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 interface Props {
   applicationId: number;
@@ -15,6 +17,7 @@ export const CancelHireButton = ({ applicationId, jobPostId }: Props) => {
   const theme = useTheme();
   const { mutate, isPending } = useCancelHire(jobPostId);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const errorModal = useErrorAlertModal();
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -24,6 +27,7 @@ export const CancelHireButton = ({ applicationId, jobPostId }: Props) => {
   const handleConfirm = () => {
     mutate(applicationId, {
       onSuccess: () => setIsModalOpen(false),
+      onError: errorModal.onMutationError('채용 취소에 실패했습니다.'),
     });
   };
 
@@ -60,6 +64,12 @@ export const CancelHireButton = ({ applicationId, jobPostId }: Props) => {
           <p>해당 지원자의 채용을 취소하시겠습니까?</p>
         </ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };

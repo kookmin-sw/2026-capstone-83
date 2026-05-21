@@ -3,7 +3,9 @@ import styled from 'styled-components';
 import { useTemplates, useCreateTemplate, useDeleteTemplate } from 'entities/jobPost/model/hooks/useTemplates';
 import type { JobPostTemplateRequest, JobPostTemplateResponse } from 'entities/jobPost/model/types/template.type';
 import { TemplateItem } from './TemplateItem';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 import { InputText } from 'shared/ui/Input/InputText';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
 
@@ -19,6 +21,7 @@ export const TemplateSection = ({ getFormValues, onLoadTemplate }: Props) => {
   const [isNaming, setIsNaming] = useState(false);
   const [templateName, setTemplateName] = useState('');
   const [deleteTargetId, setDeleteTargetId] = useState<number | null>(null);
+  const errorModal = useErrorAlertModal();
 
   const handleSaveTemplate = () => {
     if (!templateName.trim()) return;
@@ -47,6 +50,7 @@ export const TemplateSection = ({ getFormValues, onLoadTemplate }: Props) => {
         setIsNaming(false);
         setTemplateName('');
       },
+      onError: errorModal.onMutationError('템플릿 저장에 실패했습니다.'),
     });
   };
 
@@ -127,8 +131,10 @@ export const TemplateSection = ({ getFormValues, onLoadTemplate }: Props) => {
               buttonSize="large"
               onClick={() => {
                 if (deleteTargetId) {
-                  deleteTemplate(deleteTargetId);
-                  setDeleteTargetId(null);
+                  deleteTemplate(deleteTargetId, {
+                    onSuccess: () => setDeleteTargetId(null),
+                    onError: errorModal.onMutationError('템플릿 삭제에 실패했습니다.'),
+                  });
                 }
               }}
             >
@@ -142,6 +148,12 @@ export const TemplateSection = ({ getFormValues, onLoadTemplate }: Props) => {
           <p>이 템플릿을 삭제하시겠습니까?</p>
         </ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </S.Wrapper>
   );
 };

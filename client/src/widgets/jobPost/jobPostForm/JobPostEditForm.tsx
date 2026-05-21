@@ -28,6 +28,8 @@ import Article from 'shared/ui/Layout/Article';
 import Loading from 'shared/ui/Loading/Loading';
 import Empty from 'shared/ui/Empty/Empty';
 import Button from 'shared/ui/Button/Button';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 interface Props {
   postId: number;
@@ -38,6 +40,7 @@ export const JobPostEditForm = ({ postId }: Props) => {
   const { data: post, isLoading, isError } = useJobPost(postId);
   const { data: workplaces } = useWorkplaces();
   const { mutate, isPending } = useUpdateJobPostMutation();
+  const errorModal = useErrorAlertModal();
   const [descriptionImage, setDescriptionImage] = useState<File | null>(null);
   const [selectedWorkplaceId, setSelectedWorkplaceId] = useState<number | null>(null);
   const [isCreateWpModalOpen, setIsCreateWpModalOpen] = useState(false);
@@ -121,13 +124,18 @@ export const JobPostEditForm = ({ postId }: Props) => {
       ageRequirements: post.ageRequirements,
     };
 
-    mutate({
-      id: postId,
-      payload: {
-        data: updateData,
-        descriptionImage: descriptionImage ?? undefined,
+    mutate(
+      {
+        id: postId,
+        payload: {
+          data: updateData,
+          descriptionImage: descriptionImage ?? undefined,
+        },
       },
-    });
+      {
+        onError: errorModal.onMutationError('공고 수정에 실패했습니다.'),
+      },
+    );
   };
 
   const getTemplateFormValues = () => {
@@ -261,6 +269,12 @@ export const JobPostEditForm = ({ postId }: Props) => {
       <CreateWorkplaceModal
         isOpen={isCreateWpModalOpen}
         onClose={() => setIsCreateWpModalOpen(false)}
+      />
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
       />
     </Main>
   );

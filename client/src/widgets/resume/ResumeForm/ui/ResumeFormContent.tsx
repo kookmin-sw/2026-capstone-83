@@ -7,7 +7,9 @@ import { ResumeEducationFields } from 'entities/resume/ui/InputFields/ResumeEduc
 import { ResumeCareerFields } from 'entities/resume/ui/InputFields/ResumeCareerFields';
 import { ResumeCertificateFields } from 'entities/resume/ui/InputFields/ResumeCertificateFields';
 import type { ResumeRequest } from 'entities/resume/model/types/resume.type';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 import Main from 'shared/ui/Layout/Main';
 import Article from 'shared/ui/Layout/Article';
 import Loading from 'shared/ui/Loading/Loading';
@@ -17,6 +19,7 @@ import InputHeader from 'shared/ui/Input/InputHeader';
 export const ResumeFormContent = () => {
   const { data: resume, isLoading, isError } = useResume();
   const { mutate: updateResume, isPending } = useUpdateResume();
+  const errorModal = useErrorAlertModal();
 
   const { register, handleSubmit } = useForm<ResumeRequest>({
     values: resume ? {
@@ -31,9 +34,7 @@ export const ResumeFormContent = () => {
       onSuccess: () => {
         alert('이력서가 저장되었습니다.');
       },
-      onError: () => {
-        alert('이력서 저장에 실패했습니다.');
-      },
+      onError: errorModal.onMutationError('이력서 저장에 실패했습니다.'),
     });
   };
 
@@ -85,6 +86,12 @@ export const ResumeFormContent = () => {
           </form>
         </S.FormSection>
       </Article>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </Main>
   );
 };

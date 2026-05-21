@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { X } from 'lucide-react';
 import { useTheme } from 'styled-components';
 import { useRejectApplicant } from 'entities/application/model/hooks/useApplication';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 interface Props {
   applicationId: number;
@@ -15,6 +17,7 @@ export const RejectApplicantButton = ({ applicationId, jobPostId }: Props) => {
   const theme = useTheme();
   const { mutate, isPending } = useRejectApplicant(jobPostId);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const errorModal = useErrorAlertModal();
 
   const handleClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -22,8 +25,10 @@ export const RejectApplicantButton = ({ applicationId, jobPostId }: Props) => {
   };
 
   const handleConfirm = () => {
-    mutate(applicationId);
-    setIsModalOpen(false);
+    mutate(applicationId, {
+      onSuccess: () => setIsModalOpen(false),
+      onError: errorModal.onMutationError('거절 처리에 실패했습니다.'),
+    });
   };
 
   return (
@@ -59,6 +64,12 @@ export const RejectApplicantButton = ({ applicationId, jobPostId }: Props) => {
           <p>해당 지원자를 거절하시겠습니까?<br />이 작업은 되돌릴 수 없습니다.</p>
         </ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };

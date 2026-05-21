@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useDeleteJobPost } from 'entities/jobPost/model/hooks/useJobPostMutations';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import Modal from 'shared/ui/Modal/Modal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 import styled from 'styled-components';
 
 interface Props {
@@ -16,6 +18,7 @@ const DeleteJobPostButton = ({ jobPostId, compact = false, onDeleted }: Props) =
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
   const navigate = useNavigate();
   const { mutate, isPending } = useDeleteJobPost();
+  const errorModal = useErrorAlertModal();
 
   const handleDelete = () => {
     mutate(jobPostId, {
@@ -26,6 +29,7 @@ const DeleteJobPostButton = ({ jobPostId, compact = false, onDeleted }: Props) =
           navigate('/jobposts');
         }
       },
+      onError: errorModal.onMutationError('공고 삭제에 실패했습니다.'),
     });
   };
 
@@ -82,6 +86,12 @@ const DeleteJobPostButton = ({ jobPostId, compact = false, onDeleted }: Props) =
           <p>삭제된 공고는 복구할 수 없으며, 관련 지원 내역도 함께 삭제됩니다.</p>
         </S.ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };

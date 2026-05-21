@@ -2,13 +2,12 @@ import { useState } from 'react';
 import { isAxiosError } from 'axios';
 import { Check } from 'lucide-react';
 import { useTheme } from 'styled-components';
-import {
-  getApplicationMutationErrorMessage,
-  useAcceptApproval,
-} from 'entities/application/model/hooks/useApplication';
+import { useAcceptApproval } from 'entities/application/model/hooks/useApplication';
 import { clearPendingFlowFlag } from 'entities/application/lib/pendingFlowStorage';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 interface Props {
   applicationId: number;
@@ -19,6 +18,7 @@ export const AcceptApprovalButton = ({ applicationId }: Props) => {
   const theme = useTheme();
   const { mutate, isPending } = useAcceptApproval();
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const errorModal = useErrorAlertModal();
 
   const handleClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -34,10 +34,10 @@ export const AcceptApprovalButton = ({ applicationId }: Props) => {
       },
       onError: (error) => {
         if (isAxiosError(error) && error.response?.status === 409) {
-          alert('고용주의 최종 확정을 기다려 주세요.');
+          errorModal.showError(error, '고용주의 최종 확정을 기다려 주세요.');
           return;
         }
-        alert(getApplicationMutationErrorMessage(error) ?? '최종 수락에 실패했습니다.');
+        errorModal.showError(error, '최종 수락에 실패했습니다.');
       },
     });
   };
@@ -75,6 +75,12 @@ export const AcceptApprovalButton = ({ applicationId }: Props) => {
           <p>고용주 승인을 확인했습니다. 채용을 최종 수락하시겠습니까?</p>
         </ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };

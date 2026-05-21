@@ -32,10 +32,5 @@ export const useCreateJobPost = () => {
 
     },
 
-    // 에러 발생 시 처리
-    onError: (error) => {
-      console.error('공고 등록 실패:', error);
-      alert('공고 등록 중 오류가 발생했습니다.');
-    },
   });
 };

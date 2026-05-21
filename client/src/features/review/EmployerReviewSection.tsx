@@ -5,6 +5,8 @@ import { useWriteEmployerReview, useReviewsByApplication } from 'entities/review
 import { REVIEW_TAG_LABEL } from 'entities/review/model/types/review.type';
 import type { EmployerReviewTag, ReviewRequest } from 'entities/review/model/types/review.type';
 import Badge from 'shared/ui/Badge/Badge';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 
 const EMPLOYER_TAGS: EmployerReviewTag[] = [
   'PUNCTUAL',
@@ -27,6 +29,7 @@ export const EmployerReviewSection = ({ applicationId }: Props) => {
   const [content, setContent] = useState('');
   const [isEditing, setIsEditing] = useState(true);
   const [isTagPickerOpen, setIsTagPickerOpen] = useState(false);
+  const errorModal = useErrorAlertModal();
 
   // 기존 리뷰가 있으면 표시만
   const employerReview = existingReviews?.find((r) => r.target === 'EMPLOYER_TO_EMPLOYEE');
@@ -47,12 +50,16 @@ export const EmployerReviewSection = ({ applicationId }: Props) => {
       tags: selectedTags,
       content: content.trim() || undefined,
     };
-    writeReview({ applicationId, data }, {
-      onSuccess: () => {
-        setIsEditing(false);
-        setIsTagPickerOpen(false);
+    writeReview(
+      { applicationId, data },
+      {
+        onSuccess: () => {
+          setIsEditing(false);
+          setIsTagPickerOpen(false);
+        },
+        onError: errorModal.onMutationError('리뷰 저장에 실패했습니다. 잠시 후 다시 시도해주세요.'),
       },
-    });
+    );
   };
 
   const handleCancelTagPicker = () => {
@@ -76,6 +83,7 @@ export const EmployerReviewSection = ({ applicationId }: Props) => {
   }
 
   return (
+    <>
     <S.Wrapper>
       {/* 태그 영역 */}
       <S.TagRow>
@@ -144,6 +152,13 @@ export const EmployerReviewSection = ({ applicationId }: Props) => {
         </S.ActionRow>
       )}
     </S.Wrapper>
+
+    <ErrorAlertModal
+      isOpen={errorModal.isOpen}
+      message={errorModal.errorMessage}
+      onClose={errorModal.close}
+    />
+    </>
   );
 };
 

@@ -13,6 +13,8 @@ import {
 import type { Gender, UserProfileFormValues } from 'entities/user/model/types/userProfile.type';
 import { ProfileImageUpload } from './ProfileImageUpload';
 import { AddressSearchButton } from 'features/search-address/AddressSearchButton';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 import Badge from 'shared/ui/Badge/Badge';
 import Button from 'shared/ui/Button/Button';
 import { InputText } from 'shared/ui/Input/InputText';
@@ -28,6 +30,7 @@ const GENDER_OPTIONS: { value: Gender; label: string }[] = [
 export const UserProfileForm = () => {
   const { data: profile, isLoading, isError } = useMyProfile();
   const { mutate: updateProfile, isPending } = useUpdateMyProfile();
+  const errorModal = useErrorAlertModal();
 
   const {
     register,
@@ -49,9 +52,7 @@ export const UserProfileForm = () => {
       onSuccess: () => {
         alert('회원정보가 저장되었습니다.');
       },
-      onError: () => {
-        alert('회원정보 저장에 실패했습니다.');
-      },
+      onError: errorModal.onMutationError('회원정보 저장에 실패했습니다.'),
     });
   };
 
@@ -59,6 +60,7 @@ export const UserProfileForm = () => {
   if (isError || !profile) return <Empty message="회원정보를 불러올 수 없습니다." />;
 
   return (
+    <>
     <S.Form onSubmit={handleSubmit(onSubmit)}>
       <ProfileImageUpload profileImageUrl={profile.profileImageUrl} name={profile.name} />
 
@@ -159,6 +161,13 @@ export const UserProfileForm = () => {
         </Button>
       </S.Actions>
     </S.Form>
+
+    <ErrorAlertModal
+      isOpen={errorModal.isOpen}
+      message={errorModal.errorMessage}
+      onClose={errorModal.close}
+    />
+    </>
   );
 };
 

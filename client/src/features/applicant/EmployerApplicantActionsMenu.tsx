@@ -1,16 +1,17 @@
 import { useMemo, useState } from 'react';
 import type { ApplicationStatus } from 'entities/application/model/types/application.type';
 import {
-  getApplicationMutationErrorMessage,
   useAcceptApplicant,
   useCancelHire,
   useConfirmHire,
   useOfferJobPost,
   useRejectApplicant,
 } from 'entities/application/model/hooks/useApplication';
+import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import { CardActionsMenu, type CardMenuItem } from 'shared/ui/CardActionsMenu/CardActionsMenu';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
+import ErrorAlertModal from 'shared/ui/Modal/ErrorAlertModal';
 
 type ModalType = 'accept' | 'confirmHire' | 'reject' | 'offer' | 'cancelHire' | null;
 
@@ -28,6 +29,7 @@ export const EmployerApplicantActionsMenu = ({
   status,
 }: Props) => {
   const [modal, setModal] = useState<ModalType>(null);
+  const errorModal = useErrorAlertModal();
   const { mutate: acceptApplicant, isPending: isAcceptPending } = useAcceptApplicant(jobPostId);
   const { mutate: confirmHire, isPending: isConfirmPending } = useConfirmHire(jobPostId);
   const { mutate: rejectApplicant, isPending: isRejectPending } = useRejectApplicant(jobPostId);
@@ -76,7 +78,12 @@ export const EmployerApplicantActionsMenu = ({
             <Button
               scheme="primary"
               buttonSize="medium"
-              onClick={() => acceptApplicant(applicationId, { onSuccess: closeModal })}
+              onClick={() =>
+                acceptApplicant(applicationId, {
+                  onSuccess: closeModal,
+                  onError: errorModal.onMutationError('승인에 실패했습니다.'),
+                })
+              }
               disabled={isAcceptPending}
             >
               승인
@@ -104,9 +111,7 @@ export const EmployerApplicantActionsMenu = ({
               onClick={() =>
                 confirmHire(applicationId, {
                   onSuccess: closeModal,
-                  onError: (error) => {
-                    alert(getApplicationMutationErrorMessage(error) ?? '최종 확정에 실패했습니다.');
-                  },
+                  onError: errorModal.onMutationError('최종 확정에 실패했습니다.'),
                 })
               }
               disabled={isConfirmPending}
@@ -133,7 +138,12 @@ export const EmployerApplicantActionsMenu = ({
             <Button
               scheme="primary"
               buttonSize="medium"
-              onClick={() => rejectApplicant(applicationId, { onSuccess: closeModal })}
+              onClick={() =>
+                rejectApplicant(applicationId, {
+                  onSuccess: closeModal,
+                  onError: errorModal.onMutationError('거절 처리에 실패했습니다.'),
+                })
+              }
               disabled={isRejectPending}
             >
               거절 확정
@@ -164,9 +174,7 @@ export const EmployerApplicantActionsMenu = ({
                     closeModal();
                     alert('채용 제안이 전송되었습니다.');
                   },
-                  onError: (error) => {
-                    alert(getApplicationMutationErrorMessage(error) ?? '제안 전송에 실패했습니다.');
-                  },
+                  onError: errorModal.onMutationError('제안 전송에 실패했습니다.'),
                 })
               }
               disabled={isOfferPending}
@@ -193,7 +201,12 @@ export const EmployerApplicantActionsMenu = ({
             <Button
               scheme="primary"
               buttonSize="medium"
-              onClick={() => cancelHire(applicationId, { onSuccess: closeModal })}
+              onClick={() =>
+                cancelHire(applicationId, {
+                  onSuccess: closeModal,
+                  onError: errorModal.onMutationError('채용 취소에 실패했습니다.'),
+                })
+              }
               disabled={isCancelHirePending}
             >
               확정
@@ -206,6 +219,12 @@ export const EmployerApplicantActionsMenu = ({
           <p>해당 지원자의 채용을 취소하시겠습니까?</p>
         </ModalContent>
       </Modal>
+
+      <ErrorAlertModal
+        isOpen={errorModal.isOpen}
+        message={errorModal.errorMessage}
+        onClose={errorModal.close}
+      />
     </>
   );
 };
