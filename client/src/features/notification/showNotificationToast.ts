@@ -13,11 +13,7 @@ export const showNotificationToast = (notification: Notification) => {
   useNotificationStore.getState().addNotification(notification);
 
   toast.custom(
-    (t) => createElement(CustomToast, {
-      t,
-      message: notification.message,
-      type: notification.type,
-    }),
-    { duration: 4000 }
+    (t) => createElement(CustomToast, { t, notification }),
+    { duration: 4000 },
   );
 };

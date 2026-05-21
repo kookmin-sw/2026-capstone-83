@@ -1,4 +1,5 @@
 import styled from 'styled-components';
+import { useNotificationNavigate } from 'entities/notification/model/hooks/useNotificationNavigate';
 import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
 import { NotificationItem } from 'entities/notification/ui/NotificationItem';
 import Empty from 'shared/ui/Empty/Empty';
@@ -6,7 +7,7 @@ import Empty from 'shared/ui/Empty/Empty';
 const NotificationsPage = () => {
   const notifications = useNotificationStore((s) => s.notifications);
   const markAllAsRead = useNotificationStore((s) => s.markAllAsRead);
-  const markAsRead = useNotificationStore((s) => s.markAsRead);
+  const { handleNotificationClick } = useNotificationNavigate();
 
   return (
     <S.PageWrapper>
@@ -21,7 +22,7 @@ const NotificationsPage = () => {
             <NotificationItem
               key={noti.id}
               data={noti}
-              onClick={() => markAsRead(noti.id)}
+              onClick={() => handleNotificationClick(noti)}
             />
           ))
         ) : (
