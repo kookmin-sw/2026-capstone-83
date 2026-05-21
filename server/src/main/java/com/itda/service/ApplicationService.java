@@ -15,6 +15,8 @@ import com.itda.entity.User;
 import com.itda.enums.ApplicationStatus;
 import com.itda.enums.InitiatedBy;
 import com.itda.enums.NotificationType;
+import com.itda.enums.UserRole;
+import com.itda.enums.JobPostStatus;
 import com.itda.repository.ApplicationRepository;
 import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
@@ -25,6 +27,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -255,18 +258,61 @@ public class ApplicationService {
 
     // 고용주 → 지원자에게 제안
     @Transactional
-    public Application offer(Long jobPostId, User applicant) {
+    public Application offer(Long jobPostId, User employer, User applicant) {
         JobPost jobPost = jobPostRepository.findById(jobPostId)
                 .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
 
-        Application application = Application.builder()
+        // 공고 소유권 검증
+        if (!jobPost.getWorkplace().getEmployer().getUser().getId().equals(employer.getId())) {
+            throw new AccessDeniedException("본인의 공고만 제안할 수 있습니다.");
+        }
+        // 구직자 역할 검증
+        if (applicant.getRole() != UserRole.APPLICANT) {
+            throw new IllegalStateException("구직자에게만 제안할 수 있습니다.");
+        }
+
+        // 공고 상태 검증
+        if (jobPost.getStatus() != JobPostStatus.OPEN) {
+            throw new IllegalStateException("모집 중인 공고만 제안할 수 있습니다.");
+        }
+
+        // 중복 제안 처리
+        Application existing = applicationRepository
+                .findByJobPostIdAndApplicantUserId(jobPostId, applicant.getId())
+                .orElse(null);
+
+        if (existing != null) {
+            ApplicationStatus s = existing.getStatus();
+            // 재제안 가능: REJECTED 또는 CANCELLED
+            if (s == ApplicationStatus.REJECTED || s == ApplicationStatus.CANCELLED) {
+                Application updated = applicationRepository.save(Application.builder()
+                        .id(existing.getId())
+                        .jobPost(existing.getJobPost())
+                        .applicantUser(existing.getApplicantUser())
+                        .status(ApplicationStatus.OFFERED)
+                        .initiatedBy(InitiatedBy.EMPLOYER)
+                        .appliedAt(existing.getAppliedAt())
+                        .build());
+
+                notificationService.notify(
+                        applicant.getId(),
+                        NotificationType.OFFER_RECEIVED,
+                        "[" + jobPost.getTitle() + "]에 채용 제안이 왔습니다.",
+                        updated.getId()
+                );
+                return updated;
+            }
+            // 활성 상태면 차단
+            throw new DuplicateException("이미 진행 중인 지원 또는 제안이 있습니다.");
+        }
+
+        // 신규 제안
+        Application saved = applicationRepository.save(Application.builder()
                 .jobPost(jobPost)
                 .applicantUser(applicant)
                 .status(ApplicationStatus.OFFERED)
                 .initiatedBy(InitiatedBy.EMPLOYER)
-                .build();
-
-        Application saved = applicationRepository.save(application);
+                .build());
 
         // 알림: 구직자에게 채용 제안 알림
         notificationService.notify(

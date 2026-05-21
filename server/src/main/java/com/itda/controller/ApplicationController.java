@@ -103,7 +103,6 @@ public class ApplicationController {
 
 
     // 고용주 → 구직자 채용 제안
-    // POST /api/v1/job-posts/{jobPostId}/offer/{userId}
     @PostMapping("/api/v1/job-posts/{jobPostId}/offer/{userId}")
     public ResponseEntity<Map<String, Long>> offer(
             @PathVariable Long jobPostId,
@@ -111,7 +110,7 @@ public class ApplicationController {
             @AuthenticationPrincipal User user) {
         com.itda.entity.User applicant = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
-        Application application = applicationService.offer(jobPostId, applicant);
+        Application application = applicationService.offer(jobPostId, user, applicant); // user 추가
         return ResponseEntity.status(201).body(Map.of("applicationId", application.getId()));
     }
 
