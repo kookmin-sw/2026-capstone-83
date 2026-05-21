@@ -21,6 +21,7 @@ export const useCloseJobPost = () => {
     onSuccess: (_response, id) => {
       queryClient.invalidateQueries({ queryKey: ['jobPost', id] });
       queryClient.invalidateQueries({ queryKey: ['jobPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['applicants', id] });
     },
   });
 };

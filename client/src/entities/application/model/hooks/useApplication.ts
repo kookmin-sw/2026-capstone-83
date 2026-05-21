@@ -117,6 +117,7 @@ export const useCompleteWork = (jobPostId: number) => {
   return useMutation({
     mutationFn: (applicationId: number) => completeWork(applicationId),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['applicants', jobPostId] });
       queryClient.invalidateQueries({ queryKey: ['workers', jobPostId] });
       queryClient.invalidateQueries({ queryKey: ['jobPost', jobPostId] });
     },

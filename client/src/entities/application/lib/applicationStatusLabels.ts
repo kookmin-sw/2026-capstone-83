@@ -49,6 +49,29 @@ export const EMPLOYER_APPLICATION_STATUS_ORDER: ApplicationStatus[] = [
   'CANCELLED',
 ];
 
+/** 고용주 지원자 목록 탭 */
+export type EmployerApplicantTab = 'action' | 'active' | 'closed';
+
+export const EMPLOYER_APPLICANT_TABS: EmployerApplicantTab[] = ['action', 'active', 'closed'];
+
+export const EMPLOYER_APPLICANT_TAB_LABEL: Record<EmployerApplicantTab, string> = {
+  action: '처리 필요',
+  active: '채용·근무',
+  closed: '종료',
+};
+
+export const EMPLOYER_APPLICANT_TAB_STATUSES: Record<EmployerApplicantTab, ApplicationStatus[]> = {
+  action: ['APPLIED', 'OFFERED', 'PENDING'],
+  active: ['HIRED', 'COMPLETED'],
+  closed: ['REJECTED', 'CANCELLED'],
+};
+
+export const EMPLOYER_APPLICANT_TAB_EMPTY_MESSAGE: Record<EmployerApplicantTab, string> = {
+  action: '처리할 지원자가 없습니다.',
+  active: '채용·근무 중인 지원자가 없습니다.',
+  closed: '종료된 지원 내역이 없습니다.',
+};
+
 /** 구직자 지원 이력 기본 노출 순서 */
 export const WORKER_APPLICATION_STATUS_ORDER: ApplicationStatus[] = [
   'APPLIED',

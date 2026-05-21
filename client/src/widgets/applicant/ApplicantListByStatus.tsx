@@ -4,7 +4,11 @@ import { useApplicants } from 'entities/application/model/hooks/useApplicants';
 import {
   APPLICATION_STATUS_LABEL,
   APPLICATION_STATUS_BADGE_SCHEME,
-  EMPLOYER_APPLICATION_STATUS_ORDER,
+  EMPLOYER_APPLICANT_TABS,
+  EMPLOYER_APPLICANT_TAB_EMPTY_MESSAGE,
+  EMPLOYER_APPLICANT_TAB_LABEL,
+  EMPLOYER_APPLICANT_TAB_STATUSES,
+  type EmployerApplicantTab,
 } from 'entities/application/lib/applicationStatusLabels';
 import type { ApplicantResponse, ApplicationStatus } from 'entities/application/model/types/application.type';
 import { ApplicantCard } from 'entities/application/ui/ApplicantCard';
@@ -12,6 +16,7 @@ import { AcceptApplicantButton } from 'features/applicant/AcceptApplicantButton'
 import { ConfirmHireButton } from 'features/applicant/ConfirmHireButton';
 import { RejectApplicantButton } from 'features/applicant/RejectApplicantButton';
 import { CancelHireButton } from 'features/applicant/CancelHireButton';
+import { CompleteWorkButton } from 'features/applicant/CompleteWorkButton';
 import { OfferJobButton } from 'features/offer/OfferJobButton';
 import { CardActionGroup } from 'shared/ui/CardActionGroup/CardActionGroup';
 import { useResumeDetail } from 'entities/resume/model/hooks/useResumeDetail';
@@ -28,6 +33,7 @@ interface Props {
 
 export const ApplicantListByStatus = ({ jobPostId }: Props) => {
   const { data: applicants, isLoading } = useApplicants(jobPostId);
+  const [activeTab, setActiveTab] = useState<EmployerApplicantTab>('action');
   const [selectedResumeId, setSelectedResumeId] = useState<number | undefined>();
   const [selectedApplicantUserId, setSelectedApplicantUserId] = useState<number | undefined>();
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
@@ -47,6 +53,17 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
       return acc;
     }, {});
   }, [applicants]);
+
+  const tabCounts = useMemo(() => {
+    const counts = {} as Record<EmployerApplicantTab, number>;
+    EMPLOYER_APPLICANT_TABS.forEach((tab) => {
+      counts[tab] = EMPLOYER_APPLICANT_TAB_STATUSES[tab].reduce(
+        (sum, status) => sum + (grouped[status]?.length ?? 0),
+        0,
+      );
+    });
+    return counts;
+  }, [grouped]);
 
   const handleCardClick = (applicant: ApplicantResponse) => {
     setSelectedResumeId(applicant.resumeId ?? undefined);
@@ -94,41 +111,88 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
       case 'HIRED':
         return (
           <CardActionGroup>
+            <CompleteWorkButton
+              applicationId={applicant.applicationId}
+              jobPostId={jobPostId}
+              applicantName={applicant.name}
+            />
             <CancelHireButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
           </CardActionGroup>
         );
+      case 'COMPLETED':
+        return null;
       default:
         return null;
     }
   };
 
+  const renderStatusSection = (status: ApplicationStatus) => {
+    const list = grouped[status] || [];
+    if (list.length === 0) return null;
+
+    return (
+      <S.Section key={status}>
+        <S.SectionHeader>
+          <S.SectionTitle>{APPLICATION_STATUS_LABEL[status]}</S.SectionTitle>
+          <Badge scheme={APPLICATION_STATUS_BADGE_SCHEME[status]}>{list.length}명</Badge>
+        </S.SectionHeader>
+
+        <S.CardList>
+          {list.map((applicant) => (
+            <ApplicantCard
+              key={applicant.applicationId}
+              data={applicant}
+              actions={renderActions(status, applicant)}
+              reviewSlot={
+                status === 'COMPLETED' ? (
+                  <EmployerReviewSection applicationId={applicant.applicationId} />
+                ) : undefined
+              }
+              onClick={() => handleCardClick(applicant)}
+            />
+          ))}
+        </S.CardList>
+      </S.Section>
+    );
+  };
+
+  const renderTabPanel = () => {
+    const statuses = EMPLOYER_APPLICANT_TAB_STATUSES[activeTab];
+    const hasAny = statuses.some((status) => (grouped[status]?.length ?? 0) > 0);
+
+    if (!hasAny) {
+      return <S.TabEmpty>{EMPLOYER_APPLICANT_TAB_EMPTY_MESSAGE[activeTab]}</S.TabEmpty>;
+    }
+
+    return (
+      <S.TabPanelContent>{statuses.map((status) => renderStatusSection(status))}</S.TabPanelContent>
+    );
+  };
+
   return (
     <S.Wrapper>
-      {EMPLOYER_APPLICATION_STATUS_ORDER.map((key) => {
-        const list = grouped[key] || [];
-        if (list.length === 0) return null;
+      <S.TabBar role="tablist" aria-label="지원자 상태 탭">
+        {EMPLOYER_APPLICANT_TABS.map((tab) => {
+          const count = tabCounts[tab];
+          return (
+            <S.Tab
+              key={tab}
+              type="button"
+              role="tab"
+              aria-selected={activeTab === tab}
+              $active={activeTab === tab}
+              onClick={() => setActiveTab(tab)}
+            >
+              {EMPLOYER_APPLICANT_TAB_LABEL[tab]}
+              {count > 0 && (
+                <S.TabCount $active={activeTab === tab}>{count}</S.TabCount>
+              )}
+            </S.Tab>
+          );
+        })}
+      </S.TabBar>
 
-        return (
-          <S.Section key={key}>
-            <S.SectionHeader>
-              <S.SectionTitle>{APPLICATION_STATUS_LABEL[key]}</S.SectionTitle>
-              <Badge scheme={APPLICATION_STATUS_BADGE_SCHEME[key]}>{list.length}명</Badge>
-            </S.SectionHeader>
-
-            <S.CardList>
-              {list.map((applicant) => (
-                <ApplicantCard
-                  key={applicant.applicationId}
-                  data={applicant}
-                  actions={renderActions(key, applicant)}
-                  reviewSlot={<EmployerReviewSection applicationId={applicant.applicationId} />}
-                  onClick={() => handleCardClick(applicant)}
-                />
-              ))}
-            </S.CardList>
-          </S.Section>
-        );
-      })}
+      <S.TabPanel role="tabpanel">{renderTabPanel()}</S.TabPanel>
 
       <Modal isOpen={isResumeModalOpen} onClose={handleCloseModal}>
         {!selectedResumeId ? (
@@ -156,7 +220,62 @@ const S = {
   Wrapper: styled.div`
     display: flex;
     flex-direction: column;
+    gap: 20px;
+  `,
+  TabBar: styled.div`
+    display: flex;
+    gap: 6px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid ${({ theme }) => theme.color.border};
+
+    @media (${({ theme }) => theme.mediaQuery.tablet_small}) {
+      flex-wrap: wrap;
+    }
+  `,
+  Tab: styled.button<{ $active: boolean }>`
+    flex: 1;
+    min-width: 0;
+    padding: 10px 12px;
+    border: none;
+    border-radius: ${({ theme }) => theme.borderRadius.medium};
+    font-size: ${({ theme }) => theme.fontSize.small};
+    font-weight: ${({ theme }) => theme.fontWeight.semibold};
+    cursor: pointer;
+    background: ${({ theme, $active }) => ($active ? theme.color.primary : theme.color.secondary)};
+    color: ${({ theme, $active }) => ($active ? theme.color.white : theme.color.text)};
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background 0.15s ease, color 0.15s ease;
+
+    &:hover {
+      opacity: ${({ $active }) => ($active ? 1 : 0.9)};
+    }
+  `,
+  TabCount: styled.span<{ $active: boolean }>`
+    font-size: ${({ theme }) => theme.fontSize.xsmall};
+    font-weight: ${({ theme }) => theme.fontWeight.semibold};
+    padding: 2px 7px;
+    border-radius: ${({ theme }) => theme.borderRadius.round};
+    background: ${({ theme, $active }) =>
+      $active ? 'rgba(255, 255, 255, 0.25)' : theme.color.border};
+    color: inherit;
+  `,
+  TabPanel: styled.div`
+    min-height: 80px;
+  `,
+  TabPanelContent: styled.div`
+    display: flex;
+    flex-direction: column;
     gap: 24px;
+  `,
+  TabEmpty: styled.p`
+    margin: 0;
+    padding: 32px 16px;
+    text-align: center;
+    font-size: ${({ theme }) => theme.fontSize.small};
+    color: ${({ theme }) => theme.color.subText};
   `,
   Section: styled.div`
     display: flex;
