@@ -39,4 +39,28 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     /** 내가 작성한 리뷰 목록 */
     List<Review> findByReviewerIdOrderByCreatedAtDesc(Long reviewerId);
+
+    // 고용주+구직자 조합으로 기존 리뷰 조회 (재리뷰 시 UPDATE용)
+    @Query("""
+    SELECT r FROM Review r
+    WHERE r.reviewer.id = :reviewerId
+      AND r.application.applicantUser.id = :applicantUserId
+      AND r.target = 'EMPLOYER_TO_EMPLOYEE'
+    ORDER BY r.createdAt DESC
+    """)
+    Optional<Review> findByReviewerIdAndApplicantUserId(
+            @Param("reviewerId") Long reviewerId,
+            @Param("applicantUserId") Long applicantUserId);
+
+    // 고용주가 특정 구직자에게 작성한 리뷰 조회 (이력서 노출용)
+    @Query("""
+    SELECT r FROM Review r
+    WHERE r.reviewer.id = :reviewerId
+      AND r.application.applicantUser.id = :applicantUserId
+      AND r.target = 'EMPLOYER_TO_EMPLOYEE'
+    ORDER BY r.createdAt DESC
+    """)
+    List<Review> findByReviewerIdAndApplicantUserIdAll(
+            @Param("reviewerId") Long reviewerId,
+            @Param("applicantUserId") Long applicantUserId);
 }

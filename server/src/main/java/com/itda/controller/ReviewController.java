@@ -48,6 +48,24 @@ public class ReviewController {
         ReviewResponse response = reviewService.writeEmployerReview(id, user, request);
         return ResponseEntity.status(201).body(response);
     }
+    // ─── 리뷰 수정 ──────────────────────────────────────────
+    // 리뷰 수정 (작성자만)
+    @PutMapping("/api/v1/reviews/{id}")
+    public ResponseEntity<ReviewResponse> updateReview(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user,
+            @Valid @RequestBody ReviewRequest request) {
+        return ResponseEntity.ok(reviewService.updateReview(id, user, request));
+    }
+
+    // 리뷰 삭제 (작성자만)
+    @DeleteMapping("/api/v1/reviews/{id}")
+    public ResponseEntity<Void> deleteReview(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        reviewService.deleteReview(id, user);
+        return ResponseEntity.noContent().build();
+    }
 
     // ─── 리뷰 조회 ──────────────────────────────────────────
 
