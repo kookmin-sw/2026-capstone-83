@@ -298,4 +298,23 @@ public class JobPostService {
             throw new IllegalStateException("본인의 공고만 수정/삭제할 수 있습니다.");
         }
     }
+    // 제안 가능 공고 목록 조회 (OPEN + 해당 구직자와 연결된 공고 제외)
+    public CursorPageResponse<JobPostCardResponse> getOfferableJobPosts(Long userId, Long applicantUserId, Long cursor, int size) {
+        int fetchSize = size + 1;
+        List<JobPost> posts = jobPostRepository.findOfferableByEmployerIdWithCursor(
+                userId, applicantUserId, cursor, PageRequest.of(0, fetchSize));
+
+        boolean hasNext = posts.size() > size;
+        if (hasNext) {
+            posts = posts.subList(0, size);
+        }
+
+        List<JobPostCardResponse> content = posts.stream()
+                .map(j -> JobPostCardResponse.from(j, false))
+                .toList();
+
+        Long nextCursor = hasNext ? content.get(content.size() - 1).id() : null;
+        return CursorPageResponse.of(content, nextCursor, hasNext);
+    }
+
 }

@@ -81,6 +81,16 @@ public class JobPostController {
         return ResponseEntity.ok(jobPostService.getJobPostsByEmployer(user.getId(), cursor, size, status));
     }
 
+    // 제안 가능 공고 목록 조회 (OPEN + 해당 구직자와 연결된 공고 제외)
+    @GetMapping("/employer/offerable")
+    public ResponseEntity<CursorPageResponse<JobPostCardResponse>> getOfferableJobPosts(
+            @RequestParam Long applicantUserId,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(jobPostService.getOfferableJobPosts(user.getId(), applicantUserId, cursor, size));
+    }
+
     // 캘린더용 날짜 범위 공고 조회
     // GET /api/v1/job-posts/employer/calendar?start=&end=
     @GetMapping("/employer/calendar")
