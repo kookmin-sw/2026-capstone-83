@@ -13,19 +13,19 @@ import java.util.List;
 public class ResumeCardResponse {
 
     private Long resumeId;
+    private Long userId;
+
     private String profileImageUrl;
     private String name;
     private String gender;
     private int age;
     private boolean liked;
-
-    // 첫 번째 경력
     private String firstCareerTitle;
     private int firstCareerYears;
     private int firstCareerMonths;
-
     private String location;
     private int totalHired;
+
 
     public static ResumeCardResponse of(User user, Resume resume, List<CareerResponse> careers, int totalHired, boolean liked) {
         // 나이 계산
@@ -36,6 +36,7 @@ public class ResumeCardResponse {
 
         return ResumeCardResponse.builder()
                 .resumeId(resume.getId())
+                .userId(user.getId())
                 .profileImageUrl(user.getProfileImageUrl())
                 .name(user.getName())
                 .gender(user.getGender() != null ? user.getGender().name() : null)

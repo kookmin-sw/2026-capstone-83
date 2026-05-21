@@ -10,6 +10,9 @@ import java.util.List;
 @Getter
 @Builder
 public class ResumeResponse {
+    // ── 이력서/회원 Id ──
+    private Long resumeId;
+    private Long userId;
 
     // ── 회원 정보 (users 테이블) ──
     private String name;
@@ -44,6 +47,8 @@ public class ResumeResponse {
                                     int totalHired,
                                     boolean liked) {
         return ResumeResponse.builder()
+                .resumeId(resume != null ? resume.getId() : null)
+                .userId(user.getId())
                 .name(user.getName())
                 .gender(user.getGender() != null ? user.getGender().toString() : null)
                 .birthdate(user.getBirth() != null ? user.getBirth().toString() : null)
