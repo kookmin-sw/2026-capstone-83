@@ -80,7 +80,14 @@ public class JobPostController {
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(jobPostService.getJobPostsByEmployer(user.getId(), cursor, size, status));
     }
-
+    // 좋아요한 공고 목록 조회 (구직자)
+    @GetMapping("/liked")
+    public ResponseEntity<CursorPageResponse<JobPostCardResponse>> getLikedJobPosts(
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(jobPostService.getLikedJobPosts(user.getId(), cursor, size));
+    }
     // 제안 가능 공고 목록 조회 (OPEN + 해당 구직자와 연결된 공고 제외)
     @GetMapping("/employer/offerable")
     public ResponseEntity<CursorPageResponse<JobPostCardResponse>> getOfferableJobPosts(

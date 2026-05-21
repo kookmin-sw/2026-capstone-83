@@ -89,6 +89,36 @@ public class ResumeService {
         return ResumeResponse.of(resumeUser, resume, careers, certificates, totalHired, liked, reviews);
     }
 
+    // 좋아요한 이력서 목록 조회 (고용주, 커서 페이지네이션)
+    public CursorPageResponse<ResumeCardResponse> getLikedResumes(Long employerUserId, Long cursor, int size) {
+        List<Long> likedIds = likeService.getLikedResumeIds(employerUserId);
+        if (likedIds.isEmpty()) return new CursorPageResponse<>(List.of(), null, false);
+
+        int fetchSize = size + 1;
+        List<Resume> resumes = resumeRepository.findByIdInWithCursor(
+                likedIds, cursor, PageRequest.of(0, fetchSize));
+
+        boolean hasNext = resumes.size() > size;
+        if (hasNext) resumes = resumes.subList(0, size);
+
+        List<ResumeCardResponse> content = resumes.stream()
+                .map(resume -> {
+                    User resumeUser = resume.getUser();
+                    List<CareerResponse> careers = careerRepository.findByResumeId(resume.getId())
+                            .stream().map(CareerResponse::from).toList();
+                    int totalHired = applicationRepository
+                            .findByApplicantUserIdAndStatus(resumeUser.getId(), ApplicationStatus.HIRED).size();
+                    List<ReviewResponse> reviews = reviewRepository
+                            .findByReviewerIdAndApplicantUserIdAll(employerUserId, resumeUser.getId())
+                            .stream().map(ReviewResponse::from).toList();
+                    return ResumeCardResponse.of(resumeUser, resume, careers, totalHired, true, reviews);
+                })
+                .toList();
+
+        Long nextCursor = hasNext ? resumes.get(resumes.size() - 1).getId() : null;
+        return new CursorPageResponse<>(content, nextCursor, hasNext);
+    }
+
     // 이력서 증명사진 등록/수정
     @Transactional
     public void updateResumePhoto(User user, MultipartFile photo) {

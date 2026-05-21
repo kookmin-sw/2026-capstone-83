@@ -316,5 +316,24 @@ public class JobPostService {
         Long nextCursor = hasNext ? content.get(content.size() - 1).id() : null;
         return CursorPageResponse.of(content, nextCursor, hasNext);
     }
+    // 좋아요한 공고 목록 조회 (구직자, 커서 페이지네이션)
+    public CursorPageResponse<JobPostCardResponse> getLikedJobPosts(Long userId, Long cursor, int size) {
+        List<Long> likedIds = likeService.getLikedJobPostIds(userId);
+        if (likedIds.isEmpty()) return CursorPageResponse.of(List.of(), null, false);
+
+        int fetchSize = size + 1;
+        List<JobPost> posts = jobPostRepository.findByIdInWithCursor(
+                likedIds, cursor, PageRequest.of(0, fetchSize));
+
+        boolean hasNext = posts.size() > size;
+        if (hasNext) posts = posts.subList(0, size);
+
+        List<JobPostCardResponse> content = posts.stream()
+                .map(j -> JobPostCardResponse.from(j, true))
+                .toList();
+
+        Long nextCursor = hasNext ? content.get(content.size() - 1).id() : null;
+        return CursorPageResponse.of(content, nextCursor, hasNext);
+    }
 
 }

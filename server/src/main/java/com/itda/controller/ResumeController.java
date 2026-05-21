@@ -4,6 +4,8 @@ import com.itda.dto.request.CareerRequest;
 import com.itda.dto.request.CertificateRequest;
 import com.itda.dto.request.ResumeRequest;
 import com.itda.dto.response.ResumeResponse;
+import com.itda.dto.response.CursorPageResponse;
+import com.itda.dto.response.ResumeCardResponse;
 import com.itda.entity.User;
 import com.itda.service.ResumeService;
 import lombok.RequiredArgsConstructor;
@@ -25,6 +27,15 @@ public class ResumeController {
     public ResponseEntity<ResumeResponse> getResume(
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(resumeService.getResume(user));
+    }
+
+    // 좋아요한 이력서 목록 조회 (고용주)
+    @GetMapping("/liked")
+    public ResponseEntity<CursorPageResponse<ResumeCardResponse>> getLikedResumes(
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(resumeService.getLikedResumes(user.getId(), cursor, size));
     }
 
     // 이력서 상세 조회 (고용주용)

@@ -72,7 +72,14 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JobPost
     @Query("SELECT j FROM JobPost j WHERE j.status = com.itda.enums.JobPostStatus.OPEN " +
             "AND j.workDate = :today AND j.workStart < :now")
     List<JobPost> findStartedOpenPosts(@Param("today") LocalDate today, @Param("now") java.time.LocalTime now);
-
+    // 좋아요한 공고 목록 조회 (커서 페이지네이션)
+    @Query("SELECT j FROM JobPost j WHERE j.id IN :ids " +
+            "AND (:cursor IS NULL OR j.id < :cursor) " +
+            "ORDER BY j.id DESC")
+    List<JobPost> findByIdInWithCursor(
+            @Param("ids") List<Long> ids,
+            @Param("cursor") Long cursor,
+            org.springframework.data.domain.Pageable pageable);
     /**
      * 랭킹용 후보 풀 조회 — OPEN 상태의 공고 중 사용자의 HIRED 공고는 제외.
      * 메모리에서 점수 매기기 위해 한 번에 가져온다.
