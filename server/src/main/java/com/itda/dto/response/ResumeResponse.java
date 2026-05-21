@@ -41,11 +41,15 @@ public class ResumeResponse {
     // ── 좋아요 여부 ──
     private boolean liked;
 
+    // 고용주 본인이 작성한 리뷰 (고용주만 노출)
+    private List<ReviewResponse> reviews;
+
     public static ResumeResponse of(User user, Resume resume,
                                     List<CareerResponse> careers,
                                     List<CertificateResponse> certificates,
                                     int totalHired,
-                                    boolean liked) {
+                                    boolean liked,
+                                    List<ReviewResponse> reviews) {
         return ResumeResponse.builder()
                 .resumeId(resume != null ? resume.getId() : null)
                 .userId(user.getId())
@@ -63,6 +67,7 @@ public class ResumeResponse {
                 .certificates(certificates)
                 .totalHired(totalHired)
                 .liked(liked)
+                .reviews(reviews)
                 .build();
     }
 }

@@ -7,6 +7,7 @@ import com.itda.dto.response.CertificateResponse;
 import com.itda.dto.response.CursorPageResponse;
 import com.itda.dto.response.ResumeCardResponse;
 import com.itda.dto.response.ResumeResponse;
+import com.itda.dto.response.ReviewResponse;
 import com.itda.entity.Career;
 import com.itda.entity.Certificate;
 import com.itda.entity.Resume;
@@ -18,6 +19,7 @@ import com.itda.repository.CareerRepository;
 import com.itda.repository.CertificateRepository;
 import com.itda.repository.ResumeRepository;
 import com.itda.repository.ResumeLikeRepository;
+import com.itda.repository.ReviewRepository;
 import org.springframework.web.multipart.MultipartFile;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -38,6 +40,8 @@ public class ResumeService {
     private final LikeService likeService;
     private final ResumeLikeRepository resumeLikeRepository;
     private final S3Service s3Service;
+    private final ReviewRepository reviewRepository;
+
 
     // 본인 이력서 조회
     public ResumeResponse getResume(User user) {
@@ -56,8 +60,7 @@ public class ResumeService {
         int totalHired = applicationRepository
                 .findByApplicantUserIdAndStatus(user.getId(), ApplicationStatus.HIRED).size();
 
-        return ResumeResponse.of(user, resume, careers, certificates, totalHired, false);
-    }
+        return ResumeResponse.of(user, resume, careers, certificates, totalHired, false, List.of());    }
 
     // 이력서 상세 조회 (고용주용 - liked 포함)
     public ResumeResponse getResumeDetail(Long resumeId, User viewer) {
@@ -78,8 +81,12 @@ public class ResumeService {
         // 좋아요 여부 확인
         boolean liked = (viewer != null)
                 && resumeLikeRepository.existsByEmployerUserIdAndResumeId(viewer.getId(), resume.getId());
-
-        return ResumeResponse.of(resumeUser, resume, careers, certificates, totalHired, liked);
+        // 고용주 본인이 작성한 리뷰 조회
+        List<ReviewResponse> reviews = (viewer != null)
+                ? reviewRepository.findByReviewerIdAndApplicantUserIdAll(viewer.getId(), resumeUser.getId())
+                  .stream().map(ReviewResponse::from).toList()
+                : List.of();
+        return ResumeResponse.of(resumeUser, resume, careers, certificates, totalHired, liked, reviews);
     }
 
     // 이력서 증명사진 등록/수정
@@ -237,7 +244,12 @@ public class ResumeService {
                             .stream().map(CareerResponse::from).toList();
                     int totalHired = applicationRepository
                             .findByApplicantUserIdAndStatus(resumeUser.getId(), ApplicationStatus.HIRED).size();
-                    return ResumeCardResponse.of(resumeUser, resume, careers, totalHired, likedIds.contains(resume.getId()));
+                    // 고용주 본인이 작성한 리뷰 조회
+                    List<ReviewResponse> reviews = (user != null)
+                            ? reviewRepository.findByReviewerIdAndApplicantUserIdAll(user.getId(), resumeUser.getId())
+                              .stream().map(ReviewResponse::from).toList()
+                            : List.of();
+                    return ResumeCardResponse.of(resumeUser, resume, careers, totalHired, likedIds.contains(resume.getId()), reviews);
                 })
                 .toList();
 

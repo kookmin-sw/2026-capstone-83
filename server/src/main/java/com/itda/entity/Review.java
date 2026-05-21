@@ -45,6 +45,11 @@ public class Review {
     @Column(nullable = false, length = 30)
     private ReviewTarget target;
 
+    /** 수정 메서드 */
+    public void update(List<ReviewTag> tags, String content) {
+        this.tags = tags;
+        this.content = content;
+    }
     /**
      * 선택된 태그 목록 (콤마 구분 문자열로 저장)
      * ex) "GOOD_PAY,KIND_EMPLOYER"

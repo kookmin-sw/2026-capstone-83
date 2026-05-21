@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
@@ -55,7 +57,7 @@ public class ReviewService {
         return ReviewResponse.from(saved);
     }
 
-    /** 고용주 → 구직자 리뷰 작성 */
+    // 고용주 → 구직자 리뷰 작성 (같은 고용주+구직자 조합이면 UPDATE)
     @Transactional
     public ReviewResponse writeEmployerReview(Long applicationId, User reviewer, ReviewRequest request) {
         Application application = getCompletedApplication(applicationId);
@@ -64,12 +66,23 @@ public class ReviewService {
         if (!employerUserId.equals(reviewer.getId())) {
             throw new AccessDeniedException("본인의 공고 근무자에게만 리뷰를 작성할 수 있습니다.");
         }
-        if (reviewRepository.existsByApplicationIdAndTarget(applicationId, ReviewTarget.EMPLOYER_TO_EMPLOYEE)) {
-            throw new DuplicateException("이미 해당 근무자에 대한 리뷰를 작성했습니다.");
-        }
 
         validateTags(request.tags(), ReviewTarget.EMPLOYER_TO_EMPLOYEE);
         validateContent(request);
+
+        Long applicantUserId = application.getApplicantUser().getId();
+
+        // 같은 고용주+구직자 조합 기존 리뷰 있으면 UPDATE
+        Optional<Review> existing = reviewRepository
+                .findByReviewerIdAndApplicantUserId(reviewer.getId(), applicantUserId);
+
+        if (existing.isPresent()) {
+            existing.get().update(
+                    request.tags() != null ? request.tags() : List.of(),
+                    request.content()
+            );
+            return ReviewResponse.from(reviewRepository.save(existing.get()));
+        }
 
         Review saved = reviewRepository.save(Review.builder()
                 .application(application)
@@ -80,6 +93,47 @@ public class ReviewService {
                 .build());
 
         return ReviewResponse.from(saved);
+    }
+    // ─── 리뷰 수정 ──────────────────────────────────────────
+    // 리뷰 수정 (작성자만)
+    @Transactional
+    public ReviewResponse updateReview(Long reviewId, User reviewer, ReviewRequest request) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
+
+        if (!review.getReviewer().getId().equals(reviewer.getId())) {
+            throw new AccessDeniedException("본인의 리뷰만 수정할 수 있습니다.");
+        }
+
+        validateTags(request.tags(), review.getTarget());
+        validateContent(request);
+
+        review.update(
+                request.tags() != null ? request.tags() : List.of(),
+                request.content()
+        );
+        return ReviewResponse.from(reviewRepository.save(review));
+    }
+
+    // 리뷰 삭제 (작성자만)
+    @Transactional
+    public void deleteReview(Long reviewId, User reviewer) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
+
+        if (!review.getReviewer().getId().equals(reviewer.getId())) {
+            throw new AccessDeniedException("본인의 리뷰만 삭제할 수 있습니다.");
+        }
+
+        reviewRepository.delete(review);
+    }
+
+
+
+    // 고용주가 특정 구직자에게 작성한 리뷰 조회 (이력서 노출용)
+    public List<ReviewResponse> getReviewsByReviewerAndApplicant(Long reviewerId, Long applicantUserId) {
+        return reviewRepository.findByReviewerIdAndApplicantUserIdAll(reviewerId, applicantUserId)
+                .stream().map(ReviewResponse::from).toList();
     }
 
     // ─── 리뷰 조회 ──────────────────────────────────────────

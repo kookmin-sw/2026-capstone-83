@@ -26,12 +26,11 @@ public class ResumeCardResponse {
     private String location;
     private int totalHired;
 
+    // 고용주 본인이 작성한 리뷰 (고용주만 노출)
+    private List<ReviewResponse> reviews;
 
-    public static ResumeCardResponse of(User user, Resume resume, List<CareerResponse> careers, int totalHired, boolean liked) {
-        // 나이 계산
+    public static ResumeCardResponse of(User user, Resume resume, List<CareerResponse> careers, int totalHired, boolean liked, List<ReviewResponse> reviews) {
         int age = LocalDate.now().getYear() - user.getBirth().getYear() + 1;
-
-        // 첫 번째 경력
         CareerResponse firstCareer = careers.isEmpty() ? null : careers.get(0);
 
         return ResumeCardResponse.builder()
@@ -47,6 +46,7 @@ public class ResumeCardResponse {
                 .location(user.getLocation())
                 .totalHired(totalHired)
                 .liked(liked)
+                .reviews(reviews)
                 .build();
     }
 }
