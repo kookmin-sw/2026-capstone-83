@@ -71,14 +71,14 @@ public class JobPostController {
     }
 
 
-    // 고용주 본인 공고 목록 조회 (커서 페이지네이션)
-    // GET /api/v1/employer/job-posts?cursor=&size=10
+    // 고용주 본인 공고 목록 조회 (커서 페이지네이션, status 필터 선택적)
     @GetMapping("/employer")
     public ResponseEntity<CursorPageResponse<JobPostCardResponse>> getJobPostsByEmployer(
             @RequestParam(required = false) Long cursor,
             @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String status,  // 추가
             @AuthenticationPrincipal User user) {
-        return ResponseEntity.ok(jobPostService.getJobPostsByEmployer(user.getId(), cursor, size));
+        return ResponseEntity.ok(jobPostService.getJobPostsByEmployer(user.getId(), cursor, size, status));
     }
 
     // 캘린더용 날짜 범위 공고 조회

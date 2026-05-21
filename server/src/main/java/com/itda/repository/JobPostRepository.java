@@ -31,7 +31,16 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JobPost
             @Param("userId") Long userId,
             @Param("cursor") Long cursor,
             org.springframework.data.domain.Pageable pageable);
-
+    // 고용주 공고 목록 조회 (커서 페이지네이션 + status 필터)
+    @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.user.id = :userId " +
+            "AND j.status = :status " +
+            "AND (:cursor IS NULL OR j.id < :cursor) " +
+            "ORDER BY j.id DESC")
+    List<JobPost> findByEmployerIdAndStatusWithCursor(
+            @Param("userId") Long userId,
+            @Param("status") JobPostStatus status,
+            @Param("cursor") Long cursor,
+            org.springframework.data.domain.Pageable pageable);
     // 캘린더용 날짜 범위 조회 (user.id 기준)
     @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.user.id = :userId " +
             "AND j.workDate BETWEEN :start AND :end")

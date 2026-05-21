@@ -132,11 +132,15 @@ public class JobPostService {
         ));
     }
 
-    // 고용주 본인 공고 목록 조회 (커서 페이지네이션)
-    public CursorPageResponse<JobPostCardResponse> getJobPostsByEmployer(Long userId, Long cursor, int size) {
+    // 고용주 본인 공고 목록 조회 (커서 페이지네이션, status 필터 선택적)
+    public CursorPageResponse<JobPostCardResponse> getJobPostsByEmployer(Long userId, Long cursor, int size, String status) {
         int fetchSize = size + 1;
-        List<JobPost> posts = jobPostRepository.findByEmployerIdWithCursor(
-                userId, cursor, PageRequest.of(0, fetchSize));
+
+        JobPostStatus statusEnum = (status != null) ? JobPostStatus.valueOf(status) : null;
+
+        List<JobPost> posts = (statusEnum != null)
+                ? jobPostRepository.findByEmployerIdAndStatusWithCursor(userId, statusEnum, cursor, PageRequest.of(0, fetchSize))
+                : jobPostRepository.findByEmployerIdWithCursor(userId, cursor, PageRequest.of(0, fetchSize));
 
         boolean hasNext = posts.size() > size;
         if (hasNext) {
@@ -150,6 +154,9 @@ public class JobPostService {
         Long nextCursor = hasNext ? content.get(content.size() - 1).id() : null;
         return CursorPageResponse.of(content, nextCursor, hasNext);
     }
+
+
+
 
     // 캘린더용 날짜 범위 공고 조회
     public List<JobPost> getJobPostsByDateRange(Long userId, LocalDate start, LocalDate end) {
