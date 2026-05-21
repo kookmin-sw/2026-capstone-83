@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { MoreVertical } from 'lucide-react';
+import { MoreHorizontal } from 'lucide-react';
 import styled from 'styled-components';
 
 export type CardMenuItemTone = 'default' | 'primary' | 'danger';
@@ -52,7 +52,7 @@ export const CardActionsMenu = ({ items, notice, ariaLabel = '작업 메뉴' }: 
   return (
     <S.Wrapper ref={ref} onClick={(e) => e.stopPropagation()}>
       <S.Trigger type="button" aria-label={ariaLabel} aria-expanded={open} onClick={handleToggle}>
-        <MoreVertical size={18} />
+        <MoreHorizontal size={18} />
       </S.Trigger>
 
       {open && (

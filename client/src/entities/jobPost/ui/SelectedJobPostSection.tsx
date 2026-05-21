@@ -37,11 +37,13 @@ const SelectedJobPostSection = ({ postId }: Props) => {
       <S.Container>
         {/* 타이틀(상세 링크) + 수정/삭제 */}
         <S.TitleRow>
-          <S.TitleLink onClick={() => navigate(`/jobpost/${postId}`)}>
+          <S.TitleLink
+            type="button"
+            onClick={() => navigate(`/jobpost/${postId}`)}
+            aria-label={`${jobPost.title} 공고 상세 보기`}
+          >
             <S.Title>{jobPost.title}</S.Title>
-            <S.ArrowButton>
-              <ArrowRight size={20} />
-            </S.ArrowButton>
+            <ArrowRight size={16} aria-hidden />
           </S.TitleLink>
           {role === 'EMPLOYER' && (
             <JobPostOwnerActions
@@ -127,36 +129,38 @@ const S = {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
-  `,
-  TitleLink: styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex: 1;
-    min-width: 0;
     gap: 8px;
+    min-width: 0;
+  `,
+  TitleLink: styled.button`
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: 0 1 auto;
+    min-width: 0;
+    max-width: 100%;
+    padding: 0;
+    border: none;
+    background: none;
     cursor: pointer;
+    text-align: left;
 
     &:hover {
-      opacity: 0.8;
+      opacity: 0.85;
+    }
+
+    svg {
+      flex-shrink: 0;
+      color: ${({ theme }) => theme.color.subText};
     }
   `,
-  Title: styled.h3`
+  Title: styled.span`
     font-size: ${({ theme }) => theme.fontSize.large};
     font-weight: ${({ theme }) => theme.fontWeight.bold};
     color: ${({ theme }) => theme.color.text};
-    margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-  `,
-  ArrowButton: styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 4px;
-    color: ${({ theme }) => theme.color.subText};
   `,
   ProgressSection: styled.div`
     display: flex;
