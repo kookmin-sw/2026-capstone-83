@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { useNotificationNavigate } from 'entities/notification/model/hooks/useNotificationNavigate';
 import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
 import { NotificationItem } from 'entities/notification/ui/NotificationItem';
 
@@ -11,7 +12,7 @@ export const NotificationDropdown = ({ onClose }: Props) => {
   const navigate = useNavigate();
   const notifications = useNotificationStore((s) => s.notifications);
   const markAllAsRead = useNotificationStore((s) => s.markAllAsRead);
-  const markAsRead = useNotificationStore((s) => s.markAsRead);
+  const { handleNotificationClick } = useNotificationNavigate();
 
   const recentNotifications = notifications.slice(0, 5);
 
@@ -28,10 +29,7 @@ export const NotificationDropdown = ({ onClose }: Props) => {
             <NotificationItem
               key={noti.id}
               data={noti}
-              onClick={() => {
-                markAsRead(noti.id);
-                onClose();
-              }}
+              onClick={() => handleNotificationClick(noti, { onAfterNavigate: onClose })}
             />
           ))
         ) : (

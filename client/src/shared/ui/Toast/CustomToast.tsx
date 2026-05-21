@@ -1,12 +1,15 @@
 import styled, { useTheme } from 'styled-components';
 import { UserPlus, CheckCircle, Pencil, Info } from 'lucide-react';
 import toast, { type Toast } from 'react-hot-toast';
-import type { NotificationType } from 'entities/notification/model/types/notification.type';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from 'entities/auth/model/store/authStore';
+import { getNotificationNavigatePath } from 'entities/notification/lib/getNotificationNavigatePath';
+import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
+import type { Notification, NotificationType } from 'entities/notification/model/types/notification.type';
 
 interface Props {
   t: Toast;
-  message: string;
-  type: NotificationType;
+  notification: Notification;
 }
 
 const ICON_MAP: Record<NotificationType, typeof UserPlus> = {
@@ -18,17 +21,35 @@ const ICON_MAP: Record<NotificationType, typeof UserPlus> = {
   WORK_COMPLETED: Pencil,
 };
 
-export const CustomToast = ({ t, message, type }: Props) => {
+export const CustomToast = ({ t, notification }: Props) => {
   const theme = useTheme();
+  const navigate = useNavigate();
+  const role = useAuthStore((s) => s.role);
+  const markAsRead = useNotificationStore((s) => s.markAsRead);
+  const { type, message } = notification;
   const Icon = ICON_MAP[type];
   const isHighlight = type === 'NEW_APPLICATION' || type === 'OFFER_ACCEPTED' || type === 'HIRED';
   const iconColor = isHighlight ? theme.color.primary : theme.color.subText;
+
+  const handleClick = () => {
+    markAsRead(notification.id);
+    navigate(getNotificationNavigatePath(notification.type, role));
+    toast.dismiss(t.id);
+  };
 
   return (
     <S.Wrapper
       $visible={t.visible}
       $isHighlight={isHighlight}
-      onClick={() => toast.dismiss(t.id)}
+      onClick={handleClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
     >
       <S.IconCircle $isHighlight={isHighlight}>
         <Icon size={18} color={iconColor} />
