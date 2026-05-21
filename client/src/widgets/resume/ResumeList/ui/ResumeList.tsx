@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { useAuthStore } from 'entities/auth/model/store/authStore';
 import { ResumeCard } from 'entities/resume/ui/ResumeCard';
 import { fetchResumes, fetchMockResumes } from 'entities/resume/api/resume.api';
 import { toResumeCardItem } from 'entities/resume/lib/toResumeCardItem';
 import type { ResumeCardItem } from 'entities/resume/model/types/resume.type';
 import LikeResumeButton from 'features/like/LikeResumeButton';
+import { OfferFromResumeButton } from 'features/offer/OfferFromResumeButton';
 import Loading from 'shared/ui/Loading/Loading';
 import Empty from 'shared/ui/Empty/Empty';
 import { USE_MOCK } from 'shared/config/env';
 
 export const ResumeList = () => {
+  const role = useAuthStore((s) => s.role);
+  const isEmployer = role === 'EMPLOYER';
   const [resumes, setResumes] = useState<ResumeCardItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -39,11 +43,21 @@ export const ResumeList = () => {
           key={resume.resumeId}
           data={resume}
           extraActions={
-            <LikeResumeButton
-              resumeId={resume.resumeId}
-              liked={resume.liked}
-              variant="icon"
-            />
+            <>
+              <LikeResumeButton
+                resumeId={resume.resumeId}
+                liked={resume.liked}
+                variant="icon"
+              />
+              {isEmployer && resume.userId != null && (
+                <OfferFromResumeButton
+                  userId={resume.userId}
+                  applicantName={resume.name}
+                  buttonSize="small"
+                  stopPropagation
+                />
+              )}
+            </>
           }
         />
       ))}

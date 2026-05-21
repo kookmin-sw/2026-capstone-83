@@ -2,6 +2,7 @@ import { authClient, httpClient } from "shared/api/httpClient";
 import { useAuthStore } from "entities/auth/model/store/authStore";
 import type {
   GetJobPostsParams,
+  GetOfferableJobPostsParams,
   JobPost,
   JobPostCreate,
   JobPostCreateSubmit,
@@ -98,6 +99,16 @@ export const fetchJobPostsByEmployer = async (data: GetJobPostsParams): Promise<
   );
   return response.data;
 }
+
+/** 제안 가능 공고 목록 (OPEN + 해당 구직자와 미연결) */
+export const fetchOfferableJobPosts = async (
+  params: GetOfferableJobPostsParams,
+): Promise<JobPostListCursor> => {
+  const response = await authClient.get<JobPostListCursor>('/api/v1/job-posts/employer/offerable', {
+    params,
+  });
+  return response.data;
+};
 
 
 // 공고 좋아요 토글

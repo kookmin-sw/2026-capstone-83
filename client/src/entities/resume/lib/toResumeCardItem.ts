@@ -11,6 +11,7 @@ export function toResumeCardItem(
 
   return {
     resumeId: resume.resumeId ?? resume.id ?? 0,
+    userId: resume.userId,
     profileImageUrl: resume.profileUrl ?? resume.profileImageUrl ?? '',
     name: resume.name,
     gender: resume.gender,

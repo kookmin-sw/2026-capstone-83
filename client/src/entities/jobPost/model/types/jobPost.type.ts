@@ -229,3 +229,8 @@ export interface JobPostListOffset {
 //커서 응답
 export type JobPostListCursor = CursorResponse<JobPost>;
 
+/** 제안 가능 공고 목록 (고용주 OPEN + 구직자 미연결) */
+export interface GetOfferableJobPostsParams extends CursorParams {
+  applicantUserId: number;
+}
+

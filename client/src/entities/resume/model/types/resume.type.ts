@@ -58,6 +58,8 @@ import type { CertificateResponse } from 'shared/types/certificate';
 
 export interface ResumeResponse {
   id?: number;
+  resumeId?: number;
+  userId?: number;
   name: string;
   gender: string;
   birthDate?: string;
@@ -81,6 +83,7 @@ import type { CursorParams, CursorResponse } from 'shared/api/types';
 
 export interface ResumeCardItem {
   resumeId: number;
+  userId?: number;
   profileImageUrl: string;
   name: string;
   gender: string;

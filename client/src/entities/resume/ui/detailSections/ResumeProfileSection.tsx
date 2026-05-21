@@ -5,10 +5,15 @@ import Loading from 'shared/ui/Loading/Loading';
 
 interface Props {
   data: ResumeResponse | null;
-  actions?: React.ReactNode; // 회원정보 수정 버튼 슬롯
+  /** 이름 옆 (좋아요 등) */
+  nameActions?: React.ReactNode;
+  /** 프로필 사진 아래 (고용 제안 등) */
+  profileActions?: React.ReactNode;
+  /** @deprecated nameActions + profileActions 사용 */
+  actions?: React.ReactNode;
 }
 
-export const ResumeProfileSection = ({ data, actions }: Props) => {
+export const ResumeProfileSection = ({ data, nameActions, profileActions, actions }: Props) => {
   if (!data) {
     return <Loading message="프로필 정보를 불러오는 중..." />;
   }
@@ -22,22 +27,43 @@ export const ResumeProfileSection = ({ data, actions }: Props) => {
   const birthYear = birthRaw ? new Date(birthRaw).getFullYear() : '';
   const age = birthYear ? new Date().getFullYear() - Number(birthYear) + 1 : '';
 
+  const useSplitLayout = nameActions != null || profileActions != null;
+
   return (
     <Section>
       <S.ProfileLayout>
-        <S.ProfileImage>
-          <img
-            src={profileUrl || 'https://api.dicebear.com/7.x/identicon/svg?seed=user'}
-            alt="프로필 이미지"
-          />
-        </S.ProfileImage>
+        <S.ProfileColumn>
+          <S.ProfileImage>
+            <img
+              src={profileUrl || 'https://api.dicebear.com/7.x/identicon/svg?seed=user'}
+              alt="프로필 이미지"
+            />
+          </S.ProfileImage>
+          {useSplitLayout && profileActions && (
+            <S.ProfileActionSlot>{profileActions}</S.ProfileActionSlot>
+          )}
+        </S.ProfileColumn>
 
         <S.ProfileInfo>
-          <S.NameRow>
-            <S.Name>{name}</S.Name>
-            <S.SubInfo>{genderLabel} {age}세 / {birthYear}년생</S.SubInfo>
-            {actions && <S.ActionSlot>{actions}</S.ActionSlot>}
-          </S.NameRow>
+          {useSplitLayout ? (
+            <S.NameBlock>
+              <S.NameLine>
+                <S.Name>{name}</S.Name>
+                {nameActions && <S.NameActionSlot>{nameActions}</S.NameActionSlot>}
+              </S.NameLine>
+              <S.SubInfo>
+                {genderLabel} {age}세 / {birthYear}년생
+              </S.SubInfo>
+            </S.NameBlock>
+          ) : (
+            <S.NameRow>
+              <S.Name>{name}</S.Name>
+              <S.SubInfo>
+                {genderLabel} {age}세 / {birthYear}년생
+              </S.SubInfo>
+              {actions && <S.ActionSlot>{actions}</S.ActionSlot>}
+            </S.NameRow>
+          )}
 
           <S.ContactList>
             <S.ContactItem>
@@ -63,21 +89,54 @@ const S = {
   ProfileLayout: styled.div`
     display: flex;
     gap: 32px;
-    @media (max-width: 768px) { flex-direction: column; align-items: center; }
+    @media (max-width: 768px) {
+      flex-direction: column;
+      align-items: center;
+    }
+  `,
+  ProfileColumn: styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    flex-shrink: 0;
+    width: 160px;
+
+    @media (max-width: 768px) {
+      width: 100%;
+      max-width: 200px;
+    }
   `,
   ProfileImage: styled.div`
-    width: 160px;
+    width: 100%;
     height: 180px;
     border-radius: ${({ theme }) => theme.borderRadius.medium};
     overflow: hidden;
-    flex-shrink: 0;
-    img { width: 100%; height: 100%; object-fit: cover; }
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  `,
+  ProfileActionSlot: styled.div`
+    margin-top: 12px;
+    width: 100%;
   `,
   ProfileInfo: styled.div`
     flex: 1;
     display: flex;
     flex-direction: column;
     gap: 16px;
+  `,
+  NameBlock: styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  `,
+  NameLine: styled.div`
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
   `,
   NameRow: styled.div`
     display: flex;
@@ -88,10 +147,16 @@ const S = {
   Name: styled.h2`
     font-size: ${({ theme }) => theme.fontSize.large};
     font-weight: ${({ theme }) => theme.fontWeight.bold};
+    margin: 0;
   `,
   SubInfo: styled.span`
     font-size: ${({ theme }) => theme.fontSize.small};
     color: ${({ theme }) => theme.color.subText};
+  `,
+  NameActionSlot: styled.div`
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
   `,
   ActionSlot: styled.div`
     margin-left: auto;

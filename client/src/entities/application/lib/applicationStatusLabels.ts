@@ -55,7 +55,7 @@ export type EmployerApplicantTab = 'action' | 'active' | 'closed';
 export const EMPLOYER_APPLICANT_TABS: EmployerApplicantTab[] = ['action', 'active', 'closed'];
 
 export const EMPLOYER_APPLICANT_TAB_LABEL: Record<EmployerApplicantTab, string> = {
-  action: '처리 필요',
+  action: '지원·대기',
   active: '채용·근무',
   closed: '종료',
 };

@@ -174,6 +174,22 @@ export const useOfferJobPost = (jobPostId: number) => {
     mutationFn: (userId: number) => offerJobPost(jobPostId, userId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applicants', jobPostId] });
+      queryClient.invalidateQueries({ queryKey: ['offerableJobPosts'] });
+    },
+  });
+};
+
+/** 고용주 채용 제안 (공고·구직자 선택 후) */
+export const useOfferJobPostToApplicant = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ jobPostId, userId }: { jobPostId: number; userId: number }) =>
+      offerJobPost(jobPostId, userId),
+    onSuccess: (_data, { jobPostId }) => {
+      queryClient.invalidateQueries({ queryKey: ['applicants', jobPostId] });
+      queryClient.invalidateQueries({ queryKey: ['offerableJobPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['applications'] });
     },
   });
 };
