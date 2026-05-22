@@ -37,6 +37,17 @@ export const fetchReviewsByApplication = async (applicationId: number): Promise<
   return response.data;
 };
 
+/** 리뷰 수정 (작성자만) */
+export const updateReview = async (reviewId: number, data: ReviewRequest): Promise<ReviewResponse> => {
+  const response = await authClient.put<ReviewResponse>(`/api/v1/reviews/${reviewId}`, data);
+  return response.data;
+};
+
+/** 리뷰 삭제 (작성자만) */
+export const deleteReview = async (reviewId: number): Promise<void> => {
+  await authClient.delete(`/api/v1/reviews/${reviewId}`);
+};
+
 /** 사용 가능한 태그 목록 조회 */
 export const fetchReviewTags = async (target: ReviewTarget): Promise<{ name: string; label: string }[]> => {
   const response = await authClient.get<{ target: string; tags: { name: string; label: string }[] }>('/api/v1/reviews/tags', {

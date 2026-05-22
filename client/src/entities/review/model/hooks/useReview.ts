@@ -2,6 +2,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   writeEmployeeReview,
   writeEmployerReview,
+  updateReview,
+  deleteReview,
   fetchWorkplaceReviews,
   fetchEmployeeReviews,
   fetchMyReviews,
@@ -74,6 +76,31 @@ export const useWriteEmployerReview = () => {
   return useMutation({
     mutationFn: ({ applicationId, data }: { applicationId: number; data: ReviewRequest }) =>
       writeEmployerReview(applicationId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+    },
+  });
+};
+
+/** 리뷰 수정 */
+export const useUpdateReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ reviewId, data }: { reviewId: number; data: ReviewRequest }) =>
+      updateReview(reviewId, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews'] });
+    },
+  });
+};
+
+/** 리뷰 삭제 */
+export const useDeleteReview = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (reviewId: number) => deleteReview(reviewId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
     },

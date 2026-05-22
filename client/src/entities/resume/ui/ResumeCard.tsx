@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import styled from 'styled-components';
 import type { ResumeCardItem } from '../model/types/resume.type';
 import { MapPin } from 'lucide-react';
@@ -19,7 +19,6 @@ const formatDuration = (years: number, months: number) => {
 const DEFAULT_AVATAR = 'https://api.dicebear.com/7.x/identicon/svg?seed=default';
 
 export const ResumeCard = ({ data, extraActions }: Props) => {
-  const navigate = useNavigate();
   const {
     resumeId,
     name,
@@ -37,12 +36,9 @@ export const ResumeCard = ({ data, extraActions }: Props) => {
   const hasCareer = firstCareerTitle != null;
 
   return (
-    <CardWrapper onClick={() => navigate(`/resume/${resumeId}`)}>
+    <CardWrapper to={`/resume/${resumeId}`}>
       <ProfileImage>
-        <img
-          src={profileImageUrl || DEFAULT_AVATAR}
-          alt={`${name} 프로필`}
-        />
+        <img src={profileImageUrl || DEFAULT_AVATAR} alt={`${name} 프로필`} />
       </ProfileImage>
 
       <CardContent>
@@ -50,7 +46,9 @@ export const ResumeCard = ({ data, extraActions }: Props) => {
           <Name>
             {name}({genderLabel}, {age}세)
           </Name>
-          {extraActions && <ActionGroup>{extraActions}</ActionGroup>}
+          {extraActions && (
+            <ActionGroup onClick={(e) => e.preventDefault()}>{extraActions}</ActionGroup>
+          )}
         </NameRow>
 
         {hasCareer && (
@@ -72,7 +70,7 @@ export const ResumeCard = ({ data, extraActions }: Props) => {
   );
 };
 
-const CardWrapper = styled.div`
+const CardWrapper = styled(Link)`
   display: flex;
   align-items: center;
   gap: 16px;
@@ -80,6 +78,8 @@ const CardWrapper = styled.div`
   background-color: ${({ theme }) => theme.color.white};
   border-radius: ${({ theme }) => theme.borderRadius.medium};
   box-shadow: ${({ theme }) => theme.shadow.default};
+  text-decoration: none;
+  color: inherit;
   cursor: pointer;
   transition: transform 0.15s ease;
 
