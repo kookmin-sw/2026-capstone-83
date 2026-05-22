@@ -28,6 +28,8 @@ import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 
 interface Props {
   applicationId: number;
+  /** false: 조회만 (근무 완료 전 지원자·과거 리뷰 확인용) */
+  canWrite?: boolean;
 }
 
 const toEmployerTags = (tags: ReviewResponse['tags']): EmployerReviewTag[] =>
@@ -37,8 +39,8 @@ const toEmployerTags = (tags: ReviewResponse['tags']): EmployerReviewTag[] =>
     ),
   );
 
-export const EmployerReviewSection = ({ applicationId }: Props) => {
-  const { data: existingReviews } = useReviewsByApplication(applicationId);
+export const EmployerReviewSection = ({ applicationId, canWrite = true }: Props) => {
+  const { data: existingReviews, isLoading } = useReviewsByApplication(applicationId);
   const { mutate: writeReview, isPending: isWriting } = useWriteEmployerReview();
   const { mutate: updateReview, isPending: isUpdating } = useUpdateReview();
   const { mutate: deleteReview, isPending: isDeleting } = useDeleteReview();
@@ -57,13 +59,13 @@ export const EmployerReviewSection = ({ applicationId }: Props) => {
       setMode('view');
       setSelectedTags(toEmployerTags(employerReview.tags));
       setContent(employerReview.content ?? '');
-    } else {
+    } else if (canWrite) {
       setMode('create');
       setSelectedTags([]);
       setContent('');
     }
     setIsTagPickerOpen(false);
-  }, [employerReview]);
+  }, [employerReview, canWrite]);
 
   const isPending = isWriting || isUpdating || isDeleting;
 
@@ -142,34 +144,40 @@ export const EmployerReviewSection = ({ applicationId }: Props) => {
     });
   };
 
+  if (isLoading) return null;
+
+  if (!canWrite && !employerReview) return null;
+
   if (mode === 'view' && employerReview) {
     return (
       <>
         <S.Wrapper>
           <S.ViewHeader>
             <S.ViewLabel>작성한 리뷰</S.ViewLabel>
-            <S.ViewActions>
-              <Button
-                type="button"
-                scheme="secondary"
-                buttonSize="xsmall"
-                fontSize="xsmall"
-                onClick={startEdit}
-              >
-                <Pencil size={12} />
-                수정
-              </Button>
-              <Button
-                type="button"
-                scheme="secondary"
-                buttonSize="xsmall"
-                fontSize="xsmall"
-                onClick={() => setIsDeleteModalOpen(true)}
-              >
-                <Trash2 size={12} />
-                삭제
-              </Button>
-            </S.ViewActions>
+            {canWrite && (
+              <S.ViewActions>
+                <Button
+                  type="button"
+                  scheme="secondary"
+                  buttonSize="xsmall"
+                  fontSize="xsmall"
+                  onClick={startEdit}
+                >
+                  <Pencil size={12} />
+                  수정
+                </Button>
+                <Button
+                  type="button"
+                  scheme="secondary"
+                  buttonSize="xsmall"
+                  fontSize="xsmall"
+                  onClick={() => setIsDeleteModalOpen(true)}
+                >
+                  <Trash2 size={12} />
+                  삭제
+                </Button>
+              </S.ViewActions>
+            )}
           </S.ViewHeader>
           <S.TagRow>
             {toEmployerTags(employerReview.tags).map((tag) => {
@@ -209,14 +217,18 @@ export const EmployerReviewSection = ({ applicationId }: Props) => {
           </ModalContent>
         </Modal>
 
-        <ErrorAlertModal
-          isOpen={errorModal.isOpen}
-          message={errorModal.errorMessage}
-          onClose={errorModal.close}
-        />
+        {canWrite && (
+          <ErrorAlertModal
+            isOpen={errorModal.isOpen}
+            message={errorModal.errorMessage}
+            onClose={errorModal.close}
+          />
+        )}
       </>
     );
   }
+
+  if (!canWrite) return null;
 
   return (
     <>

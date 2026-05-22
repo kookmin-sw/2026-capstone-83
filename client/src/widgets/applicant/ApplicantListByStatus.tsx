@@ -144,9 +144,10 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
               data={applicant}
               actions={renderActions(status, applicant)}
               reviewSlot={
-                status === 'COMPLETED' ? (
-                  <EmployerReviewSection applicationId={applicant.applicationId} />
-                ) : undefined
+                <EmployerReviewSection
+                  applicationId={applicant.applicationId}
+                  canWrite={status === 'COMPLETED'}
+                />
               }
               onClick={() => handleCardClick(applicant)}
             />
