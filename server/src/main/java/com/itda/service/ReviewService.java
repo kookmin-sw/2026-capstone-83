@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
+
 
 
 @Service
@@ -154,9 +156,26 @@ public class ReviewService {
     }
 
     public List<ReviewResponse> getReviewsByApplication(Long applicationId) {
-        return reviewRepository.findAll().stream()
+        Application application = applicationRepository.findById(applicationId)
+                .orElseThrow(() -> new NotFoundException("지원 내역을 찾을 수 없습니다."));
+
+        // 해당 application에 직접 연결된 리뷰
+        List<Review> direct = reviewRepository.findAll().stream()
                 .filter(r -> r.getApplication().getId().equals(applicationId))
-                .map(ReviewResponse::from).toList();
+                .toList();
+
+        // 고용주+구직자 조합으로 EMPLOYER_TO_EMPLOYEE 리뷰 조회
+        Long employerUserId = application.getJobPost().getWorkplace().getEmployer().getUser().getId();
+        Long applicantUserId = application.getApplicantUser().getId();
+        List<Review> employerReviews = reviewRepository
+                .findEmployerReviewByEmployerAndApplicant(employerUserId, applicantUserId);
+
+        // 중복 제거 후 합치기
+        List<Review> merged = Stream.concat(direct.stream(), employerReviews.stream())
+                .distinct()
+                .toList();
+
+        return merged.stream().map(ReviewResponse::from).toList();
     }
 
     public List<ReviewTag> getAvailableTags(ReviewTarget target) {

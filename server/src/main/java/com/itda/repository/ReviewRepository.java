@@ -18,7 +18,17 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     /** application + 방향으로 리뷰 조회 */
     Optional<Review> findByApplicationIdAndTarget(Long applicationId, ReviewTarget target);
-
+    // 고용주+구직자 조합으로 EMPLOYER_TO_EMPLOYEE 리뷰 조회 (application 무관)
+    @Query("""
+    SELECT r FROM Review r
+    WHERE r.reviewer.id = :employerUserId
+      AND r.application.applicantUser.id = :applicantUserId
+      AND r.target = 'EMPLOYER_TO_EMPLOYEE'
+    ORDER BY r.createdAt DESC
+    """)
+    List<Review> findEmployerReviewByEmployerAndApplicant(
+            @Param("employerUserId") Long employerUserId,
+            @Param("applicantUserId") Long applicantUserId);
     /** 특정 사업장에 달린 구직자→사업장 리뷰 목록 (공고 → workplace 연결) */
     @Query("""
         SELECT r FROM Review r
