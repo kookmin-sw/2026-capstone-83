@@ -46,7 +46,8 @@ public class Review {
     private ReviewTarget target;
 
     /** 수정 메서드 */
-    public void update(List<ReviewTag> tags, String content) {
+    public void update(Application application, List<ReviewTag> tags, String content) {
+        this.application = application;
         this.tags = tags;
         this.content = content;
     }

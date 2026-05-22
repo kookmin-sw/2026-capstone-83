@@ -35,14 +35,15 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
             @Param("workplaceId") Long workplaceId,
             @Param("applicantUserId") Long applicantUserId);
 
-    // 고용주+구직자 조합으로 기존 리뷰 조회 (재리뷰 시 UPDATE용)
+    // 고용주+구직자 조합으로 기존 리뷰 조회 (재리뷰 시 UPDATE용, LIMIT 1)
     @Query("""
-        SELECT r FROM Review r
-        WHERE r.reviewer.id = :reviewerId
-          AND r.application.applicantUser.id = :applicantUserId
-          AND r.target = 'EMPLOYER_TO_EMPLOYEE'
-        ORDER BY r.createdAt DESC
-        """)
+    SELECT r FROM Review r
+    WHERE r.reviewer.id = :reviewerId
+      AND r.application.applicantUser.id = :applicantUserId
+      AND r.target = 'EMPLOYER_TO_EMPLOYEE'
+    ORDER BY r.createdAt DESC
+    LIMIT 1
+    """)
     Optional<Review> findByReviewerIdAndApplicantUserId(
             @Param("reviewerId") Long reviewerId,
             @Param("applicantUserId") Long applicantUserId);

@@ -54,6 +54,7 @@ public class ReviewService {
 
         if (existing.isPresent()) {
             existing.get().update(
+                    application,  // application 갱신 추가
                     request.tags() != null ? request.tags() : List.of(),
                     request.content()
             );
@@ -92,6 +93,7 @@ public class ReviewService {
 
         if (existing.isPresent()) {
             existing.get().update(
+                    application,  // application 갱신 추가
                     request.tags() != null ? request.tags() : List.of(),
                     request.content()
             );
@@ -123,6 +125,7 @@ public class ReviewService {
         validateContent(request);
 
         review.update(
+                review.getApplication(),  // 기존 application 유지
                 request.tags() != null ? request.tags() : List.of(),
                 request.content()
         );
