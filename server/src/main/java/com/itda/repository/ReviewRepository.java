@@ -13,23 +13,43 @@ import java.util.Optional;
 @Repository
 public interface ReviewRepository extends JpaRepository<Review, Long> {
 
-    /** application + 방향으로 이미 작성한 리뷰가 있는지 확인 */
+    // ─── 존재 여부 확인 ───────────────────────────────────────
+
+    // application + 방향으로 이미 작성한 리뷰가 있는지 확인
     boolean existsByApplicationIdAndTarget(Long applicationId, ReviewTarget target);
 
-    /** application + 방향으로 리뷰 조회 */
+    // ─── 단건 조회 ───────────────────────────────────────────
+
+    // application + 방향으로 리뷰 조회
     Optional<Review> findByApplicationIdAndTarget(Long applicationId, ReviewTarget target);
-    // 고용주+구직자 조합으로 EMPLOYER_TO_EMPLOYEE 리뷰 조회 (application 무관)
+
+    // 사업장+구직자 조합으로 EMPLOYEE_TO_WORKPLACE 리뷰 조회 (upsert용)
     @Query("""
-    SELECT r FROM Review r
-    WHERE r.reviewer.id = :employerUserId
-      AND r.application.applicantUser.id = :applicantUserId
-      AND r.target = 'EMPLOYER_TO_EMPLOYEE'
-    ORDER BY r.createdAt DESC
-    """)
-    List<Review> findEmployerReviewByEmployerAndApplicant(
-            @Param("employerUserId") Long employerUserId,
+        SELECT r FROM Review r
+        WHERE r.application.jobPost.workplace.id = :workplaceId
+          AND r.application.applicantUser.id = :applicantUserId
+          AND r.target = 'EMPLOYEE_TO_WORKPLACE'
+        ORDER BY r.createdAt DESC
+        """)
+    Optional<Review> findEmployeeReviewByWorkplaceAndApplicant(
+            @Param("workplaceId") Long workplaceId,
             @Param("applicantUserId") Long applicantUserId);
-    /** 특정 사업장에 달린 구직자→사업장 리뷰 목록 (공고 → workplace 연결) */
+
+    // 고용주+구직자 조합으로 기존 리뷰 조회 (재리뷰 시 UPDATE용)
+    @Query("""
+        SELECT r FROM Review r
+        WHERE r.reviewer.id = :reviewerId
+          AND r.application.applicantUser.id = :applicantUserId
+          AND r.target = 'EMPLOYER_TO_EMPLOYEE'
+        ORDER BY r.createdAt DESC
+        """)
+    Optional<Review> findByReviewerIdAndApplicantUserId(
+            @Param("reviewerId") Long reviewerId,
+            @Param("applicantUserId") Long applicantUserId);
+
+    // ─── 목록 조회 ───────────────────────────────────────────
+
+    // 특정 사업장에 달린 구직자→사업장 리뷰 목록
     @Query("""
         SELECT r FROM Review r
         WHERE r.application.jobPost.workplace.id = :workplaceId
@@ -38,7 +58,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         """)
     List<Review> findWorkplaceReviews(@Param("workplaceId") Long workplaceId);
 
-    /** 특정 구직자에 달린 고용주→구직자 리뷰 목록 */
+    // 특정 구직자에 달린 고용주→구직자 리뷰 목록
     @Query("""
         SELECT r FROM Review r
         WHERE r.application.applicantUser.id = :userId
@@ -47,30 +67,30 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
         """)
     List<Review> findEmployeeReviews(@Param("userId") Long userId);
 
-    /** 내가 작성한 리뷰 목록 */
-    List<Review> findByReviewerIdOrderByCreatedAtDesc(Long reviewerId);
-
-    // 고용주+구직자 조합으로 기존 리뷰 조회 (재리뷰 시 UPDATE용)
+    // 고용주+구직자 조합으로 EMPLOYER_TO_EMPLOYEE 리뷰 조회 (application 무관)
     @Query("""
-    SELECT r FROM Review r
-    WHERE r.reviewer.id = :reviewerId
-      AND r.application.applicantUser.id = :applicantUserId
-      AND r.target = 'EMPLOYER_TO_EMPLOYEE'
-    ORDER BY r.createdAt DESC
-    """)
-    Optional<Review> findByReviewerIdAndApplicantUserId(
-            @Param("reviewerId") Long reviewerId,
+        SELECT r FROM Review r
+        WHERE r.reviewer.id = :employerUserId
+          AND r.application.applicantUser.id = :applicantUserId
+          AND r.target = 'EMPLOYER_TO_EMPLOYEE'
+        ORDER BY r.createdAt DESC
+        """)
+    List<Review> findEmployerReviewByEmployerAndApplicant(
+            @Param("employerUserId") Long employerUserId,
             @Param("applicantUserId") Long applicantUserId);
 
     // 고용주가 특정 구직자에게 작성한 리뷰 조회 (이력서 노출용)
     @Query("""
-    SELECT r FROM Review r
-    WHERE r.reviewer.id = :reviewerId
-      AND r.application.applicantUser.id = :applicantUserId
-      AND r.target = 'EMPLOYER_TO_EMPLOYEE'
-    ORDER BY r.createdAt DESC
-    """)
+        SELECT r FROM Review r
+        WHERE r.reviewer.id = :reviewerId
+          AND r.application.applicantUser.id = :applicantUserId
+          AND r.target = 'EMPLOYER_TO_EMPLOYEE'
+        ORDER BY r.createdAt DESC
+        """)
     List<Review> findByReviewerIdAndApplicantUserIdAll(
             @Param("reviewerId") Long reviewerId,
             @Param("applicantUserId") Long applicantUserId);
+
+    // 내가 작성한 리뷰 목록
+    List<Review> findByReviewerIdOrderByCreatedAtDesc(Long reviewerId);
 }

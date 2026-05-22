@@ -33,7 +33,7 @@ public class ReviewService {
 
     // ─── 리뷰 작성 ──────────────────────────────────────────
 
-    /** 구직자 → 사업장 리뷰 작성 */
+    /** 구직자 → 사업장 리뷰 작성 (같은 사업장+구직자 조합이면 UPDATE) */
     @Transactional
     public ReviewResponse writeEmployeeReview(Long applicationId, User reviewer, ReviewRequest request) {
         Application application = getCompletedApplication(applicationId);
@@ -41,12 +41,24 @@ public class ReviewService {
         if (!application.getApplicantUser().getId().equals(reviewer.getId())) {
             throw new AccessDeniedException("본인의 근무 내역에만 리뷰를 작성할 수 있습니다.");
         }
-        if (reviewRepository.existsByApplicationIdAndTarget(applicationId, ReviewTarget.EMPLOYEE_TO_WORKPLACE)) {
-            throw new DuplicateException("이미 해당 근무에 대한 리뷰를 작성했습니다.");
-        }
 
         validateTags(request.tags(), ReviewTarget.EMPLOYEE_TO_WORKPLACE);
         validateContent(request);
+
+        Long workplaceId = application.getJobPost().getWorkplace().getId();
+        Long applicantUserId = application.getApplicantUser().getId();
+
+        // 같은 사업장+구직자 조합 기존 리뷰 있으면 UPDATE
+        Optional<Review> existing = reviewRepository
+                .findEmployeeReviewByWorkplaceAndApplicant(workplaceId, applicantUserId);
+
+        if (existing.isPresent()) {
+            existing.get().update(
+                    request.tags() != null ? request.tags() : List.of(),
+                    request.content()
+            );
+            return ReviewResponse.from(reviewRepository.save(existing.get()));
+        }
 
         Review saved = reviewRepository.save(Review.builder()
                 .application(application)
