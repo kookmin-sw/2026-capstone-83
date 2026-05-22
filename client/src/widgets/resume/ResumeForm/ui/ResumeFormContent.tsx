@@ -1,4 +1,6 @@
 import { useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import styled from 'styled-components';
 import { useResume } from 'entities/resume/model/hooks/useResume';
 import { useUpdateResume } from 'entities/resume/model/hooks/useResume';
@@ -16,9 +18,13 @@ import Loading from 'shared/ui/Loading/Loading';
 import Empty from 'shared/ui/Empty/Empty';
 import InputHeader from 'shared/ui/Input/InputHeader';
 
+const RESUME_VIEW_PATH = '/dashboard/resume';
+
 export const ResumeFormContent = () => {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { data: resume, isLoading, isError } = useResume();
-  const { mutate: updateResume, isPending } = useUpdateResume();
+  const { mutateAsync: updateResume, isPending } = useUpdateResume();
   const errorModal = useErrorAlertModal();
 
   const { register, handleSubmit } = useForm<ResumeRequest>({
@@ -29,13 +35,14 @@ export const ResumeFormContent = () => {
     } : undefined,
   });
 
-  const onSubmit = (data: ResumeRequest) => {
-    updateResume(data, {
-      onSuccess: () => {
-        alert('이력서가 저장되었습니다.');
-      },
-      onError: errorModal.onMutationError('이력서 저장에 실패했습니다.'),
-    });
+  const onSubmit = async (data: ResumeRequest) => {
+    try {
+      await updateResume(data);
+      await queryClient.refetchQueries({ queryKey: ['resume'] });
+      navigate(RESUME_VIEW_PATH, { replace: true });
+    } catch (error) {
+      errorModal.onMutationError('이력서 저장에 실패했습니다.')(error);
+    }
   };
 
   if (isLoading) return <Loading message="이력서를 불러오는 중입니다..." />;

@@ -30,8 +30,9 @@ export const useUpdateResume = () => {
 
   return useMutation({
     mutationFn: (data: ResumeRequest) => updateResume(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['resume'] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ['resume'] });
+      await queryClient.refetchQueries({ queryKey: ['resume'] });
     },
   });
 };
