@@ -23,21 +23,10 @@ public enum ReviewTag {
     HARD_WORK("업무 강도가 너무 높았어요", ReviewTarget.EMPLOYEE_TO_WORKPLACE),
     BAD_LOCATION("교통이 불편했어요", ReviewTarget.EMPLOYEE_TO_WORKPLACE),
 
-    // ── 고용주 → 구직자 긍정 태그 ──────────────────────────────
-    PUNCTUAL("시간을 잘 지켜요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),
-    HARD_WORKING("성실하게 일해요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),
-    QUICK_LEARNER("습득이 빨라요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),
-    GOOD_MANNER("매너가 좋아요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),
-    RESPONSIBLE("책임감이 강해요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),
-    WANT_REHIRE("다시 함께 일하고 싶어요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),
-
-    // ── 고용주 → 구직자 부정 태그 ──────────────────────────────
-    LATE("시간을 잘 안 지켜요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),
-    LAZY("성실하지 않아요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),
-    SLOW_LEARNER("습득이 느려요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),
-    BAD_MANNER("매너가 아쉬워요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),
-    IRRESPONSIBLE("책임감이 부족해요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),
-    NO_REHIRE("다시 함께 일하기 어려워요", ReviewTarget.EMPLOYER_TO_EMPLOYEE);
+    // ── 고용주 → 구직자 태그 ──────────────────────────────
+    GOOD("좋아요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),
+    NEUTRAL("무난해요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),
+    BAD("싫어요", ReviewTarget.EMPLOYER_TO_EMPLOYEE),;
 
     private final String label;
     private final ReviewTarget target;

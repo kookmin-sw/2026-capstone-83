@@ -84,4 +84,17 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
     List<Application> findCompletableApplications(
             @Param("today") LocalDate today,
             @Param("now") LocalTime now);
+    // 근무 완료 후 7일 이내 리뷰 미작성 지원 조회 (자동 무난해요 처리용)
+    @Query("""
+    SELECT a FROM Application a
+    WHERE a.status = 'COMPLETED'
+      AND a.updatedAt < :deadline
+      AND NOT EXISTS (
+          SELECT r FROM Review r
+          WHERE r.application.id = a.id
+            AND r.target = 'EMPLOYER_TO_EMPLOYEE'
+      )
+    """)
+    List<Application> findUnreviewedCompletedApplications(
+            @Param("deadline") java.time.LocalDateTime deadline);
 }
