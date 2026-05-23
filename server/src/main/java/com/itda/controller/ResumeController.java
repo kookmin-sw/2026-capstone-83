@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/resume")
@@ -120,6 +121,13 @@ public class ResumeController {
             @AuthenticationPrincipal User user) {
         resumeService.deleteResumePhoto(user);
         return ResponseEntity.noContent().build();
+    }
+
+    // 이력서 존재 여부 확인
+    @GetMapping("/exists")
+    public ResponseEntity<Map<String, Boolean>> hasResume(
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(Map.of("exists", resumeService.hasResume(user)));
     }
 
 }

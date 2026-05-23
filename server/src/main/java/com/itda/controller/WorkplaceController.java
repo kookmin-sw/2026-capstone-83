@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
+
 
 @RestController
 @RequestMapping("/api/v1/workplaces")
@@ -85,5 +87,11 @@ public class WorkplaceController {
             @AuthenticationPrincipal User user) {
         workplaceService.deleteWorkplace(id, user);
         return ResponseEntity.noContent().build();
+    }
+    // 사업장 존재 여부 확인
+    @GetMapping("/exists")
+    public ResponseEntity<Map<String, Boolean>> hasWorkplace(
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(Map.of("exists", workplaceService.hasWorkplace(user)));
     }
 }
