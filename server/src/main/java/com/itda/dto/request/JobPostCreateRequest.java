@@ -17,6 +17,7 @@ import java.util.List;
 @Getter
 @Setter
 public class JobPostCreateRequest {
+    // ─── 공고 기본 필드 ───────────────────────────────────────
 
     // 공고 제목
     private String title;
@@ -72,6 +73,16 @@ public class JobPostCreateRequest {
     // 새 파일 업로드 없이 기존 S3 URL을 그대로 재사용할 때 (사업장 로고 재사용 등)
     private String existingImageUrl;
 
+    // ─── 공고 추가 기능 필드 ───────────────────────────────────────
+    // 급구 옵션 여부 (기본값 false)
+    private boolean urgentEnabled = false;
+
+    // 급구 시 시급 인상액
+    private Integer urgentWageIncrease;
+
+    // 자동 오퍼 여부 (기본값 false)
+    private boolean autoOfferEnabled = false;
+
     // S3 업로드 완료 후 contentUrl을 받아서 엔티티 생성하는 버전
     // 기존 toEntity(workplace)는 그대로 유지
     public JobPost toEntity(Workplace workplace, String contentUrl) {
@@ -89,11 +100,14 @@ public class JobPostCreateRequest {
                 .status(JobPostStatus.OPEN)
                 .deadline(LocalDate.parse(deadline))
                 .description(description)
-                .s3ContentUrl(contentUrl) // 기존은 request의 s3ContentUrl 사용, 여기선 업로드 결과 URL 사용
+                .s3ContentUrl(contentUrl)
                 .requirements(requirements)
                 .benefits(benefits)
                 .tasks(tasks)
                 .items(items)
+                .urgentEnabled(urgentEnabled)
+                .urgentWageIncrease(urgentWageIncrease)
+                .autoOfferEnabled(autoOfferEnabled)
                 .build();
     }
 }

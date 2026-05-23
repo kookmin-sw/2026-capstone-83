@@ -44,6 +44,11 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             @Param("cursor") Long cursor,
             org.springframework.data.domain.Pageable pageable);
 
+    // 특정 날짜 + 상태로 지원 목록 조회 (날짜 겹침 체크용)
+    @Query("SELECT a FROM Application a WHERE a.jobPost.workDate = :workDate AND a.status IN :statuses")
+    List<Application> findByJobPost_WorkDateAndStatusIn(
+            @Param("workDate") java.time.LocalDate workDate,
+            @Param("statuses") List<ApplicationStatus> statuses);
     // 중복 지원 체크
     Optional<Application> findByJobPostIdAndApplicantUserId(Long jobPostId, Long applicantUserId);
 

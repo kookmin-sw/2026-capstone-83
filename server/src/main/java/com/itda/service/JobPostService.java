@@ -3,13 +3,17 @@ package com.itda.service;
 import com.itda.dto.request.JobPostCreateRequest;
 import com.itda.dto.request.JobPostUpdateRequest;
 import com.itda.dto.request.JobPostFilterRequest;
+import com.itda.dto.request.BulkOfferRequest;
 import com.itda.dto.response.CursorPageResponse;
 import com.itda.dto.response.JobPostCardResponse;
 import com.itda.dto.response.JobPostDetailResponse;
+import com.itda.dto.response.OfferTargetResponse;
+import com.itda.entity.Application;
 import com.itda.entity.JobPost;
 import com.itda.entity.User;
 import com.itda.entity.Workplace;
 import com.itda.enums.ApplicationStatus;
+import com.itda.enums.InitiatedBy;
 import com.itda.enums.JobPostStatus;
 import com.itda.enums.NotificationType;
 import com.itda.enums.WageType;
@@ -19,6 +23,8 @@ import com.itda.repository.ApplicationRepository;
 import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
 import com.itda.repository.WorkplaceRepository;
+import com.itda.repository.LongTermWorkerRepository;
+import com.itda.repository.UserRepository;
 import com.itda.service.event.InteractionEvents;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -40,15 +46,16 @@ public class JobPostService {
     private final ApplicationRepository applicationRepository;
     private final JobPostLikeRepository jobPostLikeRepository;
     private final LikeService likeService;
-    private final S3Service s3Service;                   // S3 업로드 서비스 주입
+    private final S3Service s3Service;
     private final NotificationService notificationService;
-    private final WorkplaceRepository workplaceRepository; // 로고 URL 저장용
-    private final JobPostRankingService rankingService;    // 개인화 추천
-    private final ApplicationEventPublisher eventPublisher; // impression/click 이벤트 발행
+    private final WorkplaceRepository workplaceRepository;
+    private final JobPostRankingService rankingService;
+    private final ApplicationEventPublisher eventPublisher;
+    private final LongTermWorkerRepository longTermWorkerRepository;
+    private final UserRepository userRepository;
+    private final ApplicationService applicationService;
 
     // 공고 목록 통합 조회 (필터 + 커서 페이지네이션)
-    // 지원자/고용주 공통 사용 - 모든 필터(다중 태그/범위 포함)를 JobPostRepositoryCustom으로 위임
-    // requestId: 컨트롤러에서 생성한 UUID. 노출 로그를 한 응답으로 묶기 위한 식별자.
     public CursorPageResponse<JobPostCardResponse> getJobPosts(
             JobPostFilterRequest filter, User user, String requestId) {
 
@@ -57,7 +64,6 @@ public class JobPostService {
         if ("RECOMMENDED".equalsIgnoreCase(filter.sortType())
                 && user != null
                 && user.getRole() == UserRole.APPLICANT) {
-            // 추천 정렬: APPLICANT 로그인 사용자만 개인화 랭킹. 태그 필터는 무시.
             response = rankingService.recommend(user, filter.cursor(), filter.getSize());
         } else {
             int fetchSize = filter.getSize() + 1;
@@ -91,7 +97,6 @@ public class JobPostService {
         JobPost post = jobPostRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
 
-        // 로그인 유저면 좋아요 여부 확인
         boolean liked = (user != null)
                 && jobPostLikeRepository.existsByUserIdAndJobPostId(user.getId(), id);
 
@@ -106,8 +111,7 @@ public class JobPostService {
         return JobPostDetailResponse.from(post, liked);
     }
 
-    // 응답에 포함된 공고들을 ImpressionBatchEvent 로 묶어 발행.
-    // 비어 있으면 발행하지 않음.
+    // 응답에 포함된 공고들을 ImpressionBatchEvent 로 묶어 발행
     private void publishImpressionEvent(
             CursorPageResponse<JobPostCardResponse> response,
             String sortType,
@@ -120,7 +124,7 @@ public class JobPostService {
         for (int i = 0; i < response.contents().size(); i++) {
             impressions.add(new InteractionEvents.Impression(
                     response.contents().get(i).id(),
-                    i + 1                       // 1-based position
+                    i + 1
             ));
         }
         eventPublisher.publishEvent(new InteractionEvents.ImpressionBatchEvent(
@@ -155,9 +159,6 @@ public class JobPostService {
         return CursorPageResponse.of(content, nextCursor, hasNext);
     }
 
-
-
-
     // 캘린더용 날짜 범위 공고 조회
     public List<JobPost> getJobPostsByDateRange(Long userId, LocalDate start, LocalDate end) {
         return jobPostRepository.findByEmployerIdAndWorkDateBetween(userId, start, end);
@@ -188,21 +189,27 @@ public class JobPostService {
         // 공고 상세 이미지 처리
         String contentUrl;
         if (descriptionImage != null && !descriptionImage.isEmpty()) {
-            // 새 이미지 업로드 → Lambda 리사이징 트리거
             contentUrl = s3Service.upload(descriptionImage, S3Service.PATH_JOB_POSTS);
         } else if (request.getExistingImageUrl() != null && !request.getExistingImageUrl().isBlank()) {
-            // 기존 URL 재사용 → 업로드/리사이징 없음 (이중 리사이징 방지)
             contentUrl = request.getExistingImageUrl();
         } else {
-            // 아무것도 없으면 null → 프론트가 workplace 로고로 fallback
             contentUrl = null;
         }
 
-        // contentUrl을 받는 오버로드 toEntity 사용
         JobPost saved = jobPostRepository.save(request.toEntity(workplace, contentUrl));
+
+        // 자동 오퍼 처리 (autoOfferEnabled=true인 경우)
+        if (request.isAutoOfferEnabled()) {
+            List<Long> targetIds = getOfferTargetIds(saved, workplace.getEmployer().getUser().getId());
+            if (!targetIds.isEmpty()) {
+                applicationService.bulkOffer(saved.getId(),
+                        new BulkOfferRequest(targetIds),
+                        workplace.getEmployer().getUser());
+            }
+        }
+
         return JobPostDetailResponse.from(saved, false);
     }
-
 
     // 공고 수정 (부분 수정 — null 필드는 기존 값 유지, 본인 공고만)
     @Transactional
@@ -213,11 +220,9 @@ public class JobPostService {
 
         verifyJobPostOwnership(jobPost, userId);
 
-        // 새 상세 이미지가 있으면 기존 이미지 삭제 후 업로드
         String s3ContentUrl = jobPost.getS3ContentUrl();
         if (descriptionImage != null && !descriptionImage.isEmpty()) {
             s3Service.delete(s3ContentUrl);
-            // 변경: job-posts → uploads/job-posts (Lambda 트리거 대상)
             s3ContentUrl = s3Service.upload(descriptionImage, S3Service.PATH_JOB_POSTS);
         }
 
@@ -243,13 +248,16 @@ public class JobPostService {
                 .tasks(request.tasks() != null ? request.tasks() : jobPost.getTasks())
                 .items(request.items() != null ? request.items() : jobPost.getItems())
                 .ageRequirements(request.ageRequirements() != null ? request.ageRequirements() : jobPost.getAgeRequirements())
+                .urgentEnabled(jobPost.isUrgentEnabled())
+                .urgentWageIncrease(jobPost.getUrgentWageIncrease())
+                .autoOfferEnabled(jobPost.isAutoOfferEnabled())
                 .createdAt(jobPost.getCreatedAt())
                 .build());
 
         return JobPostDetailResponse.from(updated, false);
     }
 
-    // 공고 삭제 (본인 공고만, OPEN 상태만 삭제 가능)
+    // 공고 삭제 (본인 공고만)
     @Transactional
     public void deleteJobPost(Long jobPostId, Long userId) {
         JobPost jobPost = jobPostRepository.findById(jobPostId)
@@ -257,7 +265,6 @@ public class JobPostService {
 
         verifyJobPostOwnership(jobPost, userId);
 
-        // HIRED 상태 지원자에게 공고 삭제 알림 발송
         applicationRepository.findByJobPostId(jobPostId).stream()
                 .filter(a -> a.getStatus() == ApplicationStatus.HIRED)
                 .forEach(a -> notificationService.notify(
@@ -267,14 +274,10 @@ public class JobPostService {
                         jobPostId
                 ));
 
-        // 연관 application 먼저 삭제 (FK 제약 방지)
-        List<com.itda.entity.Application> applications = applicationRepository.findByJobPostId(jobPostId);
+        List<Application> applications = applicationRepository.findByJobPostId(jobPostId);
         applicationRepository.deleteAll(applications);
 
-        // S3 이미지 삭제
         s3Service.delete(jobPost.getS3ContentUrl());
-
-        // 공고 삭제
         jobPostRepository.delete(jobPost);
     }
 
@@ -292,12 +295,6 @@ public class JobPostService {
         jobPostRepository.save(jobPost);
     }
 
-    // 공고 소유권 검증
-    private void verifyJobPostOwnership(JobPost jobPost, Long userId) {
-        if (!jobPost.getWorkplace().getEmployer().getUser().getId().equals(userId)) {
-            throw new IllegalStateException("본인의 공고만 수정/삭제할 수 있습니다.");
-        }
-    }
     // 제안 가능 공고 목록 조회 (OPEN + 해당 구직자와 연결된 공고 제외)
     public CursorPageResponse<JobPostCardResponse> getOfferableJobPosts(Long userId, Long applicantUserId, Long cursor, int size) {
         int fetchSize = size + 1;
@@ -316,6 +313,7 @@ public class JobPostService {
         Long nextCursor = hasNext ? content.get(content.size() - 1).id() : null;
         return CursorPageResponse.of(content, nextCursor, hasNext);
     }
+
     // 좋아요한 공고 목록 조회 (구직자, 커서 페이지네이션)
     public CursorPageResponse<JobPostCardResponse> getLikedJobPosts(Long userId, Long cursor, int size) {
         List<Long> likedIds = likeService.getLikedJobPostIds(userId);
@@ -336,4 +334,77 @@ public class JobPostService {
         return CursorPageResponse.of(content, nextCursor, hasNext);
     }
 
+    // 우선 채용 대상자 목록 조회
+    public List<OfferTargetResponse> getOfferTargets(Long jobPostId, Long employerUserId) {
+        JobPost jobPost = jobPostRepository.findById(jobPostId)
+                .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
+
+        List<Long> likedIds = jobPostLikeRepository.findByUserId(employerUserId)
+                .stream().map(l -> l.getJobPost().getWorkplace().getEmployer().getUser().getId()).toList();
+        List<Long> longTermIds = longTermWorkerRepository.findByEmployerUserId(employerUserId)
+                .stream().map(l -> l.getApplicantUser().getId()).toList();
+
+        List<Long> targetIds = java.util.stream.Stream.concat(likedIds.stream(), longTermIds.stream())
+                .distinct().toList();
+
+        List<Long> excludedByDate = applicationRepository
+                .findByJobPost_WorkDateAndStatusIn(
+                        jobPost.getWorkDate(),
+                        List.of(ApplicationStatus.HIRED, ApplicationStatus.PENDING))
+                .stream().map(a -> a.getApplicantUser().getId()).toList();
+
+        List<Long> excludedByDuplicate = applicationRepository
+                .findByJobPostId(jobPostId)
+                .stream().map(a -> a.getApplicantUser().getId()).toList();
+
+        return targetIds.stream()
+                .filter(id -> !excludedByDate.contains(id))
+                .filter(id -> !excludedByDuplicate.contains(id))
+                .map(userId -> {
+                    User applicant = userRepository.findById(userId).orElse(null);
+                    if (applicant == null) return null;
+                    return new OfferTargetResponse(
+                            userId,
+                            applicant.getName(),
+                            likedIds.contains(userId),
+                            longTermIds.contains(userId),
+                            false
+                    );
+                })
+                .filter(t -> t != null)
+                .toList();
+    }
+
+    // ─── 내부 헬퍼 ───────────────────────────────────────────
+
+    // 오퍼 대상자 ID 목록 추출 (날짜 겹침 + 중복 지원 제외)
+    private List<Long> getOfferTargetIds(JobPost jobPost, Long employerUserId) {
+        List<Long> likedIds = jobPostLikeRepository.findByUserId(employerUserId)
+                .stream().map(l -> l.getJobPost().getWorkplace().getEmployer().getUser().getId()).toList();
+        List<Long> longTermIds = longTermWorkerRepository.findByEmployerUserId(employerUserId)
+                .stream().map(l -> l.getApplicantUser().getId()).toList();
+
+        List<Long> excludedByDate = applicationRepository
+                .findByJobPost_WorkDateAndStatusIn(
+                        jobPost.getWorkDate(),
+                        List.of(ApplicationStatus.HIRED, ApplicationStatus.PENDING))
+                .stream().map(a -> a.getApplicantUser().getId()).toList();
+
+        List<Long> excludedByDuplicate = applicationRepository
+                .findByJobPostId(jobPost.getId())
+                .stream().map(a -> a.getApplicantUser().getId()).toList();
+
+        return java.util.stream.Stream.concat(likedIds.stream(), longTermIds.stream())
+                .distinct()
+                .filter(id -> !excludedByDate.contains(id))
+                .filter(id -> !excludedByDuplicate.contains(id))
+                .toList();
+    }
+
+    // 공고 소유권 검증
+    private void verifyJobPostOwnership(JobPost jobPost, Long userId) {
+        if (!jobPost.getWorkplace().getEmployer().getUser().getId().equals(userId)) {
+            throw new IllegalStateException("본인의 공고만 수정/삭제할 수 있습니다.");
+        }
+    }
 }

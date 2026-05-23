@@ -3,6 +3,9 @@ package com.itda.controller;
 import com.itda.dto.request.JobPostFilterRequest;
 import com.itda.dto.request.JobPostCreateRequest;
 import com.itda.dto.request.JobPostUpdateRequest;
+import com.itda.dto.request.BulkOfferRequest;
+import com.itda.dto.response.BulkOfferResponse;
+import com.itda.dto.response.OfferTargetResponse;
 import com.itda.dto.response.CursorPageResponse;
 import com.itda.dto.response.JobPostCardResponse;
 import com.itda.dto.response.JobPostDetailResponse;
@@ -11,13 +14,13 @@ import com.itda.entity.User;
 import com.itda.entity.Workplace;
 import com.itda.repository.WorkplaceRepository;
 import com.itda.service.JobPostService;
+import com.itda.service.ApplicationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import java.time.LocalDate;
@@ -31,6 +34,7 @@ public class JobPostController {
 
     private final JobPostService jobPostService;
     private final WorkplaceRepository workplaceRepository;
+    private final ApplicationService applicationService;
 
 
 
@@ -96,6 +100,22 @@ public class JobPostController {
             @RequestParam(defaultValue = "10") int size,
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(jobPostService.getOfferableJobPosts(user.getId(), applicantUserId, cursor, size));
+    }
+    // 우선 채용 대상자 목록 조회
+    @GetMapping("/{id}/offer-targets")
+    public ResponseEntity<List<OfferTargetResponse>> getOfferTargets(
+            @PathVariable Long id,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(jobPostService.getOfferTargets(id, user.getId()));
+    }
+
+    // 일괄 오퍼 발송 (반자동)
+    @PostMapping("/{id}/bulk-offer")
+    public ResponseEntity<BulkOfferResponse> bulkOffer(
+            @PathVariable Long id,
+            @RequestBody BulkOfferRequest request,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(applicationService.bulkOffer(id, request, user));
     }
 
     // 캘린더용 날짜 범위 공고 조회
