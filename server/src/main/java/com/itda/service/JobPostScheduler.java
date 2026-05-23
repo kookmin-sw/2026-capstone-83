@@ -9,7 +9,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -75,5 +74,23 @@ public class JobPostScheduler {
 
         log.info("[스케줄러] 근무 시작 공고 {}건 자동 마감 ({})",
                 started.size(), LocalDateTime.now());
+    }
+    /**
+     * 급구 트리거 처리
+     * 매일 자정 실행 — 마감 하루 전 OPEN 공고 중 urgentEnabled=true인 공고 시급 자동 인상
+     */
+    @Scheduled(cron = "0 0 0 * * *")
+    @Transactional
+    public void triggerUrgentJobPosts() {
+        LocalDate tomorrow = LocalDate.now().plusDays(1);
+        List<JobPost> urgentPosts = jobPostRepository.findUrgentJobPostsByDeadline(tomorrow);
+
+        if (urgentPosts.isEmpty()) return;
+
+        urgentPosts.forEach(JobPost::applyUrgentWage);
+        jobPostRepository.saveAll(urgentPosts);
+
+        log.info("[스케줄러] 급구 시급 인상 처리 {}건 ({})",
+                urgentPosts.size(), LocalDate.now());
     }
 }
