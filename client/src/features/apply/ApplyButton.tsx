@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { UserRoundPlus } from 'lucide-react';
 import { useApply } from 'entities/application/model/hooks/useApply';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
+import { refreshProfileSetupStatus } from 'entities/profileSetup/lib/loadProfileSetupStatus';
+import { useProfileSetupStore } from 'entities/profileSetup/model/store/profileSetupStore';
 import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
@@ -16,6 +18,7 @@ interface Props {
 const ApplyButton = ({ jobPostId }: Props) => {
   const [isApplyModalOpen, setIsApplyModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isNoResumeModalOpen, setIsNoResumeModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
@@ -23,11 +26,24 @@ const ApplyButton = ({ jobPostId }: Props) => {
   const { mutate, isPending } = useApply();
   const errorModal = useErrorAlertModal();
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (!isLoggedIn || role !== 'APPLICANT') {
       setIsLoginModalOpen(true);
       return;
     }
+
+    try {
+      await refreshProfileSetupStatus('APPLICANT');
+    } catch {
+      errorModal.showError(null, '이력서 정보를 확인하지 못했습니다. 잠시 후 다시 시도해주세요.');
+      return;
+    }
+
+    if (!useProfileSetupStore.getState().hasResume) {
+      setIsNoResumeModalOpen(true);
+      return;
+    }
+
     setIsApplyModalOpen(true);
   };
 
@@ -117,6 +133,40 @@ const ApplyButton = ({ jobPostId }: Props) => {
         <ModalContent>
           <h2>구직자 회원 기능</h2>
           <p>지원하려면 구직자 회원으로 로그인해주세요.</p>
+        </ModalContent>
+      </Modal>
+
+      {/* 이력서 미작성 안내 모달 */}
+      <Modal
+        isOpen={isNoResumeModalOpen}
+        onClose={() => setIsNoResumeModalOpen(false)}
+        actions={
+          <>
+            <Button
+              scheme="secondary"
+              buttonSize="large"
+              borderRadius="medium"
+              onClick={() => setIsNoResumeModalOpen(false)}
+            >
+              취소
+            </Button>
+            <Button
+              scheme="primary"
+              buttonSize="large"
+              borderRadius="medium"
+              onClick={() => {
+                setIsNoResumeModalOpen(false);
+                navigate('/dashboard/resume/edit');
+              }}
+            >
+              이력서 작성하기
+            </Button>
+          </>
+        }
+      >
+        <ModalContent>
+          <h2>이력서 작성이 필요합니다</h2>
+          <p>공고에 지원하려면 먼저 이력서를 작성해주세요.</p>
         </ModalContent>
       </Modal>
 

@@ -25,6 +25,12 @@ export const fetchUserWorkplaces = async (): Promise<Workplace[]> => {
   return response.data;
 };
 
+/** 사업장 존재 여부 확인 (고용주 본인) */
+export const fetchWorkplaceExists = async (): Promise<{ exists: boolean }> => {
+  const response = await authClient.get<{ exists: boolean }>(`/api/v1/workplaces/exists`);
+  return response.data;
+};
+
 export const fetchWorkplaceById = async (id: number): Promise<Workplace> => {
   const response = await authClient.get(`/api/v1/workplaces/${id}`);
   return response.data;

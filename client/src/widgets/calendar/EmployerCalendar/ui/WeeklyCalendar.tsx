@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { openJobPostCreatePage } from 'entities/profileSetup/lib/jobPostCreateNavigation';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   DndContext,
@@ -146,7 +147,9 @@ export const WeeklyCalendar = ({ schedules, currentDate, onPrev, onNext, viewMod
                   </SortableContext>
                 </DndContext>
 
-                <CS.AddButton onClick={() => window.open(`/jobpost/create?workDate=${dateStr}`, '_blank')}>
+                <CS.AddButton onClick={() => {
+                  void openJobPostCreatePage({ workDate: dateStr });
+                }}>
                   <span>+ 공고 추가</span>
                 </CS.AddButton>
               </CS.DayContent>
