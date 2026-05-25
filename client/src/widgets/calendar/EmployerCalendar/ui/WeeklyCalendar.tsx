@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { openJobPostCreatePage } from 'entities/profileSetup/lib/jobPostCreateNavigation';
+import { buildJobPostCreateUrl } from 'entities/profileSetup/lib/jobPostCreateNavigation';
+import { NoWorkplaceForJobPostModal } from 'features/profileSetup/NoWorkplaceForJobPostModal';
+import { useWorkplaceRequiredForJobPost } from 'features/profileSetup/useWorkplaceRequiredForJobPost';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   DndContext,
@@ -75,6 +77,18 @@ const SortableItem = ({ schedule }: { schedule: Schedule }) => {
 export const WeeklyCalendar = ({ schedules, currentDate, onPrev, onNext, viewMode, onViewChange }: Props) => {
   const weekDays = getWeekDays(currentDate);
   const weekNum = getWeekNumber(currentDate);
+  const {
+    isNoWorkplaceModalOpen,
+    runWithWorkplaceCheck,
+    closeNoWorkplaceModal,
+    confirmNoWorkplaceModal,
+  } = useWorkplaceRequiredForJobPost();
+
+  const openCreatePage = (workDate: string) => {
+    void runWithWorkplaceCheck(() => {
+      window.open(buildJobPostCreateUrl({ workDate }), '_blank');
+    });
+  };
 
   // 로컬 순서 상태 (드래그로 변경 가능)
   const [localOrder, setLocalOrder] = useState<Record<string, number[]>>({});
@@ -147,9 +161,7 @@ export const WeeklyCalendar = ({ schedules, currentDate, onPrev, onNext, viewMod
                   </SortableContext>
                 </DndContext>
 
-                <CS.AddButton onClick={() => {
-                  void openJobPostCreatePage({ workDate: dateStr });
-                }}>
+                <CS.AddButton onClick={() => openCreatePage(dateStr)}>
                   <span>+ 공고 추가</span>
                 </CS.AddButton>
               </CS.DayContent>
@@ -157,6 +169,12 @@ export const WeeklyCalendar = ({ schedules, currentDate, onPrev, onNext, viewMod
           );
         })}
       </CS.WeekGrid>
+
+      <NoWorkplaceForJobPostModal
+        isOpen={isNoWorkplaceModalOpen}
+        onClose={closeNoWorkplaceModal}
+        onConfirm={confirmNoWorkplaceModal}
+      />
     </>
   );
 };

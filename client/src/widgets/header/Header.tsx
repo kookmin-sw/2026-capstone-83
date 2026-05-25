@@ -2,8 +2,9 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Bell, User } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
-import { ensureHasWorkplaceForJobPostCreate } from 'entities/profileSetup/lib/jobPostCreateNavigation';
 import { useLogout } from 'entities/auth/model/hooks/useAuth';
+import { NoWorkplaceForJobPostModal } from 'features/profileSetup/NoWorkplaceForJobPostModal';
+import { useWorkplaceRequiredForJobPost } from 'features/profileSetup/useWorkplaceRequiredForJobPost';
 import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
 import { NotificationDropdown } from 'widgets/notification/NotificationDropdown';
 import Button from 'shared/ui/Button/Button';
@@ -24,6 +25,12 @@ const Header = () => {
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const role = useAuthStore((s) => s.role);
   const { mutate: logoutMutate } = useLogout();
+  const {
+    isNoWorkplaceModalOpen,
+    runWithWorkplaceCheck,
+    closeNoWorkplaceModal,
+    confirmNoWorkplaceModal,
+  } = useWorkplaceRequiredForJobPost();
 
   const [isNotiOpen, setIsNotiOpen] = useState(false);
   const [isUserOpen, setIsUserOpen] = useState(false);
@@ -93,12 +100,7 @@ const Header = () => {
                   }
 
                   e.preventDefault();
-                  const canCreate = await ensureHasWorkplaceForJobPostCreate();
-                  if (!canCreate) {
-                    navigate('/dashboard/workplace');
-                    return;
-                  }
-                  navigate('/jobpost/create');
+                  await runWithWorkplaceCheck(() => navigate('/jobpost/create'));
                 }}
               >
                 <Button
@@ -211,6 +213,12 @@ const Header = () => {
           <p>공고 등록은 고용주 회원만 가능합니다.<br />고용주 계정으로 로그인해주세요.</p>
         </ModalContent>
       </Modal>
+
+      <NoWorkplaceForJobPostModal
+        isOpen={isNoWorkplaceModalOpen}
+        onClose={closeNoWorkplaceModal}
+        onConfirm={confirmNoWorkplaceModal}
+      />
 
       {/* 로그인 유도 모달 (작업 관리) */}
       <Modal

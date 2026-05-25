@@ -8,7 +8,9 @@ import { useWorkplaceStore } from 'entities/workplace/model/store/workplaceStore
 import { ScheduleChip } from 'entities/schedule/ui/ScheduleChip';
 import { BaseMonthlyCalendar } from 'widgets/calendar/BaseMonthlyCalendar';
 import { WeeklyCalendar } from './WeeklyCalendar';
-import { openJobPostCreatePage } from 'entities/profileSetup/lib/jobPostCreateNavigation';
+import { buildJobPostCreateUrl } from 'entities/profileSetup/lib/jobPostCreateNavigation';
+import { NoWorkplaceForJobPostModal } from 'features/profileSetup/NoWorkplaceForJobPostModal';
+import { useWorkplaceRequiredForJobPost } from 'features/profileSetup/useWorkplaceRequiredForJobPost';
 import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
 
@@ -78,6 +80,24 @@ export const EmployerCalendarWidget = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const setSelectedJobPostId = useScheduleStore((s) => s.setSelectedJobPostId);
   const selectedWpId = useWorkplaceStore((s) => s.selectedWorkplaceId);
+  const {
+    isNoWorkplaceModalOpen,
+    runWithWorkplaceCheck,
+    closeNoWorkplaceModal,
+    confirmNoWorkplaceModal,
+  } = useWorkplaceRequiredForJobPost();
+
+  const openCreatePage = (workDate: string) => {
+    void runWithWorkplaceCheck(() => {
+      window.open(
+        buildJobPostCreateUrl({
+          workDate,
+          workplaceId: selectedWpId ?? undefined,
+        }),
+        '_blank',
+      );
+    });
+  };
 
   const { fromDate, toDate } = useMemo(() => getMonthDateRange(currentDate), [currentDate]);
   const { data, isLoading, isError } = useSchedules(selectedWpId, fromDate, toDate);
@@ -119,6 +139,7 @@ export const EmployerCalendarWidget = () => {
   if (isError) return <Loading message="캘린더를 불러올 수 없습니다." />;
 
   return (
+    <>
     <CalendarSurface>
       {viewMode === 'monthly' ? (
         <BaseMonthlyCalendar
@@ -150,21 +171,13 @@ export const EmployerCalendarWidget = () => {
           renderEmptyCell={(fullDate) => (
             <AddButton onClick={(e) => {
               e.stopPropagation();
-              void openJobPostCreatePage({
-                workDate: fullDate,
-                workplaceId: selectedWpId ?? undefined,
-              });
+              openCreatePage(fullDate);
             }}>
               + 공고 추가
             </AddButton>
           )}
           renderModalFooter={(fullDate) => (
-            <ModalAddButton onClick={() => {
-              void openJobPostCreatePage({
-                workDate: fullDate,
-                workplaceId: selectedWpId ?? undefined,
-              });
-            }}>
+            <ModalAddButton onClick={() => openCreatePage(fullDate)}>
               + 공고 추가
             </ModalAddButton>
           )}
@@ -180,6 +193,13 @@ export const EmployerCalendarWidget = () => {
         />
       )}
     </CalendarSurface>
+
+    <NoWorkplaceForJobPostModal
+      isOpen={isNoWorkplaceModalOpen}
+      onClose={closeNoWorkplaceModal}
+      onConfirm={confirmNoWorkplaceModal}
+    />
+    </>
   );
 };
 

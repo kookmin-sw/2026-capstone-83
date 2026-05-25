@@ -16,17 +16,3 @@ export const buildJobPostCreateUrl = (params?: {
   const query = search.toString();
   return query ? `/jobpost/create?${query}` : '/jobpost/create';
 };
-
-export const openJobPostCreatePage = async (params?: {
-  workDate?: string;
-  workplaceId?: number;
-}) => {
-  const canCreate = await ensureHasWorkplaceForJobPostCreate();
-  if (!canCreate) {
-    window.location.href = '/dashboard/workplace';
-    return false;
-  }
-
-  window.open(buildJobPostCreateUrl(params), '_blank');
-  return true;
-};
