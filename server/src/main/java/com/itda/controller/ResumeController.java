@@ -55,6 +55,14 @@ public class ResumeController {
         resumeService.saveResume(user, request);
         return ResponseEntity.ok().build();
     }
+    // 인재 목록 조회 (커서 페이지네이션)
+    @GetMapping("/list")
+    public ResponseEntity<CursorPageResponse<ResumeCardResponse>> getResumeList(
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(resumeService.getResumeList(cursor, size, user));
+    }
 
     // 경력 추가
     @PostMapping("/careers")
