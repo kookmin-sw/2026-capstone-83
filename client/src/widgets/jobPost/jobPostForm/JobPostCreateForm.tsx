@@ -23,7 +23,8 @@ import { AddressSearchButton } from 'features/search-address/AddressSearchButton
 import { JobPostSubmitCard } from 'features/jobPost/create-jobPost/JobPostSubmitCard';
 import { TemplateSection } from 'features/jobPost/create-jobPost/TemplateSection';
 import type { JobPostTemplateResponse } from 'entities/jobPost/model/types/template.type';
-import { useCreateJobPost } from 'features/jobPost/hooks/useCreateJobPost';
+import { useCreateJobPost } from 'entities/jobPost/model/hooks/useCreateJobPost';
+import { JobPostUrgentFields } from 'entities/jobPost/ui/InputFields/JobPostUrgentFields';
 import { splitByComma } from 'shared/lib/transformString';
 import { mergeJobPostRequirements, splitJobPostRequirements } from 'entities/jobPost/lib/jobPostRequirements';
 import CreateJobPostButton from 'features/jobPost/create-jobPost/CreateJobPostButton';
@@ -46,6 +47,7 @@ export const JobPostCreateForm = () => {
       workDate: defaultWorkDate,
       requirementsText: '',
       certRequirements: [],
+      urgentEnabled: false,
     },
   });
   const { mutate } = useCreateJobPost();
@@ -77,6 +79,8 @@ export const JobPostCreateForm = () => {
     const { requirementsText, certRequirements, ...rest } = data;
     const requestBody: JobPostCreateSubmit = {
       ...rest,
+      urgentEnabled: !!data.urgentEnabled,
+      urgentWageIncrease: data.urgentEnabled ? data.urgentWageIncrease : undefined,
       requirements: mergeJobPostRequirements(requirementsText, certRequirements),
       benefits: splitByComma(data.benefits),
       tasks: splitByComma(data.tasks),
@@ -189,6 +193,7 @@ export const JobPostCreateForm = () => {
                 </ButtonGroup>
               }
             />
+            <JobPostUrgentFields register={register} watch={watch} setValue={setValue} />
             <JobPostWorkContentFields register={register} setValue={setValue} watch={watch} />
             <JobPostLocationField
               register={register}

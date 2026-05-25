@@ -10,6 +10,7 @@ import { RECRUITMENT_STATUS_MAP } from '../model/constants';
 import Section from 'shared/ui/Layout/Section';
 import ProgressBar from 'shared/ui/ProgressBar/ProgressBar';
 import Badge from 'shared/ui/Badge/Badge';
+import { UrgentJobPostBadge } from './UrgentJobPostBadge';
 import Loading from 'shared/ui/Loading/Loading';
 
 interface Props {
@@ -43,6 +44,7 @@ const SelectedJobPostSection = ({ postId }: Props) => {
             aria-label={`${jobPost.title} 공고 상세 보기`}
           >
             <S.Title>{jobPost.title}</S.Title>
+            <UrgentJobPostBadge urgentEnabled={jobPost.urgentEnabled} />
             <ArrowRight size={16} aria-hidden />
           </S.TitleLink>
           {role === 'EMPLOYER' && (

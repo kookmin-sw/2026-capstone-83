@@ -6,6 +6,7 @@ import Section from 'shared/ui/Layout/Section';
 import { calculateDDay } from 'shared/lib/calculateDDay';
 import ResizedImage from 'shared/ui/ResizedImage/ResizedImage';
 import type { JobPostOverviewProps } from '../../model/types/jobPost.type';
+import { UrgentJobPostBadge } from '../UrgentJobPostBadge';
 import Loading from 'shared/ui/Loading/Loading';
 
 
@@ -33,7 +34,9 @@ export const JobPostDetailOverviewSection = ({ data, headerActions, actions }: P
     wageType,
     companyLogoUrl,
     totalSlots,
-    filledSlots
+    filledSlots,
+    urgentEnabled,
+    urgentWageIncrease,
   } = data;
 
   return (
@@ -44,7 +47,10 @@ export const JobPostDetailOverviewSection = ({ data, headerActions, actions }: P
           <S.TextContent>
             <S.Header>
               <S.TitleRow>
-                <S.MainTitle>{title}</S.MainTitle>
+                <S.TitleGroup>
+                  <S.MainTitle>{title}</S.MainTitle>
+                  <UrgentJobPostBadge urgentEnabled={urgentEnabled} />
+                </S.TitleGroup>
                 {headerActions && <S.HeaderActions>{headerActions}</S.HeaderActions>}
               </S.TitleRow>
               <S.CompanyInfo>
@@ -57,8 +63,11 @@ export const JobPostDetailOverviewSection = ({ data, headerActions, actions }: P
               <S.InfoRow>
                 <S.Label>급여</S.Label>
                 <S.Value>
-                  <S.Badge>{wageType === 'DAILY' ? '일급' : '시급'}</S.Badge>
+                  <S.Badge>{wageType === 'DAILY' ? '일급' : wageType === 'HOURLY' ? '시급' : '월급'}</S.Badge>
                   <strong>{wage.toLocaleString()}원</strong>
+                  {urgentEnabled && urgentWageIncrease != null && (
+                    <S.UrgentHint>급구 · 마감 전 +{urgentWageIncrease.toLocaleString()}원 예정</S.UrgentHint>
+                  )}
                 </S.Value>
                 <S.Label>공고 마감</S.Label>
                 <S.Value>{deadline} <span className="dday">{calculateDDay(deadline)}</span></S.Value>
@@ -128,13 +137,24 @@ const S = {
     justify-content: space-between;
     gap: 12px;
   `,
-  MainTitle: styled.h1`
+  TitleGroup: styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
     flex: 1;
     min-width: 0;
+  `,
+  MainTitle: styled.h1`
+    margin: 0;
     font-size: ${({ theme }) => theme.fontSize.xlarge};
     font-weight: ${({ theme }) => theme.fontWeight.bold};
     line-height: 1.4;
-    margin: 0;
+  `,
+  UrgentHint: styled.span`
+    font-size: ${({ theme }) => theme.fontSize.xsmall};
+    color: ${({ theme }) => theme.color.error};
+    font-weight: ${({ theme }) => theme.fontWeight.medium};
   `,
   HeaderActions: styled.div`
     display: flex;

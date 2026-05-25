@@ -15,6 +15,7 @@ import {
   getSlotsRemainingLabel,
   getWageTypeLabel,
 } from '../lib/jobPostCardDisplay';
+import { UrgentJobPostBadge } from './UrgentJobPostBadge';
 
 export interface JobPostCardProps {
   data: JobPost;
@@ -52,6 +53,7 @@ export const JobPostCard = ({
     workDate,
     totalSlots,
     filledSlots,
+    urgentEnabled,
   } = data;
 
   const dDayLabel = calculateDDay(deadline);
@@ -90,6 +92,7 @@ export const JobPostCard = ({
             <S.TitleRow>
               <S.TitleGroup>
                 <S.Title>{title}</S.Title>
+                <UrgentJobPostBadge urgentEnabled={urgentEnabled} />
                 <S.DDayChip $tone={dDayTone}>{dDayLabel}</S.DDayChip>
               </S.TitleGroup>
               {topActions && (
