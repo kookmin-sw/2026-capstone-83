@@ -10,6 +10,12 @@ export const fetchResume = async (): Promise<ResumeResponse> => {
   return response.data;
 };
 
+/** 이력서 존재 여부 확인 (구직자 본인) */
+export const fetchResumeExists = async (): Promise<{ exists: boolean }> => {
+  const response = await authClient.get<{ exists: boolean }>(`/api/v1/resume/exists`);
+  return response.data;
+};
+
 /** 이력서 상세 조회 (고용주 — 목록의 resumeId) */
 export const fetchResumeDetail = async (resumeId: number): Promise<ResumeResponse> => {
   const response = await authClient.get(`/api/v1/resume/${resumeId}`);

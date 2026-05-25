@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { logout, refresh, signup } from 'entities/auth/api/auth.api';
 import { loginWithFallback } from 'entities/auth/lib/loginWithFallback';
 import { loadUserProfile } from 'entities/user/lib/loadUserProfile';
+import { loadProfileSetupStatus } from 'entities/profileSetup/lib/loadProfileSetupStatus';
+import { useProfileSetupStore } from 'entities/profileSetup/model/store/profileSetupStore';
 import { useUserProfileStore } from 'entities/user/model/store/userProfileStore';
 import { useAuthStore } from '../store/authStore';
 
@@ -30,6 +32,7 @@ export const useLogin = () => {
       setAuth(data.accessToken, data.role);
       try {
         await loadUserProfile();
+        await loadProfileSetupStatus(data.role);
       } catch (error) {
         console.error('프로필 조회 실패:', error);
       }
@@ -70,6 +73,7 @@ export const useLogout = () => {
     onSettled: () => {
       clearAuth();
       useUserProfileStore.getState().clearProfile();
+      useProfileSetupStore.getState().clearProfileSetup();
       queryClient.clear();
     },
   });

@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Bell, User } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
+import { ensureHasWorkplaceForJobPostCreate } from 'entities/profileSetup/lib/jobPostCreateNavigation';
 import { useLogout } from 'entities/auth/model/hooks/useAuth';
 import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
 import { NotificationDropdown } from 'widgets/notification/NotificationDropdown';
@@ -84,11 +85,20 @@ const Header = () => {
             {role !== 'MANAGER' && (
               <S.CreateLink
                 to="/jobpost/create"
-                onClick={(e) => {
+                onClick={async (e) => {
                   if (!isLoggedIn || role !== 'EMPLOYER') {
                     e.preventDefault();
                     setIsRoleModalOpen(true);
+                    return;
                   }
+
+                  e.preventDefault();
+                  const canCreate = await ensureHasWorkplaceForJobPostCreate();
+                  if (!canCreate) {
+                    navigate('/dashboard/workplace');
+                    return;
+                  }
+                  navigate('/jobpost/create');
                 }}
               >
                 <Button

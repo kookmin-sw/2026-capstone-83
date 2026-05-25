@@ -8,6 +8,7 @@ import { useWorkplaceStore } from 'entities/workplace/model/store/workplaceStore
 import { ScheduleChip } from 'entities/schedule/ui/ScheduleChip';
 import { BaseMonthlyCalendar } from 'widgets/calendar/BaseMonthlyCalendar';
 import { WeeklyCalendar } from './WeeklyCalendar';
+import { openJobPostCreatePage } from 'entities/profileSetup/lib/jobPostCreateNavigation';
 import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
 
@@ -149,16 +150,20 @@ export const EmployerCalendarWidget = () => {
           renderEmptyCell={(fullDate) => (
             <AddButton onClick={(e) => {
               e.stopPropagation();
-              const wpParam = selectedWpId ? `&workplaceId=${selectedWpId}` : '';
-              window.open(`/jobpost/create?workDate=${fullDate}${wpParam}`, '_blank');
+              void openJobPostCreatePage({
+                workDate: fullDate,
+                workplaceId: selectedWpId ?? undefined,
+              });
             }}>
               + 공고 추가
             </AddButton>
           )}
           renderModalFooter={(fullDate) => (
             <ModalAddButton onClick={() => {
-              const wpParam = selectedWpId ? `&workplaceId=${selectedWpId}` : '';
-              window.open(`/jobpost/create?workDate=${fullDate}${wpParam}`, '_blank');
+              void openJobPostCreatePage({
+                workDate: fullDate,
+                workplaceId: selectedWpId ?? undefined,
+              });
             }}>
               + 공고 추가
             </ModalAddButton>
