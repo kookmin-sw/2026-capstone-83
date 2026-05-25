@@ -24,6 +24,8 @@ export interface JobPost {
   deadline: string; // 마감일
   liked: boolean; // 공고 좋아요 여부
   companyLogoUrl?: string; // 사업장 로고 (목록 API)
+  /** 급구 옵션 (마감 하루 전 급여 인상) */
+  urgentEnabled?: boolean;
 }
 
 export interface JobPostDetail extends JobPost {
@@ -39,6 +41,8 @@ export interface JobPostDetail extends JobPost {
   tasks: string[]; // 업무 내용
   items?: string[]; // 준비물
   ageRequirements?: string[];
+  /** 급구 시 예정 인상액 (원) */
+  urgentWageIncrease?: number;
 }
 
 export type JobPostOverviewProps = Pick<
@@ -55,7 +59,9 @@ export type JobPostOverviewProps = Pick<
   'companyLogoUrl' |
   'workDate' |
   'workStart' |
-  'workEnd'
+  'workEnd' |
+  'urgentEnabled' |
+  'urgentWageIncrease'
 >;
 
 export type JobPostWorkContentProps = Pick<
@@ -100,6 +106,10 @@ export interface JobPostCreate {
   benefits?: string;
   tasks?: string;
   items?: string;
+  /** 급구 옵션 */
+  urgentEnabled?: boolean;
+  /** 급구 시급/급여 인상액 (원) */
+  urgentWageIncrease?: number;
 }
 
 /** 폼 제출 후 API/multipart 전송용 (List 필드 변환 완료) */
@@ -111,6 +121,8 @@ export type JobPostCreateSubmit = Omit<
   benefits?: string[];
   tasks?: string[];
   items?: string[];
+  urgentEnabled?: boolean;
+  urgentWageIncrease?: number;
 };
 
 export interface JobPostCreateResponse {

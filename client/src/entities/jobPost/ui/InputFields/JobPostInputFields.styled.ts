@@ -95,3 +95,10 @@ export const CheckboxWrapper = styled.div`
     user-select: none;
   }
 `;
+
+export const HelperText = styled.p`
+  margin: -12px 0 0;
+  font-size: ${({ theme }) => theme.fontSize.xsmall};
+  color: ${({ theme }) => theme.color.subText};
+  line-height: 1.5;
+`;

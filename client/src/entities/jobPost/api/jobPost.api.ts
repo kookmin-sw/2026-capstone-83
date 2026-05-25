@@ -38,12 +38,11 @@ export const fetchJobPost = async (id: number): Promise<JobPostDetail> => {
   return response.data;
 };
 
-//공고 생성
-export const createJobPost = async (data: JobPostCreateSubmit) => {
-  // form data 변환 유틸함수
+/** 공고 생성 (급구: urgentEnabled, urgentWageIncrease 포함) */
+export const createJobPost = async (data: JobPostCreateSubmit): Promise<JobPostDetail> => {
   const formData = toFormData(data);
 
-  const response = await authClient.post('/api/v1/job-posts', formData,
+  const response = await authClient.post<JobPostDetail>('/api/v1/job-posts', formData,
     {
       params: {
         workplaceId: data.workplaceId,
