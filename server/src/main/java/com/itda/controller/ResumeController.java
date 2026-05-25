@@ -14,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/resume")
@@ -53,6 +54,14 @@ public class ResumeController {
             @RequestBody ResumeRequest request) {
         resumeService.saveResume(user, request);
         return ResponseEntity.ok().build();
+    }
+    // 인재 목록 조회 (커서 페이지네이션)
+    @GetMapping("/list")
+    public ResponseEntity<CursorPageResponse<ResumeCardResponse>> getResumeList(
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(resumeService.getResumeList(cursor, size, user));
     }
 
     // 경력 추가
@@ -120,6 +129,13 @@ public class ResumeController {
             @AuthenticationPrincipal User user) {
         resumeService.deleteResumePhoto(user);
         return ResponseEntity.noContent().build();
+    }
+
+    // 이력서 존재 여부 확인
+    @GetMapping("/exists")
+    public ResponseEntity<Map<String, Boolean>> hasResume(
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(Map.of("exists", resumeService.hasResume(user)));
     }
 
 }

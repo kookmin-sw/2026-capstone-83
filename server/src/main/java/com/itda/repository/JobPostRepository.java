@@ -53,7 +53,11 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JobPost
             @Param("applicantUserId") Long applicantUserId,
             @Param("cursor") Long cursor,
             org.springframework.data.domain.Pageable pageable);
-
+    // 급구 트리거 대상 조회 (마감일이 내일이고 urgentEnabled=true인 OPEN 공고)
+    @Query("SELECT j FROM JobPost j WHERE j.status = com.itda.enums.JobPostStatus.OPEN " +
+            "AND j.urgentEnabled = true " +
+            "AND j.deadline = :deadline")
+    List<JobPost> findUrgentJobPostsByDeadline(@Param("deadline") LocalDate deadline);
     // 캘린더용 날짜 범위 조회 (user.id 기준)
     @Query("SELECT j FROM JobPost j WHERE j.workplace.employer.user.id = :userId " +
             "AND j.workDate BETWEEN :start AND :end")

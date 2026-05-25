@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { refreshProfileSetupStatus } from 'entities/profileSetup/lib/loadProfileSetupStatus';
 import { createWorkplace, updateWorkplace, deleteWorkplace, fetchUserWorkplaces, fetchWorkplaceById } from 'entities/workplace/api/workplace.api';
 import type {
   Workplace,
@@ -37,8 +38,9 @@ export const useCreateWorkplace = () => {
 
   return useMutation({
     mutationFn: (payload: WorkplaceCreatePayload) => createWorkplace(payload),
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['workplaces'] });
+      await refreshProfileSetupStatus('EMPLOYER');
     },
   });
 };
@@ -66,8 +68,9 @@ export const useDeleteWorkplace = () => {
 
   return useMutation({
     mutationFn: (id: number) => deleteWorkplace(id),
-    onSuccess: () => {
+    onSuccess: async () => {
       queryClient.invalidateQueries({ queryKey: ['workplaces'] });
+      await refreshProfileSetupStatus('EMPLOYER');
     },
   });
 };

@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { refresh } from 'entities/auth/api/auth.api';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import { loadUserProfile } from 'entities/user/lib/loadUserProfile';
+import { loadProfileSetupStatus } from 'entities/profileSetup/lib/loadProfileSetupStatus';
+import { useProfileSetupStore } from 'entities/profileSetup/model/store/profileSetupStore';
 import { useUserProfileStore } from 'entities/user/model/store/userProfileStore';
 
 export const useAuthInit = () => {
@@ -10,6 +12,7 @@ export const useAuthInit = () => {
   const setAuth = useAuthStore((state) => state.setAuth);
   const clearAuth = useAuthStore((state) => state.clearAuth);
   const clearProfile = useUserProfileStore((state) => state.clearProfile);
+  const clearProfileSetup = useProfileSetupStore((state) => state.clearProfileSetup);
 
   useEffect(() => {
     const initAuth = async () => {
@@ -23,6 +26,7 @@ export const useAuthInit = () => {
           setAuth(data.accessToken, currentRole);
           try {
             await loadUserProfile();
+            await loadProfileSetupStatus(currentRole);
           } catch {
             // 프로필 조회 실패 시에도 로그인 세션은 유지
           }
@@ -30,17 +34,19 @@ export const useAuthInit = () => {
           // 이전 세션 정보가 없으면 토큰만 있어도 의미 없음 — 초기화
           clearAuth();
           clearProfile();
+          clearProfileSetup();
         }
       } catch (error) {
         clearAuth();
         clearProfile();
+        clearProfileSetup();
       } finally {
         setIsInitializing(false);
       }
     };
 
     initAuth();
-  }, [setAuth, clearAuth, clearProfile]);
+  }, [setAuth, clearAuth, clearProfile, clearProfileSetup]);
 
   return { isInitializing };
 };

@@ -1,9 +1,10 @@
 package com.itda.service;
 
 import com.itda.dto.request.ScheduleRequest;
+import com.itda.dto.request.BulkOfferRequest;
 import com.itda.dto.response.ApplicantResponse;
 import com.itda.dto.response.ApplicationResponse;
-
+import com.itda.dto.response.BulkOfferResponse;
 import com.itda.dto.response.CursorPageResponse;
 import com.itda.dto.response.calendar.EmployeeScheduleItem;
 import com.itda.dto.response.calendar.EmployeeScheduleResponse;
@@ -21,6 +22,7 @@ import com.itda.repository.ApplicationRepository;
 import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
 import com.itda.repository.ResumeRepository;
+import com.itda.repository.UserRepository;
 import com.itda.exception.DuplicateException;
 import com.itda.exception.NotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +48,8 @@ public class ApplicationService {
     private final JobPostLikeRepository jobPostLikeRepository;
     private final ResumeRepository resumeRepository;
     private final NotificationService notificationService;
+    private final UserRepository userRepository;
+
 
     // ─── 구직자 API ───────────────────────────────────────────
 
@@ -518,6 +522,64 @@ public class ApplicationService {
         );
 
         return toApplicantResponse(application);
+    }
+    // 일괄 오퍼 발송 (반자동, 소유권 검증)
+    @Transactional
+    public BulkOfferResponse bulkOffer(Long jobPostId, BulkOfferRequest request, User employer) {
+        JobPost jobPost = jobPostRepository.findById(jobPostId)
+                .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
+
+        // 소유권 검증
+        if (!jobPost.getWorkplace().getEmployer().getUser().getId().equals(employer.getId())) {
+            throw new AccessDeniedException("본인의 공고만 제안할 수 있습니다.");
+        }
+
+        // 날짜 겹침 제외 대상
+        List<Long> excludedByDate = applicationRepository
+                .findByJobPost_WorkDateAndStatusIn(
+                        jobPost.getWorkDate(),
+                        List.of(ApplicationStatus.HIRED, ApplicationStatus.PENDING))
+                .stream().map(a -> a.getApplicantUser().getId()).toList();
+
+        // 중복 지원 제외 대상
+        List<Long> excludedByDuplicate = applicationRepository
+                .findByJobPostId(jobPostId)
+                .stream().map(a -> a.getApplicantUser().getId()).toList();
+
+        int offeredCount = 0;
+        int skippedCount = 0;
+
+        for (Long userId : request.userIds()) {
+            // 날짜 겹침 or 중복 지원이면 스킵
+            if (excludedByDate.contains(userId) || excludedByDuplicate.contains(userId)) {
+                skippedCount++;
+                continue;
+            }
+
+            User applicant = userRepository.findById(userId).orElse(null);
+            if (applicant == null) {
+                skippedCount++;
+                continue;
+            }
+
+            applicationRepository.save(Application.builder()
+                    .jobPost(jobPost)
+                    .applicantUser(applicant)
+                    .status(ApplicationStatus.OFFERED)
+                    .initiatedBy(InitiatedBy.EMPLOYER)
+                    .build());
+
+            notificationService.notify(
+                    userId,
+                    NotificationType.OFFER_RECEIVED,
+                    "[" + jobPost.getTitle() + "]에 채용 제안이 왔습니다.",
+                    jobPostId
+            );
+
+            offeredCount++;
+        }
+
+        return new BulkOfferResponse(offeredCount, skippedCount);
     }
 
     // ─── 캘린더 API ───────────────────────────────────────────

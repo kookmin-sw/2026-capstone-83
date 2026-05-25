@@ -135,4 +135,11 @@ public class WorkplaceService {
         }
         return workplace;
     }
+    // 사업장 존재 여부 확인
+    public boolean hasWorkplace(User user) {
+        Employer employer = employerRepository.findByUserId(user.getId())
+                .orElse(null);
+        if (employer == null) return false;
+        return !workplaceRepository.findByEmployerId(employer.getId()).isEmpty();
+    }
 }

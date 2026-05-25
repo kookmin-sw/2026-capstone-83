@@ -3,14 +3,17 @@ package com.itda.service;
 import com.itda.dto.request.JobPostCreateRequest;
 import com.itda.dto.request.JobPostUpdateRequest;
 import com.itda.dto.request.JobPostFilterRequest;
+import com.itda.dto.request.BulkOfferRequest;
 import com.itda.dto.response.CursorPageResponse;
 import com.itda.dto.response.JobPostCardResponse;
 import com.itda.dto.response.JobPostDetailResponse;
+import com.itda.dto.response.OfferTargetResponse;
 import com.itda.entity.Application;
 import com.itda.entity.JobPost;
 import com.itda.entity.User;
 import com.itda.entity.Workplace;
 import com.itda.enums.ApplicationStatus;
+import com.itda.enums.InitiatedBy;
 import com.itda.enums.JobPostStatus;
 import com.itda.enums.NotificationType;
 import com.itda.enums.WageType;
@@ -20,6 +23,8 @@ import com.itda.repository.ApplicationRepository;
 import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
 import com.itda.repository.WorkplaceRepository;
+import com.itda.repository.LongTermWorkerRepository;
+import com.itda.repository.UserRepository;
 import com.itda.service.event.AutoMatchEvents;
 import com.itda.service.event.InteractionEvents;
 import com.itda.service.util.TimeSlotSplitter;
@@ -51,6 +56,9 @@ public class JobPostService {
     private final WorkplaceRepository workplaceRepository;
     private final JobPostRankingService rankingService;
     private final ApplicationEventPublisher eventPublisher;
+    private final LongTermWorkerRepository longTermWorkerRepository;
+    private final UserRepository userRepository;
+    private final ApplicationService applicationService;
 
     // ─── 조회 ────────────────────────────────────────────────────
 
@@ -183,6 +191,16 @@ public class JobPostService {
 
         // Day1(이른 날짜) 레코드를 대표로 응답 반환
         JobPost day1 = savedPosts.get(0);
+
+        // 자동 오퍼 처리 (autoOfferEnabled=true인 경우)
+        if (Boolean.TRUE.equals(request.getAutoOfferEnabled())) {
+            List<Long> targetIds = getOfferTargetIds(day1, workplace.getEmployer().getUser().getId());
+            if (!targetIds.isEmpty()) {
+                applicationService.bulkOffer(day1.getId(),
+                        new BulkOfferRequest(targetIds),
+                        workplace.getEmployer().getUser());
+            }
+        }
 
         // 자동 매칭 이벤트 발행 — 비동기 리스너가 별도 스레드에서 처리
         eventPublisher.publishEvent(new AutoMatchEvents.JobPostCreatedEvent(
@@ -428,6 +446,47 @@ public class JobPostService {
         return CursorPageResponse.of(content, nextCursor, hasNext);
     }
 
+    /** 우선 채용 대상자 목록 조회. */
+    public List<OfferTargetResponse> getOfferTargets(Long jobPostId, Long employerUserId) {
+        JobPost jobPost = jobPostRepository.findById(jobPostId)
+                .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
+
+        List<Long> likedIds = jobPostLikeRepository.findByUserId(employerUserId)
+                .stream().map(l -> l.getJobPost().getWorkplace().getEmployer().getUser().getId()).toList();
+        List<Long> longTermIds = longTermWorkerRepository.findByEmployerUserId(employerUserId)
+                .stream().map(l -> l.getApplicantUser().getId()).toList();
+
+        List<Long> targetIds = java.util.stream.Stream.concat(likedIds.stream(), longTermIds.stream())
+                .distinct().toList();
+
+        List<Long> excludedByDate = applicationRepository
+                .findByJobPost_WorkDateAndStatusIn(
+                        jobPost.getWorkDate(),
+                        List.of(ApplicationStatus.HIRED, ApplicationStatus.PENDING))
+                .stream().map(a -> a.getApplicantUser().getId()).toList();
+
+        List<Long> excludedByDuplicate = applicationRepository
+                .findByJobPostId(jobPostId)
+                .stream().map(a -> a.getApplicantUser().getId()).toList();
+
+        return targetIds.stream()
+                .filter(id -> !excludedByDate.contains(id))
+                .filter(id -> !excludedByDuplicate.contains(id))
+                .map(userId -> {
+                    User applicant = userRepository.findById(userId).orElse(null);
+                    if (applicant == null) return null;
+                    return new OfferTargetResponse(
+                            userId,
+                            applicant.getName(),
+                            likedIds.contains(userId),
+                            longTermIds.contains(userId),
+                            false
+                    );
+                })
+                .filter(t -> t != null)
+                .toList();
+    }
+
     // ─── private helpers ─────────────────────────────────────────
 
     /**
@@ -498,6 +557,30 @@ public class JobPostService {
                 .groupStartAt(split.groupStartAt())
                 .groupEndAt(split.groupEndAt())
                 .build();
+    }
+
+    // 오퍼 대상자 ID 목록 추출 (날짜 겹침 + 중복 지원 제외)
+    private List<Long> getOfferTargetIds(JobPost jobPost, Long employerUserId) {
+        List<Long> likedIds = jobPostLikeRepository.findByUserId(employerUserId)
+                .stream().map(l -> l.getJobPost().getWorkplace().getEmployer().getUser().getId()).toList();
+        List<Long> longTermIds = longTermWorkerRepository.findByEmployerUserId(employerUserId)
+                .stream().map(l -> l.getApplicantUser().getId()).toList();
+
+        List<Long> excludedByDate = applicationRepository
+                .findByJobPost_WorkDateAndStatusIn(
+                        jobPost.getWorkDate(),
+                        List.of(ApplicationStatus.HIRED, ApplicationStatus.PENDING))
+                .stream().map(a -> a.getApplicantUser().getId()).toList();
+
+        List<Long> excludedByDuplicate = applicationRepository
+                .findByJobPostId(jobPost.getId())
+                .stream().map(a -> a.getApplicantUser().getId()).toList();
+
+        return java.util.stream.Stream.concat(likedIds.stream(), longTermIds.stream())
+                .distinct()
+                .filter(id -> !excludedByDate.contains(id))
+                .filter(id -> !excludedByDuplicate.contains(id))
+                .toList();
     }
 
     /** 공고 소유권 검증 — 본인 사업장의 공고가 아니면 {@link IllegalStateException}. */

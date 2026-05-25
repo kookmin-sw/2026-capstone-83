@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { refreshProfileSetupStatus } from 'entities/profileSetup/lib/loadProfileSetupStatus';
 import {
   fetchResume,
   updateResume,
@@ -33,6 +34,7 @@ export const useUpdateResume = () => {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ['resume'] });
       await queryClient.refetchQueries({ queryKey: ['resume'] });
+      await refreshProfileSetupStatus('APPLICANT');
     },
   });
 };

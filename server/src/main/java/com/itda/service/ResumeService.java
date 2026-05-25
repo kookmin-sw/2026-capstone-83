@@ -287,4 +287,8 @@ public class ResumeService {
 
         return new CursorPageResponse<>(result, nextCursor, hasNext);
     }
+    // 이력서 존재 여부 확인
+    public boolean hasResume(User user) {
+        return resumeRepository.findByUserId(user.getId()).isPresent();
+    }
 }
