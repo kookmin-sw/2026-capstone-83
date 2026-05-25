@@ -172,7 +172,7 @@ public class JobPost {
     // 급구 옵션
     @Column(name = "urgent_enabled")
     @Builder.Default
-    private boolean urgentEnabled = false;
+    private Boolean urgentEnabled = false;
 
     @Column(name = "urgent_wage_increase")
     private Integer urgentWageIncrease;
@@ -180,7 +180,7 @@ public class JobPost {
     // 자동 오퍼 옵션
     @Column(name = "auto_offer_enabled")
     @Builder.Default
-    private boolean autoOfferEnabled = false;
+    private Boolean autoOfferEnabled = false;
 
     // 급구 트리거 발동 메서드
     public void applyUrgentWage() {

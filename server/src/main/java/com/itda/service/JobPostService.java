@@ -199,7 +199,7 @@ public class JobPostService {
         JobPost saved = jobPostRepository.save(request.toEntity(workplace, contentUrl));
 
         // 자동 오퍼 처리 (autoOfferEnabled=true인 경우)
-        if (request.isAutoOfferEnabled()) {
+        if (Boolean.TRUE.equals(request.getAutoOfferEnabled())) {
             List<Long> targetIds = getOfferTargetIds(saved, workplace.getEmployer().getUser().getId());
             if (!targetIds.isEmpty()) {
                 applicationService.bulkOffer(saved.getId(),
@@ -248,9 +248,9 @@ public class JobPostService {
                 .tasks(request.tasks() != null ? request.tasks() : jobPost.getTasks())
                 .items(request.items() != null ? request.items() : jobPost.getItems())
                 .ageRequirements(request.ageRequirements() != null ? request.ageRequirements() : jobPost.getAgeRequirements())
-                .urgentEnabled(jobPost.isUrgentEnabled())
+                .urgentEnabled(jobPost.getUrgentEnabled())
                 .urgentWageIncrease(jobPost.getUrgentWageIncrease())
-                .autoOfferEnabled(jobPost.isAutoOfferEnabled())
+                .autoOfferEnabled(jobPost.getAutoOfferEnabled())
                 .createdAt(jobPost.getCreatedAt())
                 .build());
 
