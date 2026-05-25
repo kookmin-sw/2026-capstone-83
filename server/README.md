@@ -114,6 +114,22 @@ bash ~/start.sh
 tail -f /home/ec2-user/app.log
 ```
 
+> **운영 환경 타임존 주의**
+>
+> JVM 타임존은 `ItdaApplication.main()` 에서 `Asia/Seoul(KST)` 로 강제 설정되므로
+> 코드 레벨에서는 별도 JVM 옵션 없이도 동작한다.
+> 단, EC2 OS 타임존도 `Asia/Seoul` 로 맞춰두어야 스케줄러 cron 표현식과
+> OS 시각이 일치한다.
+>
+> ```bash
+> # EC2 OS 타임존 확인 및 설정
+> timedatectl
+> sudo timedatectl set-timezone Asia/Seoul
+> ```
+>
+> `DB_URL` 환경변수에는 `?serverTimezone=Asia/Seoul` 이 포함되어 있어야 한다
+> (현재 운영 환경에 설정됨). `application.yml` 에 중복 기재하지 말 것.
+
 ---
 
 ## API 명세
