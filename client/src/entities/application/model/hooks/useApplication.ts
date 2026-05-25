@@ -175,6 +175,7 @@ export const useOfferJobPost = (jobPostId: number) => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applicants', jobPostId] });
       queryClient.invalidateQueries({ queryKey: ['offerableJobPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['offerTargets', jobPostId] });
     },
   });
 };
@@ -189,6 +190,7 @@ export const useOfferJobPostToApplicant = () => {
     onSuccess: (_data, { jobPostId }) => {
       queryClient.invalidateQueries({ queryKey: ['applicants', jobPostId] });
       queryClient.invalidateQueries({ queryKey: ['offerableJobPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['offerTargets', jobPostId] });
       queryClient.invalidateQueries({ queryKey: ['applications'] });
     },
   });

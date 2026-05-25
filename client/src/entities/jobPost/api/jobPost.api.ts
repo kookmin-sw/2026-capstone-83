@@ -1,6 +1,11 @@
 import { authClient, httpClient } from "shared/api/httpClient";
 import { useAuthStore } from "entities/auth/model/store/authStore";
 import type {
+  BulkOfferRequest,
+  BulkOfferResponse,
+  OfferTarget,
+} from '../model/types/offer.type';
+import type {
   GetJobPostsParams,
   GetOfferableJobPostsParams,
   JobPost,
@@ -98,6 +103,24 @@ export const fetchJobPostsByEmployer = async (data: GetJobPostsParams): Promise<
   );
   return response.data;
 }
+
+/** 우선 채용 대상자 목록 (일괄 제안용) */
+export const fetchOfferTargets = async (jobPostId: number): Promise<OfferTarget[]> => {
+  const response = await authClient.get<OfferTarget[]>(`/api/v1/job-posts/${jobPostId}/offer-targets`);
+  return response.data;
+};
+
+/** 일괄 채용 제안 */
+export const bulkOffer = async (
+  jobPostId: number,
+  body: BulkOfferRequest,
+): Promise<BulkOfferResponse> => {
+  const response = await authClient.post<BulkOfferResponse>(
+    `/api/v1/job-posts/${jobPostId}/bulk-offer`,
+    body,
+  );
+  return response.data;
+};
 
 /** 제안 가능 공고 목록 (OPEN + 해당 구직자와 미연결) */
 export const fetchOfferableJobPosts = async (

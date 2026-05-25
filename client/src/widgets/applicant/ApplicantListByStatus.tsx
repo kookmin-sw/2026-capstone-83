@@ -26,6 +26,9 @@ import Badge from 'shared/ui/Badge/Badge';
 import Loading from 'shared/ui/Loading/Loading';
 import Empty from 'shared/ui/Empty/Empty';
 import { EmployerReviewSection } from 'features/review/EmployerReviewSection';
+import { BulkOfferButton } from 'features/offer/BulkOfferButton';
+import { ToggleLongTermWorkerButton } from 'features/longTermWorker/ToggleLongTermWorkerButton';
+import { useJobPost } from 'entities/jobPost/model/hooks/useJobPost';
 
 interface Props {
   jobPostId: number;
@@ -33,6 +36,8 @@ interface Props {
 
 export const ApplicantListByStatus = ({ jobPostId }: Props) => {
   const { data: applicants, isLoading } = useApplicants(jobPostId);
+  const { data: jobPost } = useJobPost(jobPostId);
+  const canBulkOffer = jobPost?.status === 'OPEN';
   const [activeTab, setActiveTab] = useState<EmployerApplicantTab>('action');
   const [selectedResumeId, setSelectedResumeId] = useState<number | undefined>();
   const [selectedApplicantUserId, setSelectedApplicantUserId] = useState<number | undefined>();
@@ -172,6 +177,12 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
 
   return (
     <S.Wrapper>
+      {canBulkOffer && (
+        <S.BulkOfferRow>
+          <BulkOfferButton jobPostId={jobPostId} />
+        </S.BulkOfferRow>
+      )}
+
       <S.TabBar role="tablist" aria-label="지원자 상태 탭">
         {EMPLOYER_APPLICANT_TABS.map((tab) => {
           const count = tabCounts[tab];
@@ -205,7 +216,13 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
             data={selectedResume}
             actions={
               selectedApplicantUserId ? (
-                <OfferJobButton jobPostId={jobPostId} userId={selectedApplicantUserId} />
+                <>
+                  <ToggleLongTermWorkerButton
+                    applicantUserId={selectedApplicantUserId}
+                    stopPropagation
+                  />
+                  <OfferJobButton jobPostId={jobPostId} userId={selectedApplicantUserId} />
+                </>
               ) : undefined
             }
           />
@@ -222,6 +239,10 @@ const S = {
     display: flex;
     flex-direction: column;
     gap: 20px;
+  `,
+  BulkOfferRow: styled.div`
+    display: flex;
+    justify-content: flex-end;
   `,
   TabBar: styled.div`
     display: flex;

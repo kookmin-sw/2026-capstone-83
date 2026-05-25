@@ -110,6 +110,8 @@ export interface JobPostCreate {
   urgentEnabled?: boolean;
   /** 급구 시급/급여 인상액 (원) */
   urgentWageIncrease?: number;
+  /** 등록 시 우선 대상 자동 일괄 제안 */
+  autoOfferEnabled?: boolean;
 }
 
 /** 폼 제출 후 API/multipart 전송용 (List 필드 변환 완료) */
@@ -123,6 +125,7 @@ export type JobPostCreateSubmit = Omit<
   items?: string[];
   urgentEnabled?: boolean;
   urgentWageIncrease?: number;
+  autoOfferEnabled?: boolean;
 };
 
 export interface JobPostCreateResponse {

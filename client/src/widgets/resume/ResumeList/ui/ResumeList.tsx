@@ -7,6 +7,7 @@ import { toResumeCardItem } from 'entities/resume/lib/toResumeCardItem';
 import type { ResumeCardItem } from 'entities/resume/model/types/resume.type';
 import LikeResumeButton from 'features/like/LikeResumeButton';
 import { OfferFromResumeButton } from 'features/offer/OfferFromResumeButton';
+import { ToggleLongTermWorkerButton } from 'features/longTermWorker/ToggleLongTermWorkerButton';
 import Loading from 'shared/ui/Loading/Loading';
 import Empty from 'shared/ui/Empty/Empty';
 import { USE_MOCK } from 'shared/config/env';
@@ -50,12 +51,18 @@ export const ResumeList = () => {
                 variant="icon"
               />
               {isEmployer && resume.userId != null && (
-                <OfferFromResumeButton
-                  userId={resume.userId}
-                  applicantName={resume.name}
-                  buttonSize="small"
-                  stopPropagation
-                />
+                <>
+                  <ToggleLongTermWorkerButton
+                    applicantUserId={resume.userId}
+                    stopPropagation
+                  />
+                  <OfferFromResumeButton
+                    userId={resume.userId}
+                    applicantName={resume.name}
+                    buttonSize="small"
+                    stopPropagation
+                  />
+                </>
               )}
             </>
           }

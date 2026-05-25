@@ -7,13 +7,21 @@ interface Props {
   data: ResumeResponse | null;
   /** 이름 옆 (좋아요 등) */
   nameActions?: React.ReactNode;
-  /** 프로필 사진 아래 (고용 제안 등) */
+  /** 프로필 사진 아래 (레거시) */
   profileActions?: React.ReactNode;
+  /** 섹션 하단 푸터 (고용 제안·장기근무 등 한 줄 배치) */
+  footerActions?: React.ReactNode;
   /** @deprecated nameActions + profileActions 사용 */
   actions?: React.ReactNode;
 }
 
-export const ResumeProfileSection = ({ data, nameActions, profileActions, actions }: Props) => {
+export const ResumeProfileSection = ({
+  data,
+  nameActions,
+  profileActions,
+  footerActions,
+  actions,
+}: Props) => {
   if (!data) {
     return <Loading message="프로필 정보를 불러오는 중..." />;
   }
@@ -27,7 +35,8 @@ export const ResumeProfileSection = ({ data, nameActions, profileActions, action
   const birthYear = birthRaw ? new Date(birthRaw).getFullYear() : '';
   const age = birthYear ? new Date().getFullYear() - Number(birthYear) + 1 : '';
 
-  const useSplitLayout = nameActions != null || profileActions != null;
+  const useSplitLayout =
+    nameActions != null || profileActions != null || footerActions != null;
 
   return (
     <Section>
@@ -81,6 +90,7 @@ export const ResumeProfileSection = ({ data, nameActions, profileActions, action
           </S.ContactList>
         </S.ProfileInfo>
       </S.ProfileLayout>
+      {footerActions && <S.FooterActions>{footerActions}</S.FooterActions>}
     </Section>
   );
 };
@@ -120,6 +130,27 @@ const S = {
   ProfileActionSlot: styled.div`
     margin-top: 12px;
     width: 100%;
+  `,
+  FooterActions: styled.div`
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+    width: 100%;
+    margin-top: 8px;
+    padding-top: 24px;
+    border-top: 1px solid ${({ theme }) => theme.color.border};
+
+    & > * {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+      justify-content: center;
+    }
   `,
   ProfileInfo: styled.div`
     flex: 1;

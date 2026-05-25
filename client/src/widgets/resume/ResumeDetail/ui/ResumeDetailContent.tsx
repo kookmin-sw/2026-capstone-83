@@ -4,6 +4,7 @@ import { ResumeCareerSection } from 'entities/resume/ui/detailSections/ResumeCar
 import { useResumeDetail } from 'entities/resume/model/hooks/useResumeDetail';
 import LikeResumeButton from 'features/like/LikeResumeButton';
 import { OfferFromResumeButton } from 'features/offer/OfferFromResumeButton';
+import { ToggleLongTermWorkerButton } from 'features/longTermWorker/ToggleLongTermWorkerButton';
 import Article from 'shared/ui/Layout/Article';
 import Main from 'shared/ui/Layout/Main';
 import Loading from 'shared/ui/Loading/Loading';
@@ -33,13 +34,16 @@ export const ResumeDetailContent = ({ resumeId }: Props) => {
               <LikeResumeButton resumeId={resumeId} liked={resume.liked} variant="icon" />
             ) : undefined
           }
-          profileActions={
+          footerActions={
             isEmployer && applicantUserId != null ? (
-              <OfferFromResumeButton
-                userId={applicantUserId}
-                applicantName={resume.name}
-                variant="profile"
-              />
+              <>
+                <ToggleLongTermWorkerButton applicantUserId={applicantUserId} buttonSize="small" />
+                <OfferFromResumeButton
+                  userId={applicantUserId}
+                  applicantName={resume.name}
+                  buttonSize="small"
+                />
+              </>
             ) : undefined
           }
         />
@@ -49,7 +53,12 @@ export const ResumeDetailContent = ({ resumeId }: Props) => {
       {isEmployer && applicantUserId != null && (
         <StickyBar>
           <LikeResumeButton resumeId={resumeId} liked={resume.liked} variant="bordered" />
-          <OfferFromResumeButton userId={applicantUserId} applicantName={resume.name} />
+          <ToggleLongTermWorkerButton applicantUserId={applicantUserId} buttonSize="small" />
+          <OfferFromResumeButton
+            userId={applicantUserId}
+            applicantName={resume.name}
+            buttonSize="small"
+          />
         </StickyBar>
       )}
     </Main>

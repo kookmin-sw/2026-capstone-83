@@ -25,6 +25,7 @@ import { TemplateSection } from 'features/jobPost/create-jobPost/TemplateSection
 import type { JobPostTemplateResponse } from 'entities/jobPost/model/types/template.type';
 import { useCreateJobPost } from 'entities/jobPost/model/hooks/useCreateJobPost';
 import { JobPostUrgentFields } from 'entities/jobPost/ui/InputFields/JobPostUrgentFields';
+import { JobPostAutoOfferFields } from 'entities/jobPost/ui/InputFields/JobPostAutoOfferFields';
 import { splitByComma } from 'shared/lib/transformString';
 import { mergeJobPostRequirements, splitJobPostRequirements } from 'entities/jobPost/lib/jobPostRequirements';
 import CreateJobPostButton from 'features/jobPost/create-jobPost/CreateJobPostButton';
@@ -48,6 +49,7 @@ export const JobPostCreateForm = () => {
       requirementsText: '',
       certRequirements: [],
       urgentEnabled: false,
+      autoOfferEnabled: false,
     },
   });
   const { mutate } = useCreateJobPost();
@@ -81,6 +83,7 @@ export const JobPostCreateForm = () => {
       ...rest,
       urgentEnabled: !!data.urgentEnabled,
       urgentWageIncrease: data.urgentEnabled ? data.urgentWageIncrease : undefined,
+      autoOfferEnabled: !!data.autoOfferEnabled,
       requirements: mergeJobPostRequirements(requirementsText, certRequirements),
       benefits: splitByComma(data.benefits),
       tasks: splitByComma(data.tasks),
@@ -194,6 +197,7 @@ export const JobPostCreateForm = () => {
               }
             />
             <JobPostUrgentFields register={register} watch={watch} setValue={setValue} />
+            <JobPostAutoOfferFields register={register} />
             <JobPostWorkContentFields register={register} setValue={setValue} watch={watch} />
             <JobPostLocationField
               register={register}

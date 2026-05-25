@@ -11,6 +11,7 @@ import Section from 'shared/ui/Layout/Section';
 import ProgressBar from 'shared/ui/ProgressBar/ProgressBar';
 import Badge from 'shared/ui/Badge/Badge';
 import { UrgentJobPostBadge } from './UrgentJobPostBadge';
+import { BulkOfferButton } from 'features/offer/BulkOfferButton';
 import Loading from 'shared/ui/Loading/Loading';
 
 interface Props {
@@ -67,6 +68,9 @@ const SelectedJobPostSection = ({ postId }: Props) => {
           <ProgressBar total={jobPost.totalSlots} current={jobPost.filledSlots} />
           {jobPost.status === 'CLOSED' && (
             <S.StatusHint>마감된 공고입니다. 신규 지원·제안은 받을 수 없습니다.</S.StatusHint>
+          )}
+          {role === 'EMPLOYER' && jobPost.status === 'OPEN' && (
+            <BulkOfferButton jobPostId={postId} />
           )}
         </S.ProgressSection>
 

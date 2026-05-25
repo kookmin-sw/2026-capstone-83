@@ -25,12 +25,18 @@ const StickyBarWrapper = styled.div`
 `;
 
 const StickyBarInner = styled.div`
-  max-width: 250px;
+  max-width: min(100%, 520px);
   margin: 0 auto;
   display: flex;
+  flex-wrap: nowrap;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
+
+  & > * {
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
 `;
 
 export default StickyBar;
