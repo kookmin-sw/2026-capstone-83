@@ -22,11 +22,16 @@ public record EmployerScheduleItem(
         int hiredCount
 ) {
     public static EmployerScheduleItem from(JobPost jobPost, int applicantCount, int hiredCount) {
+        // 자정 분할된 Day1 레코드의 workEnd=LocalTime.MAX 를 "24:00" 으로 표시.
+        // Day2 레코드(workStart=00:00, workEnd=06:00 등)는 그대로 표시.
+        String workEndStr = jobPost.getWorkEnd().equals(java.time.LocalTime.MAX)
+                ? "24:00"
+                : jobPost.getWorkEnd().toString();
         return new EmployerScheduleItem(
                 jobPost.getId(),
                 jobPost.getTitle(),
                 jobPost.getWorkStart().toString(),
-                jobPost.getWorkEnd().toString(),
+                workEndStr,
                 jobPost.getFilledSlots(),
                 jobPost.getTotalSlots(),
                 jobPost.getStatus().name(),

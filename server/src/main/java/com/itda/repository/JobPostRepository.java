@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface JobPostRepository extends JpaRepository<JobPost, Long>, JobPostRepositoryCustom {
@@ -91,4 +92,44 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JobPost
     List<JobPost> findOpenPostsExcluding(@Param("excludeIds") List<Long> excludeIds);
 
     // 공고 목록 통합 필터 조회는 JobPostRepositoryCustom#findByDynamicFilter 로 위임.
+
+    /**
+     * 같은 그룹(linkedGroupId)에 속하는 JobPost 전체 조회.
+     * 자정 분할된 공고의 마감·삭제·그룹 단위 조회에 사용한다.
+     *
+     * @param linkedGroupId 그룹 식별자 UUID
+     */
+    List<JobPost> findByLinkedGroupId(String linkedGroupId);
+
+    /**
+     * 자동 매칭(가용시간 등록 트리거)용 — 구직자 가용시간 범위에 완전히 포함되는
+     * OPEN 공고의 linkedGroupId 목록을 반환한다.
+     *
+     * <p><b>매칭 조건 (avail ⊇ post):</b>
+     * <ol>
+     *   <li>{@code groupStartAt ≥ availStart}: 공고가 가용시간 시작 이후에 시작한다.</li>
+     *   <li>{@code groupEndAt ≤ availEnd}: 공고가 가용시간 종료 이전에 끝난다.</li>
+     *   <li>{@code status = OPEN}: 모집 중인 공고만 대상.</li>
+     *   <li>{@code employer.user.id ≠ userId}: 가용시간 등록자 본인 공고 제외.</li>
+     * </ol>
+     *
+     * <p>minDurationMinutes 필터는 공고 그룹마다 적용할 구직자별 값이 다르므로
+     * Java 레이어에서 처리한다.
+     *
+     * @param availStart 가용시간 그룹 시작 일시
+     * @param availEnd   가용시간 그룹 종료 일시
+     * @param userId     가용시간 등록 구직자 User ID (본인 공고 제외)
+     * @return 매칭 후보 linkedGroupId 목록 (중복 제거)
+     */
+    @Query("""
+            SELECT DISTINCT j.linkedGroupId FROM JobPost j
+            WHERE j.status = com.itda.enums.JobPostStatus.OPEN
+              AND j.groupStartAt >= :availStart
+              AND j.groupEndAt   <= :availEnd
+              AND j.workplace.employer.user.id <> :userId
+            """)
+    List<String> findMatchingJobPostGroupIdsForAvailability(
+            @Param("availStart") LocalDateTime availStart,
+            @Param("availEnd") LocalDateTime availEnd,
+            @Param("userId") Long userId);
 }

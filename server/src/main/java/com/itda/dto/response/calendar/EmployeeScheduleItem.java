@@ -21,11 +21,15 @@ public record EmployeeScheduleItem(
 ) {
     public static EmployeeScheduleItem from(Application application) {
         JobPost jobPost = application.getJobPost();
+        // 자정 분할된 Day1 레코드의 workEnd=LocalTime.MAX 를 "24:00" 으로 표시.
+        String workEndStr = jobPost.getWorkEnd().equals(java.time.LocalTime.MAX)
+                ? "24:00"
+                : jobPost.getWorkEnd().toString();
         return new EmployeeScheduleItem(
                 jobPost.getId(),
                 jobPost.getTitle(),
                 jobPost.getWorkStart().toString(),
-                jobPost.getWorkEnd().toString(),
+                workEndStr,
                 jobPost.getFilledSlots(),
                 jobPost.getTotalSlots(),
                 jobPost.getStatus().name(),

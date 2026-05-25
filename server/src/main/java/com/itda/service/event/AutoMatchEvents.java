@@ -1,0 +1,55 @@
+package com.itda.service.event;
+
+import java.time.LocalDateTime;
+
+/**
+ * 자동 매칭 이벤트 모델.
+ *
+ * <ul>
+ *   <li>{@link AvailabilityCreatedEvent}: 구직자 가용시간 등록/수정 완료 후 발행.
+ *       가용시간 범위에 포함되는 OPEN 공고를 찾아 자동 매칭을 시도한다.</li>
+ *   <li>{@link JobPostCreatedEvent}: 구인 공고 등록 완료 후 발행.
+ *       공고 범위를 포함하는 가용시간을 가진 구직자를 찾아 자동 매칭을 시도한다.</li>
+ * </ul>
+ *
+ * <p>두 이벤트 모두 {@code eventsExecutor} 스레드 풀에서 비동기 처리되므로
+ * 사용자 요청 레이턴시에 영향을 주지 않는다.
+ */
+public final class AutoMatchEvents {
+
+    private AutoMatchEvents() {}
+
+    /**
+     * 구직자 가용시간 생성/수정 이벤트.
+     *
+     * @param userId             가용시간을 등록한 구직자 User ID
+     * @param linkedGroupId      가용시간 그룹 식별자 UUID
+     * @param groupStartAt       가용시간 그룹 전체 시작 일시
+     * @param groupEndAt         가용시간 그룹 전체 종료 일시
+     * @param minDurationMinutes 구직자가 요구하는 최소 근무 시간(분)
+     */
+    public record AvailabilityCreatedEvent(
+            Long userId,
+            String linkedGroupId,
+            LocalDateTime groupStartAt,
+            LocalDateTime groupEndAt,
+            int minDurationMinutes
+    ) {}
+
+    /**
+     * 구인 공고 등록 이벤트.
+     *
+     * @param jobPostRepresentativeId 대표 JobPost DB PK (자정 분할 시 Day1 레코드 ID)
+     * @param linkedGroupId           공고 그룹 식별자 UUID
+     * @param groupStartAt            공고 그룹 전체 시작 일시
+     * @param groupEndAt              공고 그룹 전체 종료 일시
+     * @param employerUserId          공고 등록 고용주의 User ID
+     */
+    public record JobPostCreatedEvent(
+            Long jobPostRepresentativeId,
+            String linkedGroupId,
+            LocalDateTime groupStartAt,
+            LocalDateTime groupEndAt,
+            Long employerUserId
+    ) {}
+}

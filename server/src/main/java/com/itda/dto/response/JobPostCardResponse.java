@@ -49,6 +49,14 @@ public record JobPostCardResponse(
     // liked 포함 변환
     public static JobPostCardResponse from(JobPost post, boolean liked) {
         long leftDays = ChronoUnit.DAYS.between(LocalDate.now(), post.getDeadline());
+
+        // workEnd 표시: 자정 분할 Day1 의 workEnd=LocalTime.MAX 를 원래 값으로 되돌린다.
+        // groupEndAt.toLocalTime() = 사용자 원래 입력값 (예: 06:00, 00:00).
+        // groupEndAt 이 null 이면 (migration 전 old data) workEnd 를 그대로 사용.
+        String workEndDisplay = post.getGroupEndAt() != null
+                ? post.getGroupEndAt().toLocalTime().toString()
+                : post.getWorkEnd().toString();
+
         return new JobPostCardResponse(
                 post.getId(),
                 post.getTitle(),
@@ -61,7 +69,7 @@ public record JobPostCardResponse(
                 post.getFilledSlots(),
                 post.getWorkDate().toString(),
                 post.getWorkStart().toString(),
-                post.getWorkEnd().toString(),
+                workEndDisplay,
                 leftDays,
                 post.getStatus().name(),
                 post.getDeadline().toString(),
