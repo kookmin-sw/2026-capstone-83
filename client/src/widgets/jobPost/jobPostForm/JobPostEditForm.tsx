@@ -13,6 +13,8 @@ import { JobPostBasicInfoFields } from 'entities/jobPost/ui/InputFields/JobPostB
 import { JobPostLocationField } from 'entities/jobPost/ui/InputFields/JobPostLocationField';
 import { JobPostDescriptionField } from 'entities/jobPost/ui/InputFields/JobPostDescriptionField';
 import { JobPostWorkContentFields } from 'entities/jobPost/ui/InputFields/JobPostWorkContentFields';
+import { JobPostUrgentFields } from 'entities/jobPost/ui/InputFields/JobPostUrgentFields';
+import { JobPostAutoOfferFields } from 'entities/jobPost/ui/InputFields/JobPostAutoOfferFields';
 import { useImageUpload } from 'features/control-Image/hooks/useImageUpload';
 import { ImageUploadButton } from 'features/control-Image/UploadButton';
 import { ImageRemoveButton } from 'features/control-Image/RemoveButton';
@@ -80,6 +82,9 @@ export const JobPostEditForm = ({ postId }: Props) => {
       benefits: joinByComma(post.benefits),
       tasks: joinByComma(post.tasks),
       items: joinByComma(post.items),
+      urgentEnabled: Boolean(post.urgentEnabled),
+      urgentWageIncrease: post.urgentWageIncrease ?? undefined,
+      autoOfferEnabled: Boolean(post.autoOfferEnabled),
     });
     setIsFormReady(true);
   }, [post, reset]);
@@ -122,6 +127,9 @@ export const JobPostEditForm = ({ postId }: Props) => {
       tasks: splitByComma(data.tasks),
       items: splitByComma(data.items),
       ageRequirements: post.ageRequirements,
+      urgentEnabled: !!data.urgentEnabled,
+      urgentWageIncrease: data.urgentEnabled ? Number(data.urgentWageIncrease) : null,
+      autoOfferEnabled: !!data.autoOfferEnabled,
     };
 
     mutate(
@@ -209,6 +217,8 @@ export const JobPostEditForm = ({ postId }: Props) => {
               errors={formState.errors}
               previewUrl={post.companyLogoUrl}
             />
+            <JobPostUrgentFields register={register} watch={watch} setValue={setValue} />
+            <JobPostAutoOfferFields register={register} />
             <JobPostWorkContentFields register={register} setValue={setValue} watch={watch} />
             <JobPostLocationField
               register={register}

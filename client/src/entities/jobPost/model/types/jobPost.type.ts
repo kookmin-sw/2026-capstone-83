@@ -25,7 +25,9 @@ export interface JobPost {
   liked: boolean; // 공고 좋아요 여부
   companyLogoUrl?: string; // 사업장 로고 (목록 API)
   /** 급구 옵션 (마감 하루 전 급여 인상) */
-  urgentEnabled?: boolean;
+  urgentEnabled?: boolean | null;
+  /** 급구 인상액 (원, 스케줄러 적용 전 기준) */
+  urgentWageIncrease?: number | null;
 }
 
 export interface JobPostDetail extends JobPost {
@@ -41,8 +43,10 @@ export interface JobPostDetail extends JobPost {
   tasks: string[]; // 업무 내용
   items?: string[]; // 준비물
   ageRequirements?: string[];
-  /** 급구 시 예정 인상액 (원) */
-  urgentWageIncrease?: number;
+  /** 급구 인상액 (원) */
+  urgentWageIncrease?: number | null;
+  /** 자동 채용 제안 여부 */
+  autoOfferEnabled?: boolean | null;
 }
 
 export type JobPostOverviewProps = Pick<
@@ -151,6 +155,9 @@ export interface JobPostUpdateRequest {
   tasks?: string[];
   items?: string[];
   ageRequirements?: string[];
+  urgentEnabled?: boolean | null;
+  urgentWageIncrease?: number | null;
+  autoOfferEnabled?: boolean | null;
 }
 
 export interface JobPostUpdatePayload {

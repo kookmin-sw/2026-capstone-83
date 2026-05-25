@@ -7,6 +7,7 @@ import { calculateDDay } from 'shared/lib/calculateDDay';
 import ResizedImage from 'shared/ui/ResizedImage/ResizedImage';
 import type { JobPostOverviewProps } from '../../model/types/jobPost.type';
 import { UrgentJobPostBadge } from '../UrgentJobPostBadge';
+import { UrgentWageIncreaseHint } from '../UrgentWageIncreaseHint';
 import Loading from 'shared/ui/Loading/Loading';
 
 
@@ -64,10 +65,13 @@ export const JobPostDetailOverviewSection = ({ data, headerActions, actions }: P
                 <S.Label>급여</S.Label>
                 <S.Value>
                   <S.Badge>{wageType === 'DAILY' ? '일급' : wageType === 'HOURLY' ? '시급' : '월급'}</S.Badge>
-                  <strong>{wage.toLocaleString()}원</strong>
-                  {urgentEnabled && urgentWageIncrease != null && (
-                    <S.UrgentHint>급구 · 마감 전 +{urgentWageIncrease.toLocaleString()}원 예정</S.UrgentHint>
-                  )}
+                  <S.WageAmount>
+                    <strong>{wage.toLocaleString()}원</strong>
+                    <UrgentWageIncreaseHint
+                      urgentEnabled={urgentEnabled}
+                      urgentWageIncrease={urgentWageIncrease}
+                    />
+                  </S.WageAmount>
                 </S.Value>
                 <S.Label>공고 마감</S.Label>
                 <S.Value>{deadline} <span className="dday">{calculateDDay(deadline)}</span></S.Value>
@@ -151,11 +155,6 @@ const S = {
     font-weight: ${({ theme }) => theme.fontWeight.bold};
     line-height: 1.4;
   `,
-  UrgentHint: styled.span`
-    font-size: ${({ theme }) => theme.fontSize.xsmall};
-    color: ${({ theme }) => theme.color.error};
-    font-weight: ${({ theme }) => theme.fontWeight.medium};
-  `,
   HeaderActions: styled.div`
     display: flex;
     align-items: center;
@@ -185,6 +184,10 @@ const S = {
     align-items: center;
     gap: 8px;
     .dday { color: ${({ theme }) => theme.color.error}; font-weight: bold; }
+  `,
+  WageAmount: styled.span`
+    display: inline-flex;
+    align-items: center;
   `,
   Badge: styled.span`
     padding: 2px 8px;

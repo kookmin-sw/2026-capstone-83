@@ -11,6 +11,7 @@ import Section from 'shared/ui/Layout/Section';
 import ProgressBar from 'shared/ui/ProgressBar/ProgressBar';
 import Badge from 'shared/ui/Badge/Badge';
 import { UrgentJobPostBadge } from './UrgentJobPostBadge';
+import { UrgentWageIncreaseHint } from './UrgentWageIncreaseHint';
 import { BulkOfferButton } from 'features/offer/BulkOfferButton';
 import Loading from 'shared/ui/Loading/Loading';
 
@@ -80,7 +81,13 @@ const SelectedJobPostSection = ({ postId }: Props) => {
             <S.InfoLabel>급여</S.InfoLabel>
             <S.InfoValue>
               <Badge scheme="primary" fontSize="xsmall">{wageLabel}</Badge>
-              <span className="wage">{jobPost.wage.toLocaleString()}원</span>
+              <span className="wage">
+                {jobPost.wage.toLocaleString()}원
+                <UrgentWageIncreaseHint
+                  urgentEnabled={jobPost.urgentEnabled}
+                  urgentWageIncrease={jobPost.urgentWageIncrease}
+                />
+              </span>
             </S.InfoValue>
           </S.InfoRow>
 

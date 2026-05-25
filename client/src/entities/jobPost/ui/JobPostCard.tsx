@@ -16,6 +16,7 @@ import {
   getWageTypeLabel,
 } from '../lib/jobPostCardDisplay';
 import { UrgentJobPostBadge } from './UrgentJobPostBadge';
+import { UrgentWageIncreaseHint } from './UrgentWageIncreaseHint';
 
 export interface JobPostCardProps {
   data: JobPost;
@@ -54,6 +55,7 @@ export const JobPostCard = ({
     totalSlots,
     filledSlots,
     urgentEnabled,
+    urgentWageIncrease,
   } = data;
 
   const dDayLabel = calculateDDay(deadline);
@@ -106,6 +108,10 @@ export const JobPostCard = ({
           <strong>
             {getWageTypeLabel(wageType)} {wage.toLocaleString()}원
           </strong>
+          <UrgentWageIncreaseHint
+            urgentEnabled={urgentEnabled}
+            urgentWageIncrease={urgentWageIncrease}
+          />
           <span className="dot">·</span>
           {formatScheduleLine(workDate, workStart, workEnd)}
         </S.PayLine>
