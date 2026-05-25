@@ -24,5 +24,8 @@ public record JobPostUpdateRequest(
         List<String> benefits,
         List<String> tasks,
         List<String> items,
-        List<String> ageRequirements
+        List<String> ageRequirements,
+        Boolean urgentEnabled,
+        Integer urgentWageIncrease,
+        Boolean autoOfferEnabled
 ) {}

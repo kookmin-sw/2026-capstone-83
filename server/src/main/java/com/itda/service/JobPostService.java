@@ -334,6 +334,11 @@ public class JobPostService {
                     .groupStartAt(finalGroupStartAt)
                     .groupEndAt(finalGroupEndAt)
                     .createdAt(gp.getCreatedAt())
+                    .ageRequirements(request.ageRequirements() != null ? request.ageRequirements() : day1.getAgeRequirements())
+                    .urgentEnabled(request.urgentEnabled() != null ? request.urgentEnabled() : day1.getUrgentEnabled())
+                    .urgentWageIncrease(request.urgentWageIncrease() != null ? request.urgentWageIncrease() : day1.getUrgentWageIncrease())
+                    .autoOfferEnabled(request.autoOfferEnabled() != null ? request.autoOfferEnabled() : day1.getAutoOfferEnabled())
+                    .linkedGroupId(groupId)
                     .build()));
         }
 
@@ -556,6 +561,10 @@ public class JobPostService {
                 .linkedGroupId(split.linkedGroupId())
                 .groupStartAt(split.groupStartAt())
                 .groupEndAt(split.groupEndAt())
+                .groupEndAt(split.groupEndAt())
+                .urgentEnabled(request.getUrgentEnabled())
+                .urgentWageIncrease(request.getUrgentWageIncrease())
+                .autoOfferEnabled(request.getAutoOfferEnabled())
                 .build();
     }
 

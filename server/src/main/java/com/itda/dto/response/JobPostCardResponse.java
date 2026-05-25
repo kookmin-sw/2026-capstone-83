@@ -39,7 +39,11 @@ public record JobPostCardResponse(
         String jobSubcategory,
 
         // 좋아요 여부
-        boolean liked
+        boolean liked,
+
+        // 급구 여부
+        Boolean urgentEnabled,
+        Integer urgentWageIncrease
 ) {
     // liked 없는 기본 변환 (비로그인 or liked 불필요한 경우)
     public static JobPostCardResponse from(JobPost post) {
@@ -75,7 +79,9 @@ public record JobPostCardResponse(
                 post.getDeadline().toString(),
                 post.getJobCategory(),
                 post.getJobSubcategory(),
-                liked
+                liked,
+                post.getUrgentEnabled(),
+                post.getUrgentWageIncrease()
         );
     }
 }

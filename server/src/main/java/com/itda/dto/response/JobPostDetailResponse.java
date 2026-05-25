@@ -42,19 +42,16 @@ public record JobPostDetailResponse(
         String updatedAt,
 
         // 좋아요 여부
-        boolean liked
+        boolean liked,
+
+        // 급구 옵션
+        Boolean urgentEnabled,
+        Integer urgentWageIncrease,
+        Boolean autoOfferEnabled
 ) {
     // liked 포함 버전
     public static JobPostDetailResponse from(JobPost post, boolean liked) {
         long leftDays = ChronoUnit.DAYS.between(LocalDate.now(), post.getDeadline());
-
-        // workEnd 표시: 자정 분할된 Day1 레코드는 workEnd=LocalTime.MAX 로 저장되므로
-        // groupEndAt.toLocalTime() 을 우선 사용한다 (사용자 원래 입력값이 보존되어 있음).
-        // groupEndAt 이 null 인 경우(migration 전 old data)에는 workEnd 를 그대로 사용.
-        String workEndDisplay = post.getGroupEndAt() != null
-                ? post.getGroupEndAt().toLocalTime().toString()
-                : post.getWorkEnd().toString();
-
         return new JobPostDetailResponse(
                 post.getId(),
                 post.getTitle(),
@@ -67,7 +64,7 @@ public record JobPostDetailResponse(
                 post.getFilledSlots(),
                 post.getWorkDate().toString(),
                 post.getWorkStart().toString(),
-                workEndDisplay,
+                post.getWorkEnd().toString(),
                 leftDays,
                 post.getStatus().name(),
                 post.getDeadline().toString(),
@@ -81,7 +78,10 @@ public record JobPostDetailResponse(
                 post.getItems(),
                 post.getCreatedAt() != null ? post.getCreatedAt().toString() : null,
                 null,
-                liked
+                liked,
+                post.getUrgentEnabled(),
+                post.getUrgentWageIncrease(),
+                post.getAutoOfferEnabled()
         );
     }
 }
