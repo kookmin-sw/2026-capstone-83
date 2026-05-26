@@ -78,7 +78,7 @@ public class WorkerAvailabilityController {
      *
      * @param fromDate 조회 시작 날짜 (yyyy-MM-dd, 포함)
      * @param toDate   조회 종료 날짜 (yyyy-MM-dd, 포함)
-     * @return 200 OK + groupStartAt 오름차순 슬롯 목록
+     * @return 200 OK + availStartAt 오름차순 슬롯 목록
      */
     @GetMapping
     public ResponseEntity<List<WorkerAvailabilityResponse>> getRange(

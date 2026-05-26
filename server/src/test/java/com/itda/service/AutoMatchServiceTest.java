@@ -70,7 +70,7 @@ class AutoMatchServiceTest {
             LocalDateTime.of(2030, 6, 1, 18, 0);
     private static final int POST_DURATION_MIN     = 480; // 8시간
 
-    private static final String AVAIL_GROUP_ID = "avail-group-uuid";
+    private static final Long AVAIL_ID = 42L;
 
     private AutoMatchEvents.AvailabilityCreatedEvent availEvent;
     private AutoMatchEvents.JobPostCreatedEvent postEvent;
@@ -78,7 +78,7 @@ class AutoMatchServiceTest {
     @BeforeEach
     void setUp() {
         availEvent = new AutoMatchEvents.AvailabilityCreatedEvent(
-                APPLICANT_USER_ID, AVAIL_GROUP_ID, AVAIL_START, AVAIL_END, 0);
+                APPLICANT_USER_ID, AVAIL_ID, AVAIL_START, AVAIL_END, 0);
         postEvent = new AutoMatchEvents.JobPostCreatedEvent(
                 10L, POST_START, POST_END, EMPLOYER_USER_ID);
     }
@@ -121,7 +121,7 @@ class AutoMatchServiceTest {
         // minDuration = 600분 (10시간) > postDuration = 480분 (8시간)
         AutoMatchEvents.AvailabilityCreatedEvent strictEvent =
                 new AutoMatchEvents.AvailabilityCreatedEvent(
-                        APPLICANT_USER_ID, AVAIL_GROUP_ID, AVAIL_START, AVAIL_END, 600);
+                        APPLICANT_USER_ID, AVAIL_ID, AVAIL_START, AVAIL_END, 600);
 
         JobPost post = buildPost(10L, POST_START, POST_END);
 
@@ -216,7 +216,7 @@ class AutoMatchServiceTest {
     @Test
     @DisplayName("B1: 매칭 구직자 없음 → txSupport 호출 없음")
     void B1_noMatchingApplicants_tryCreateNotCalled() {
-        when(availabilityRepository.findMatchingAvailabilityUserIds(
+        when(availabilityRepository.findMatchingUserIdsForJobPost(
                 POST_START, POST_END, POST_DURATION_MIN, EMPLOYER_USER_ID))
                 .thenReturn(List.of());
 
@@ -228,7 +228,7 @@ class AutoMatchServiceTest {
     @Test
     @DisplayName("B2: 1명 매칭 구직자 → tryCreate 1회 호출")
     void B2_oneMatchingApplicant_tryCreateCalledOnce() {
-        when(availabilityRepository.findMatchingAvailabilityUserIds(
+        when(availabilityRepository.findMatchingUserIdsForJobPost(
                 POST_START, POST_END, POST_DURATION_MIN, EMPLOYER_USER_ID))
                 .thenReturn(List.of(APPLICANT_USER_ID));
 
@@ -242,7 +242,7 @@ class AutoMatchServiceTest {
     void B3_threeMatchingApplicants_tryCreateCalledThreeTimes() {
         long user1 = 1L, user2 = 2L, user3 = 3L;
 
-        when(availabilityRepository.findMatchingAvailabilityUserIds(
+        when(availabilityRepository.findMatchingUserIdsForJobPost(
                 POST_START, POST_END, POST_DURATION_MIN, EMPLOYER_USER_ID))
                 .thenReturn(List.of(user1, user2, user3));
 
