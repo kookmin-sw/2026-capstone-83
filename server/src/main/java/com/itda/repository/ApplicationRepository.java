@@ -44,10 +44,16 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             @Param("cursor") Long cursor,
             org.springframework.data.domain.Pageable pageable);
 
-    // 특정 날짜 + 상태로 지원 목록 조회 (날짜 겹침 체크용)
-    @Query("SELECT a FROM Application a WHERE a.jobPost.workDate = :workDate AND a.status IN :statuses")
-    List<Application> findByJobPost_WorkDateAndStatusIn(
-            @Param("workDate") java.time.LocalDate workDate,
+    // 근무 시간 겹침 체크 (workStartAt/workEndAt 범위 기준)
+    @Query("""
+    SELECT a FROM Application a
+    WHERE a.status IN :statuses
+      AND a.jobPost.workStartAt < :endAt
+      AND a.jobPost.workEndAt > :startAt
+    """)
+    List<Application> findByJobPost_WorkRangeOverlapAndStatusIn(
+            @Param("startAt") LocalDateTime startAt,
+            @Param("endAt") LocalDateTime endAt,
             @Param("statuses") List<ApplicationStatus> statuses);
     // 중복 지원 체크
     Optional<Application> findByJobPostIdAndApplicantUserId(Long jobPostId, Long applicantUserId);

@@ -380,11 +380,11 @@ public class JobPostService {
                 .distinct().toList();
 
         List<Long> excludedByDate = applicationRepository
-                .findByJobPost_WorkDateAndStatusIn(
-                        jobPost.getWorkDate(),
+                .findByJobPost_WorkRangeOverlapAndStatusIn(
+                        jobPost.getWorkStartAt(),
+                        jobPost.getWorkEndAt(),
                         List.of(ApplicationStatus.HIRED, ApplicationStatus.PENDING))
                 .stream().map(a -> a.getApplicantUser().getId()).toList();
-
         List<Long> excludedByDuplicate = applicationRepository
                 .findByJobPostId(jobPostId)
                 .stream().map(a -> a.getApplicantUser().getId()).toList();
@@ -417,8 +417,9 @@ public class JobPostService {
                 .stream().map(l -> l.getApplicantUser().getId()).toList();
 
         List<Long> excludedByDate = applicationRepository
-                .findByJobPost_WorkDateAndStatusIn(
-                        jobPost.getWorkDate(),
+                .findByJobPost_WorkRangeOverlapAndStatusIn(
+                        jobPost.getWorkStartAt(),
+                        jobPost.getWorkEndAt(),
                         List.of(ApplicationStatus.HIRED, ApplicationStatus.PENDING))
                 .stream().map(a -> a.getApplicantUser().getId()).toList();
 
