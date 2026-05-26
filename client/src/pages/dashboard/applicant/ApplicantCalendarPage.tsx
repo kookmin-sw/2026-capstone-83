@@ -3,7 +3,7 @@ import styled from 'styled-components';
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import type { ApplicantSchedule } from 'entities/schedule/model/types/schedule.type';
 import { ApplicantCalendarWidget } from 'widgets/calendar/ApplicantCalendar/ui/ApplicantCalendarWidget';
-import { HiredWeeklyTimetable } from 'widgets/calendar/ApplicantCalendar/ui/HiredWeeklyTimetable';
+import { ApplicantWeeklyAvailabilityTimetable } from 'widgets/calendar/ApplicantCalendar/ui/ApplicantWeeklyAvailabilityTimetable';
 
 const ApplicantCalendarPage = () => {
   const schedules = useScheduleStore((s) => s.schedules);
@@ -30,7 +30,7 @@ const ApplicantCalendarPage = () => {
       <ApplicantCalendarWidget />
 
       <S.TimetableWrapper>
-        <HiredWeeklyTimetable
+        <ApplicantWeeklyAvailabilityTimetable
           schedules={schedules as Record<string, ApplicantSchedule[]>}
           currentDate={timetableDate}
           onPrev={handleTimetablePrev}
