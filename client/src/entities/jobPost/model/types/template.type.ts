@@ -15,6 +15,9 @@ export interface JobPostTemplateResponse {
   benefits?: string[];
   tasks?: string[];
   items?: string[];
+  urgentEnabled?: boolean | null;
+  urgentWageIncrease?: number | null;
+  autoOfferEnabled?: boolean | null;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -35,4 +38,7 @@ export interface JobPostTemplateRequest {
   benefits?: string[];
   tasks?: string[];
   items?: string[];
+  urgentEnabled?: boolean;
+  urgentWageIncrease?: number;
+  autoOfferEnabled?: boolean;
 }
