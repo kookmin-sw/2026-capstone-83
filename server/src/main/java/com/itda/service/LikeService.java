@@ -42,35 +42,28 @@ public class LikeService {
         return true; // 좋아요 추가
     }
 
-    // 이력서 좋아요 토글 (고용주) - 근무 완료 후에만 가능
+    // 이력서 좋아요 토글 (고용주)
     @Transactional
     public boolean toggleResumeLike(Long resumeId, User employerUser) {
+
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new NotFoundException("이력서를 찾을 수 없습니다."));
-
-        // 근무 완료(HIRED) 여부 확인
-        boolean hasWorked = applicationRepository
-                .findByApplicantUserIdAndStatus(resume.getUser().getId(), ApplicationStatus.HIRED)
-                .stream()
-                .anyMatch(a -> a.getJobPost().getWorkplace().getEmployer().getUser().getId()
-                        .equals(employerUser.getId()));
-
-        if (!hasWorked) {
-            throw new IllegalStateException("근무 완료 후에만 좋아요할 수 있습니다.");
-        }
 
         Optional<ResumeLike> existing = resumeLikeRepository
                 .findByEmployerUserIdAndResumeId(employerUser.getId(), resumeId);
 
+        // 이미 좋아요 눌렀으면 취소
         if (existing.isPresent()) {
             resumeLikeRepository.delete(existing.get());
             return false;
         }
 
+        // 좋아요 추가
         resumeLikeRepository.save(ResumeLike.builder()
                 .employerUser(employerUser)
                 .resume(resume)
                 .build());
+
         return true;
     }
 
