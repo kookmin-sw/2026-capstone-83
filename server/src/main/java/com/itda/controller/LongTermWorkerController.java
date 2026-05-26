@@ -37,11 +37,12 @@ public class LongTermWorkerController {
         return ResponseEntity.ok(Map.of("longTerm", result));
     }
     // 장기근무 등록한 구직자 ID 목록 (고용주)
-    @GetMapping
+    @GetMapping("/ids")
     public ResponseEntity<List<Long>> getLongTermWorkerIds(
             @AuthenticationPrincipal User user) {
         return ResponseEntity.ok(longTermWorkerService.getLongTermWorkerIds(user.getId()));
     }
+
     // 장기근무 등록한 구직자 목록 (고용주)
     @GetMapping
     public ResponseEntity<List<ResumeCardResponse>> getLongTermWorkers(
