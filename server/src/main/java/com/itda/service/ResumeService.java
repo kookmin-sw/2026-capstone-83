@@ -17,6 +17,7 @@ import com.itda.exception.NotFoundException;
 import com.itda.repository.ApplicationRepository;
 import com.itda.repository.CareerRepository;
 import com.itda.repository.CertificateRepository;
+import com.itda.repository.LongTermWorkerRepository;
 import com.itda.repository.ResumeRepository;
 import com.itda.repository.ResumeLikeRepository;
 import com.itda.repository.ReviewRepository;
@@ -41,6 +42,7 @@ public class ResumeService {
     private final ResumeLikeRepository resumeLikeRepository;
     private final S3Service s3Service;
     private final ReviewRepository reviewRepository;
+    private final LongTermWorkerRepository longTermWorkerRepository;
 
 
     // 본인 이력서 조회
@@ -111,7 +113,9 @@ public class ResumeService {
                     List<ReviewResponse> reviews = reviewRepository
                             .findByReviewerIdAndApplicantUserIdAll(employerUserId, resumeUser.getId())
                             .stream().map(ReviewResponse::from).toList();
-                    return ResumeCardResponse.of(resumeUser, resume, careers, totalHired, true, reviews);
+                    boolean longTerm = longTermWorkerRepository
+                            .existsByEmployerUserIdAndApplicantUserId(employerUserId, resumeUser.getId());
+                    return ResumeCardResponse.of(resumeUser, resume, careers, totalHired, true, longTerm, reviews);
                 })
                 .toList();
 
@@ -279,7 +283,9 @@ public class ResumeService {
                             ? reviewRepository.findByReviewerIdAndApplicantUserIdAll(user.getId(), resumeUser.getId())
                               .stream().map(ReviewResponse::from).toList()
                             : List.of();
-                    return ResumeCardResponse.of(resumeUser, resume, careers, totalHired, likedIds.contains(resume.getId()), reviews);
+                    boolean longTerm = (user != null) && longTermWorkerRepository
+                            .existsByEmployerUserIdAndApplicantUserId(user.getId(), resumeUser.getId());
+                    return ResumeCardResponse.of(resumeUser, resume, careers, totalHired, likedIds.contains(resume.getId()), longTerm, reviews);
                 })
                 .toList();
 

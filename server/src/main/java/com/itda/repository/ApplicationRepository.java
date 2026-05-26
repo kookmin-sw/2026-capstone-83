@@ -74,6 +74,11 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
             Long applicantUserId, List<ApplicationStatus> statuses, LocalDate from, LocalDate to
     );
 
+    // 특정 날짜에 근무하는 지원 목록 (다중 상태 필터) — bulkOffer 날짜 겹침 제외에 사용
+    List<Application> findByJobPost_WorkDateAndStatusIn(
+            LocalDate workDate, List<ApplicationStatus> statuses
+    );
+
     // 유저의 매칭 횟수 (HIRED + COMPLETED 건수)
     long countByApplicantUserIdAndStatusIn(Long applicantUserId, List<ApplicationStatus> statuses);
 
