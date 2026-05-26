@@ -59,6 +59,9 @@ public class JobPostTemplateService {
                 .benefits(request.benefits())
                 .tasks(request.tasks())
                 .items(request.items())
+                .urgentEnabled(request.urgentEnabled() != null ? request.urgentEnabled() : false)
+                .urgentWageIncrease(request.urgentWageIncrease())
+                .autoOfferEnabled(request.autoOfferEnabled() != null ? request.autoOfferEnabled() : false)
                 .build();
 
         return JobPostTemplateResponse.from(templateRepository.save(template));
@@ -84,6 +87,9 @@ public class JobPostTemplateService {
         template.setBenefits(request.benefits());
         template.setTasks(request.tasks());
         template.setItems(request.items());
+        template.setUrgentEnabled(request.urgentEnabled() != null ? request.urgentEnabled() : false);
+        template.setUrgentWageIncrease(request.urgentWageIncrease());
+        template.setAutoOfferEnabled(request.autoOfferEnabled() != null ? request.autoOfferEnabled() : false);
 
         return JobPostTemplateResponse.from(template);
     }

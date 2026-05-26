@@ -19,5 +19,14 @@ public record JobPostTemplateRequest(
         List<String> requirements,
         List<String> benefits,
         List<String> tasks,
-        List<String> items
+        List<String> items,
+
+        // 급구 옵션 여부 (null 이면 false 로 취급)
+        Boolean urgentEnabled,
+
+        // 급구 시 시급 인상액
+        Integer urgentWageIncrease,
+
+        // 자동 오퍼 여부 (null 이면 false 로 취급)
+        Boolean autoOfferEnabled
 ) {}

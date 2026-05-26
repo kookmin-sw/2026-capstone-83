@@ -92,6 +92,20 @@ public class JobPostTemplate {
     @Column(columnDefinition = "TEXT")
     private List<String> items;
 
+    // 급구 옵션 여부 (기본값 false)
+    @Builder.Default
+    @Column(name = "urgent_enabled", nullable = false)
+    private Boolean urgentEnabled = false;
+
+    // 급구 시 시급 인상액
+    @Column(name = "urgent_wage_increase")
+    private Integer urgentWageIncrease;
+
+    // 자동 오퍼 여부 (기본값 false)
+    @Builder.Default
+    @Column(name = "auto_offer_enabled", nullable = false)
+    private Boolean autoOfferEnabled = false;
+
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
 
