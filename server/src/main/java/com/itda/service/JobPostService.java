@@ -13,7 +13,6 @@ import com.itda.entity.JobPost;
 import com.itda.entity.User;
 import com.itda.entity.Workplace;
 import com.itda.enums.ApplicationStatus;
-import com.itda.enums.InitiatedBy;
 import com.itda.enums.JobPostStatus;
 import com.itda.enums.NotificationType;
 import com.itda.enums.WageType;
@@ -27,7 +26,6 @@ import com.itda.repository.LongTermWorkerRepository;
 import com.itda.repository.UserRepository;
 import com.itda.service.event.AutoMatchEvents;
 import com.itda.service.event.InteractionEvents;
-import com.itda.service.util.TimeSlotSplitter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
@@ -39,7 +37,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -150,10 +147,10 @@ public class JobPostService {
     // ─── 등록 ────────────────────────────────────────────────────
 
     /**
-     * 공고 등록 — 이미지 파일 S3 업로드 후 URL 저장.
+     * 공고 등록 — 이미지 파일 S3 업로드 후 단일 레코드 저장.
      *
-     * <p>자정 넘김 공고(workEnd &lt;= workStart)는 {@link TimeSlotSplitter} 로 분할 저장된다.
-     * 분할 시 Day1·Day2 레코드가 생성되고 대표(Day1)를 응답으로 반환한다.
+     * <p>자정 넘김 공고(workEnd &lt;= workStart)도 단일 레코드로 저장된다.
+     * 매칭 전용 {@code workStartAt}/{@code workEndAt} 은 {@link com.itda.dto.request.JobPostCreateRequest#toEntity} 에서 계산된다.
      */
     @Transactional
     public JobPostDetailResponse createJobPost(
@@ -186,17 +183,14 @@ public class JobPostService {
             contentUrl = null;
         }
 
-        // 자정 분할 처리
-        List<JobPost> savedPosts = splitAndSaveJobPosts(request, workplace, contentUrl);
-
-        // Day1(이른 날짜) 레코드를 대표로 응답 반환
-        JobPost day1 = savedPosts.get(0);
+        // 단일 레코드 저장 (workStartAt/workEndAt 은 toEntity() 내부에서 계산)
+        JobPost saved = jobPostRepository.save(request.toEntity(workplace, contentUrl));
 
         // 자동 오퍼 처리 (autoOfferEnabled=true인 경우)
         if (Boolean.TRUE.equals(request.getAutoOfferEnabled())) {
-            List<Long> targetIds = getOfferTargetIds(day1, workplace.getEmployer().getUser().getId());
+            List<Long> targetIds = getOfferTargetIds(saved, workplace.getEmployer().getUser().getId());
             if (!targetIds.isEmpty()) {
-                applicationService.bulkOffer(day1.getId(),
+                applicationService.bulkOffer(saved.getId(),
                         new BulkOfferRequest(targetIds),
                         workplace.getEmployer().getUser());
             }
@@ -204,26 +198,21 @@ public class JobPostService {
 
         // 자동 매칭 이벤트 발행 — 비동기 리스너가 별도 스레드에서 처리
         eventPublisher.publishEvent(new AutoMatchEvents.JobPostCreatedEvent(
-                day1.getId(),
-                day1.getLinkedGroupId(),
-                day1.getGroupStartAt(),
-                day1.getGroupEndAt(),
+                saved.getId(),
+                saved.getWorkStartAt(),
+                saved.getWorkEndAt(),
                 workplace.getEmployer().getUser().getId()));
 
-        return JobPostDetailResponse.from(day1, false);
+        return JobPostDetailResponse.from(saved, false);
     }
 
     // ─── 수정 ────────────────────────────────────────────────────
 
     /**
-     * 공고 수정 (부분 수정 — null 필드는 Day1 기존값 유지, 본인 공고만).
+     * 공고 수정 (부분 수정 — null 필드는 기존값 유지, 본인 공고만).
      *
-     * <p>시간 필드(workDate/workStart/workEnd) 가 변경될 경우:
-     * <ul>
-     *   <li>분할 구조(1↔2 레코드) 가 바뀌면 {@link IllegalStateException} — 삭제 후 재등록 권장.</li>
-     *   <li>분할 구조가 유지되면 그룹 전체 레코드의 날짜·시간·그룹 컬럼을 재계산.</li>
-     * </ul>
-     * 비시간 필드(title, wage 등)는 그룹 전체에 동일하게 적용된다.
+     * <p>시간 필드(workDate/workStart/workEnd) 가 변경되면 {@code workStartAt}/{@code workEndAt} 도
+     * 함께 재계산된다. 자정 넘김 여부가 바뀌어도 단일 레코드를 그대로 수정한다.
      */
     @Transactional
     public JobPostDetailResponse updateJobPost(Long jobPostId, JobPostUpdateRequest request,
@@ -232,125 +221,63 @@ public class JobPostService {
                 .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
         verifyJobPostOwnership(jobPost, userId);
 
-        // 이미지 처리 (기존 로직 유지)
+        // 이미지 처리
         String s3ContentUrl = jobPost.getS3ContentUrl();
         if (descriptionImage != null && !descriptionImage.isEmpty()) {
             s3Service.delete(s3ContentUrl);
             s3ContentUrl = s3Service.upload(descriptionImage, S3Service.PATH_JOB_POSTS);
         }
 
-        // 그룹 전체 조회 — 날짜 오름차순(Day1 = index 0)
-        List<JobPost> groupPosts = jobPostRepository.findByLinkedGroupId(jobPost.getLinkedGroupId());
-        groupPosts.sort(Comparator.comparing(JobPost::getWorkDate));
-        JobPost day1 = groupPosts.get(0);
+        // 시간 필드 확정 (변경된 값 우선, 없으면 기존값 유지)
+        LocalDate newDate  = request.workDate()  != null ? LocalDate.parse(request.workDate())  : jobPost.getWorkDate();
+        LocalTime newStart = request.workStart() != null ? LocalTime.parse(request.workStart()) : jobPost.getWorkStart();
+        LocalTime newEnd   = request.workEnd()   != null ? LocalTime.parse(request.workEnd())   : jobPost.getWorkEnd();
 
-        // 시간 변경 여부 판단
-        boolean timeFieldsChanged = request.workDate() != null
-                || request.workStart() != null
-                || request.workEnd() != null;
+        // 매칭 전용 datetime 재계산 (workEnd <= workStart 이면 자정 넘김)
+        LocalDateTime newStartAt = LocalDateTime.of(newDate, newStart);
+        LocalDateTime newEndAt   = newEnd.isAfter(newStart)
+                ? LocalDateTime.of(newDate, newEnd)
+                : LocalDateTime.of(newDate.plusDays(1), newEnd);
 
-        List<TimeSlotSplitter.Slice> newSlices;
-        String groupId = jobPost.getLinkedGroupId();
-        LocalDateTime newGroupStartAt;
-        LocalDateTime newGroupEndAt;
-
-        if (timeFieldsChanged) {
-            // 원본 workEnd 복원: Day1 의 workEnd 가 LocalTime.MAX 이면 groupEndAt 에서 읽음
-            LocalDate baseDate  = day1.getWorkDate();
-            LocalTime baseStart = day1.getWorkStart();
-            LocalTime baseEnd   = (day1.getGroupEndAt() != null)
-                    ? day1.getGroupEndAt().toLocalTime()
-                    : day1.getWorkEnd(); // migration 전 old data 대비 fallback
-
-            LocalDate  newDate  = request.workDate()  != null ? LocalDate.parse(request.workDate())  : baseDate;
-            LocalTime  newStart = request.workStart() != null ? LocalTime.parse(request.workStart()) : baseStart;
-            LocalTime  newEnd   = request.workEnd()   != null ? LocalTime.parse(request.workEnd())   : baseEnd;
-
-            LocalDateTime newStartAt = LocalDateTime.of(newDate, newStart);
-            // workEnd <= workStart 이면 자정 넘김 (다음날로 계산)
-            LocalDateTime newEndAt = newEnd.compareTo(newStart) <= 0
-                    ? LocalDateTime.of(newDate.plusDays(1), newEnd)
-                    : LocalDateTime.of(newDate, newEnd);
-
-            TimeSlotSplitter.Split newSplit = TimeSlotSplitter.split(newStartAt, newEndAt);
-
-            // V1: 분할 구조 변경(1↔2 레코드)은 거부
-            if (newSplit.slices().size() != groupPosts.size()) {
-                throw new IllegalStateException(
-                        "시간 수정으로 분할 구조가 변경됩니다. 기존 공고를 삭제 후 새로 등록해 주세요.");
-            }
-
-            newSlices       = newSplit.slices();
-            newGroupStartAt = newSplit.groupStartAt();
-            newGroupEndAt   = newSplit.groupEndAt();
-        } else {
-            // 시간 변경 없음 → 기존 slice 정보 그대로
-            newSlices = groupPosts.stream()
-                    .map(gp -> new TimeSlotSplitter.Slice(
-                            gp.getWorkDate(), gp.getWorkStart(), gp.getWorkEnd()))
-                    .toList();
-            // migration 전 데이터도 안전하게 처리
-            newGroupStartAt = day1.getGroupStartAt() != null
-                    ? day1.getGroupStartAt()
-                    : LocalDateTime.of(day1.getWorkDate(), day1.getWorkStart());
-            newGroupEndAt = day1.getGroupEndAt() != null
-                    ? day1.getGroupEndAt()
-                    : LocalDateTime.of(day1.getWorkDate(), day1.getWorkEnd());
-        }
-
-        // 그룹 내 모든 레코드 업데이트 — 비시간 필드는 Day1 기존값 기준
         final String finalS3ContentUrl = s3ContentUrl;
-        final LocalDateTime finalGroupStartAt = newGroupStartAt;
-        final LocalDateTime finalGroupEndAt   = newGroupEndAt;
 
-        List<JobPost> updatedPosts = new ArrayList<>();
-        for (int i = 0; i < groupPosts.size(); i++) {
-            JobPost gp    = groupPosts.get(i);
-            TimeSlotSplitter.Slice slice = newSlices.get(i);
+        JobPost updated = jobPostRepository.save(JobPost.builder()
+                .id(jobPost.getId())
+                .workplace(jobPost.getWorkplace())
+                .title(          request.title()          != null ? request.title()                          : jobPost.getTitle())
+                .jobCategory(    request.jobCategory()    != null ? request.jobCategory()                    : jobPost.getJobCategory())
+                .jobSubcategory( request.jobSubcategory() != null ? request.jobSubcategory()                 : jobPost.getJobSubcategory())
+                .s3ContentUrl(finalS3ContentUrl)
+                .wage(           request.wage()           != null ? request.wage()                           : jobPost.getWage())
+                .wageType(       request.wageType()       != null ? WageType.valueOf(request.wageType())     : jobPost.getWageType())
+                .workDate(newDate)
+                .workStart(newStart)
+                .workEnd(newEnd)
+                .workStartAt(newStartAt)
+                .workEndAt(newEndAt)
+                .totalSlots(     request.totalSlots()     != null ? request.totalSlots()                     : jobPost.getTotalSlots())
+                .filledSlots(jobPost.getFilledSlots())
+                .status(jobPost.getStatus())
+                .deadline(       request.deadline()       != null ? LocalDate.parse(request.deadline())     : jobPost.getDeadline())
+                .description(    request.description()    != null ? request.description()                    : jobPost.getDescription())
+                .requirements(   request.requirements()   != null ? request.requirements()                   : jobPost.getRequirements())
+                .benefits(       request.benefits()       != null ? request.benefits()                       : jobPost.getBenefits())
+                .tasks(          request.tasks()          != null ? request.tasks()                          : jobPost.getTasks())
+                .items(          request.items()          != null ? request.items()                          : jobPost.getItems())
+                .ageRequirements(request.ageRequirements() != null ? request.ageRequirements()               : jobPost.getAgeRequirements())
+                .urgentEnabled(  request.urgentEnabled()       != null ? request.urgentEnabled()       : jobPost.getUrgentEnabled())
+                .urgentWageIncrease(request.urgentWageIncrease() != null ? request.urgentWageIncrease() : jobPost.getUrgentWageIncrease())
+                .autoOfferEnabled(request.autoOfferEnabled()   != null ? request.autoOfferEnabled()   : jobPost.getAutoOfferEnabled())
+                .createdAt(jobPost.getCreatedAt())
+                .build());
 
-            updatedPosts.add(jobPostRepository.save(JobPost.builder()
-                    .id(gp.getId())
-                    .workplace(gp.getWorkplace())
-                    .title(          request.title()          != null ? request.title()                              : day1.getTitle())
-                    .jobCategory(    request.jobCategory()    != null ? request.jobCategory()                        : day1.getJobCategory())
-                    .jobSubcategory( request.jobSubcategory() != null ? request.jobSubcategory()                     : day1.getJobSubcategory())
-                    .s3ContentUrl(finalS3ContentUrl)
-                    .wage(           request.wage()           != null ? request.wage()                               : day1.getWage())
-                    .wageType(       request.wageType()       != null ? WageType.valueOf(request.wageType())         : day1.getWageType())
-                    .workDate(slice.date())
-                    .workStart(slice.startTime())
-                    .workEnd(slice.endTime())
-                    .totalSlots(     request.totalSlots()     != null ? request.totalSlots()                         : day1.getTotalSlots())
-                    .filledSlots(gp.getFilledSlots())   // 레코드별 독립 관리
-                    .status(gp.getStatus())             // 상태는 레코드별 독립
-                    .deadline(       request.deadline()       != null ? LocalDate.parse(request.deadline())         : day1.getDeadline())
-                    .description(    request.description()    != null ? request.description()                        : day1.getDescription())
-                    .requirements(   request.requirements()   != null ? request.requirements()                       : day1.getRequirements())
-                    .benefits(       request.benefits()       != null ? request.benefits()                           : day1.getBenefits())
-                    .tasks(          request.tasks()          != null ? request.tasks()                              : day1.getTasks())
-                    .items(          request.items()          != null ? request.items()                              : day1.getItems())
-                    .ageRequirements(request.ageRequirements() != null ? request.ageRequirements()                   : day1.getAgeRequirements())
-                    .linkedGroupId(groupId)
-                    .groupStartAt(finalGroupStartAt)
-                    .groupEndAt(finalGroupEndAt)
-                    .createdAt(gp.getCreatedAt())
-                    .ageRequirements(request.ageRequirements() != null ? request.ageRequirements() : day1.getAgeRequirements())
-                    .urgentEnabled(request.urgentEnabled() != null ? request.urgentEnabled() : day1.getUrgentEnabled())
-                    .urgentWageIncrease(request.urgentWageIncrease() != null ? request.urgentWageIncrease() : day1.getUrgentWageIncrease())
-                    .autoOfferEnabled(request.autoOfferEnabled() != null ? request.autoOfferEnabled() : day1.getAutoOfferEnabled())
-                    .linkedGroupId(groupId)
-                    .build()));
-        }
-
-        // Day1 레코드를 대표로 반환
-        return JobPostDetailResponse.from(updatedPosts.get(0), false);
+        return JobPostDetailResponse.from(updated, false);
     }
 
     // ─── 마감 ────────────────────────────────────────────────────
 
     /**
-     * 공고 마감 처리 — 소유권 검증 후 그룹 전체 CLOSED.
-     * 자정 분할된 공고는 Day1·Day2 레코드 모두 함께 마감한다.
+     * 공고 마감 처리 — 소유권 검증 후 CLOSED.
      */
     @Transactional
     public void closeJobPost(Long id, Long userId) {
@@ -361,21 +288,16 @@ public class JobPostService {
             throw new IllegalStateException("본인의 공고만 마감 처리할 수 있습니다.");
         }
 
-        // 그룹 전체 레코드를 함께 마감 (분할 공고 일관성)
-        List<JobPost> groupPosts = jobPostRepository.findByLinkedGroupId(jobPost.getLinkedGroupId());
-        for (JobPost gp : groupPosts) {
-            gp.closeByEmployer();
-            jobPostRepository.save(gp);
-        }
+        jobPost.closeByEmployer();
+        jobPostRepository.save(jobPost);
     }
 
     // ─── 삭제 ────────────────────────────────────────────────────
 
     /**
-     * 공고 삭제 — 소유권 검증, 본인 공고만, 그룹 전체 삭제.
+     * 공고 삭제 — 소유권 검증, 본인 공고만.
      *
-     * <p>자정 분할된 공고는 Day1·Day2 레코드와 각각에 연결된 Application 을 모두 삭제한다.
-     * HIRED 지원자에게는 삭제 알림을 발송한다.
+     * <p>HIRED 지원자에게 삭제 알림을 발송한 후 연관 Application 과 공고를 삭제한다.
      */
     @Transactional
     public void deleteJobPost(Long jobPostId, Long userId) {
@@ -383,32 +305,25 @@ public class JobPostService {
                 .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
         verifyJobPostOwnership(jobPost, userId);
 
-        // 그룹 전체 레코드 조회
-        List<JobPost> groupPosts = jobPostRepository.findByLinkedGroupId(jobPost.getLinkedGroupId());
+        // HIRED 지원자 삭제 알림
+        applicationRepository.findByJobPostId(jobPostId).stream()
+                .filter(a -> a.getStatus() == ApplicationStatus.HIRED)
+                .forEach(a -> notificationService.notify(
+                        a.getApplicantUser().getId(),
+                        NotificationType.JOB_POST_DELETED,
+                        "[" + jobPost.getTitle() + "] 공고가 고용주에 의해 삭제되었습니다.",
+                        jobPostId
+                ));
 
-        // HIRED 지원자 삭제 알림 (그룹 전체 레코드 대상)
-        for (JobPost gp : groupPosts) {
-            applicationRepository.findByJobPostId(gp.getId()).stream()
-                    .filter(a -> a.getStatus() == ApplicationStatus.HIRED)
-                    .forEach(a -> notificationService.notify(
-                            a.getApplicantUser().getId(),
-                            NotificationType.JOB_POST_DELETED,
-                            "[" + gp.getTitle() + "] 공고가 고용주에 의해 삭제되었습니다.",
-                            gp.getId()
-                    ));
-        }
+        // 연관 Application 삭제 (FK 제약 방지)
+        List<Application> applications = applicationRepository.findByJobPostId(jobPostId);
+        applicationRepository.deleteAll(applications);
 
-        // 연관 Application 삭제 (그룹 전체, FK 제약 방지)
-        for (JobPost gp : groupPosts) {
-            List<Application> applications = applicationRepository.findByJobPostId(gp.getId());
-            applicationRepository.deleteAll(applications);
-        }
-
-        // S3 이미지 삭제 (그룹 내 모든 레코드가 같은 URL 공유 → 대표 레코드 기준으로 1회만)
+        // S3 이미지 삭제
         s3Service.delete(jobPost.getS3ContentUrl());
 
-        // 공고 삭제 (그룹 전체)
-        jobPostRepository.deleteAll(groupPosts);
+        // 공고 삭제
+        jobPostRepository.delete(jobPost);
     }
 
     // ─── 기타 조회 ───────────────────────────────────────────────
@@ -493,80 +408,6 @@ public class JobPostService {
     }
 
     // ─── private helpers ─────────────────────────────────────────
-
-    /**
-     * 자정 분할을 처리하여 1~2개의 JobPost 를 생성 후 저장한다.
-     *
-     * <p>workEnd &lt;= workStart 이면 자정 넘김으로 판단하고 다음날 종료로 계산한다.
-     * {@link TimeSlotSplitter#split} 에 위임하며, Slice 별로 동일한 공통 필드를 공유하는
-     * JobPost 를 빌드한다.
-     *
-     * @return 저장된 JobPost 목록 (Day1 이 index 0)
-     */
-    private List<JobPost> splitAndSaveJobPosts(
-            JobPostCreateRequest request, Workplace workplace, String contentUrl) {
-
-        LocalDate workDate  = LocalDate.parse(request.getWorkDate());
-        LocalTime workStart = LocalTime.parse(request.getWorkStart());
-        LocalTime workEnd   = LocalTime.parse(request.getWorkEnd());
-
-        LocalDateTime startAt = LocalDateTime.of(workDate, workStart);
-        // workEnd <= workStart 이면 자정 넘김 — endAt 을 다음날로 계산
-        LocalDateTime endAt = workEnd.compareTo(workStart) <= 0
-                ? LocalDateTime.of(workDate.plusDays(1), workEnd)
-                : LocalDateTime.of(workDate, workEnd);
-
-        TimeSlotSplitter.Split split = TimeSlotSplitter.split(startAt, endAt);
-
-        List<JobPost> savedPosts = new ArrayList<>();
-        for (TimeSlotSplitter.Slice slice : split.slices()) {
-            JobPost post = buildJobPostFromSlice(request, workplace, contentUrl, split, slice);
-            savedPosts.add(jobPostRepository.save(post));
-        }
-        return savedPosts;
-    }
-
-    /**
-     * 단일 Slice 와 공통 필드를 조합해 JobPost 엔티티를 빌드한다.
-     * {@code filledSlots} 는 0 으로 초기화된다.
-     */
-    private JobPost buildJobPostFromSlice(
-            JobPostCreateRequest request,
-            Workplace workplace,
-            String contentUrl,
-            TimeSlotSplitter.Split split,
-            TimeSlotSplitter.Slice slice) {
-
-        return JobPost.builder()
-                .workplace(workplace)
-                .title(request.getTitle())
-                .jobCategory(request.getJobCategory() != null ? request.getJobCategory() : "미분류")
-                .jobSubcategory(request.getJobSubcategory())
-                .s3ContentUrl(contentUrl)
-                .wage(request.getWage())
-                .wageType(WageType.valueOf(request.getWageType()))
-                // Slice 별 날짜·시간 (자정 분할 시 Day1=MAX, Day2=MIN 으로 채워짐)
-                .workDate(slice.date())
-                .workStart(slice.startTime())
-                .workEnd(slice.endTime())
-                .totalSlots(request.getTotalSlots())
-                .status(JobPostStatus.OPEN)
-                .deadline(LocalDate.parse(request.getDeadline()))
-                .description(request.getDescription())
-                .requirements(request.getRequirements())
-                .benefits(request.getBenefits())
-                .tasks(request.getTasks())
-                .items(request.getItems())
-                // 그룹 컬럼 — 분할된 두 레코드가 동일한 값을 공유
-                .linkedGroupId(split.linkedGroupId())
-                .groupStartAt(split.groupStartAt())
-                .groupEndAt(split.groupEndAt())
-                .groupEndAt(split.groupEndAt())
-                .urgentEnabled(request.getUrgentEnabled())
-                .urgentWageIncrease(request.getUrgentWageIncrease())
-                .autoOfferEnabled(request.getAutoOfferEnabled())
-                .build();
-    }
 
     // 오퍼 대상자 ID 목록 추출 (날짜 겹침 + 중복 지원 제외)
     private List<Long> getOfferTargetIds(JobPost jobPost, Long employerUserId) {

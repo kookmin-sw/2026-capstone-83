@@ -353,6 +353,28 @@ Base URL: `http://44.207.95.136:8080/api/v1`
 
 ## ERD 및 엔티티 설명
 
+### JobPost 시간 표현
+
+`job_posts` 테이블은 시간을 **두 가지 표현**으로 저장한다.
+
+| 컬럼 | 용도 | 비고 |
+|------|------|------|
+| `work_date` | 표시·필터·캘린더 | 근무 시작 날짜 |
+| `work_start` | 표시·필터·캘린더 | 당일 시작 시각 |
+| `work_end` | 표시·필터·캘린더 | 당일 종료 시각 (자정 넘김 시 `work_start` 보다 작은 값) |
+| `work_start_at` | **매칭 전용** | `work_date + work_start` 와 동기화된 `DATETIME` |
+| `work_end_at` | **매칭 전용** | 항상 `work_start_at` 보다 큼. 자정 넘김 시 `work_date + 1일 + work_end` |
+
+두 표현은 항상 동기화된다 (저장: `JobPostCreateRequest.toEntity()`, 수정: `JobPostService.updateJobPost()`).  
+자동 매칭 쿼리(`findMatchingJobPostIdsForAvailability`)는 `work_start_at`/`work_end_at` 컬럼만 사용하며,  
+목록 표시·필터·DTO 응답은 `work_date`/`work_start`/`work_end` 를 그대로 사용한다.
+
+> **WorkerAvailability 와의 차이**  
+> `WorkerAvailability` 는 캘린더 UI 1:1 매핑을 위해 자정 분할(1 레코드 = 1일치) 구조를 **유지**한다.  
+> `JobPost` 는 V3 이후 항상 **단일 레코드**로 저장된다.
+
+---
+
 ### DB 테이블 목록
 
 `users` · `employers` · `workplaces` · `job_posts` · `applications` · `manager` · `resumes` · `careers` · `certificates` · `job_post_likes` · `resume_likes` · `reviews` · `notifications` · `reports` · `job_post_templates` · `job_post_click_logs` · `job_post_impression_logs`

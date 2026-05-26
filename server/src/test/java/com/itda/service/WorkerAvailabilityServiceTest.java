@@ -9,6 +9,7 @@ import com.itda.enums.UserRole;
 import com.itda.exception.DuplicateException;
 import com.itda.exception.NotFoundException;
 import com.itda.repository.WorkerAvailabilityRepository;
+import com.itda.service.event.AutoMatchEvents;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,62 +61,49 @@ class WorkerAvailabilityServiceTest {
         otherApplicant = User.builder()
                 .id(99L).name("타인").email("o@test.com").phone("01099999999")
                 .role(UserRole.APPLICANT).build();
-
-        // saveAll → 인수 그대로 반환 (ID 없음, 테스트 목적상 충분)
-        lenient().when(availabilityRepository.saveAll(anyList()))
-                .thenAnswer(inv -> inv.getArgument(0));
     }
 
     // ─── 생성 — 정상 ─────────────────────────────────────────────
 
     @Test
-    @DisplayName("같은 날 단일 슬롯 생성 → 레코드 1개 저장, crossesMidnight=false")
+    @DisplayName("같은 날 단일 슬롯 생성 → 레코드 1개 저장, crossesMidnight=false, id 반환")
     void create_sameDay_savesOneRecord() {
         LocalDateTime start = LocalDateTime.of(FUTURE_DATE, LocalTime.of(9, 0));
         LocalDateTime end   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(18, 0));
 
         givenNoOverlap();
+        WorkerAvailability saved = savedSlot(5L, applicant, start, end);
+        when(availabilityRepository.save(any(WorkerAvailability.class))).thenReturn(saved);
 
         WorkerAvailabilityResponse response =
                 availabilityService.create(applicant, new WorkerAvailabilityCreateRequest(start, end, null));
 
-        ArgumentCaptor<List<WorkerAvailability>> captor = listCaptor();
-        verify(availabilityRepository).saveAll(captor.capture());
-
-        assertThat(captor.getValue()).hasSize(1);
+        verify(availabilityRepository).save(any(WorkerAvailability.class));
+        assertThat(response.id()).isEqualTo(5L);
         assertThat(response.crossesMidnight()).isFalse();
         assertThat(response.startAt()).isEqualTo(start);
         assertThat(response.endAt()).isEqualTo(end);
-        assertThat(response.linkedGroupId()).isNotNull().hasSize(36);
     }
 
     @Test
-    @DisplayName("자정 넘김 슬롯 생성 (22:00–익일 06:00) → 레코드 2개 저장, crossesMidnight=true")
-    void create_overnight_savesTwoRecords() {
+    @DisplayName("야간 슬롯 생성 (22:00–익일 06:00) → 레코드 1개, crossesMidnight=true, 시간 정확")
+    void create_overnight_savesOneRecord_crossesMidnight() {
         LocalDateTime start = LocalDateTime.of(FUTURE_DATE, LocalTime.of(22, 0));
         LocalDateTime end   = LocalDateTime.of(FUTURE_DATE_NEXT, LocalTime.of(6, 0));
 
         givenNoOverlap();
+        WorkerAvailability saved = savedSlot(6L, applicant, start, end);
+        when(availabilityRepository.save(any(WorkerAvailability.class))).thenReturn(saved);
 
         WorkerAvailabilityResponse response =
                 availabilityService.create(applicant, new WorkerAvailabilityCreateRequest(start, end, null));
 
-        ArgumentCaptor<List<WorkerAvailability>> captor = listCaptor();
-        verify(availabilityRepository).saveAll(captor.capture());
-
-        List<WorkerAvailability> saved = captor.getValue();
-        assertThat(saved).hasSize(2);
+        // 단일 레코드 저장
+        verify(availabilityRepository).save(any(WorkerAvailability.class));
+        assertThat(response.id()).isEqualTo(6L);
         assertThat(response.crossesMidnight()).isTrue();
         assertThat(response.startAt()).isEqualTo(start);
         assertThat(response.endAt()).isEqualTo(end);
-
-        // 두 레코드가 동일한 linkedGroupId 공유
-        String groupId = saved.get(0).getLinkedGroupId();
-        assertThat(saved.get(1).getLinkedGroupId()).isEqualTo(groupId);
-
-        // Day1 endTime = LocalTime.MAX, Day2 startTime = LocalTime.MIN
-        assertThat(saved.get(0).getEndTime()).isEqualTo(LocalTime.MAX);
-        assertThat(saved.get(1).getStartTime()).isEqualTo(LocalTime.MIN);
     }
 
     // ─── 생성 — 예외 ─────────────────────────────────────────────
@@ -132,7 +120,22 @@ class WorkerAvailabilityServiceTest {
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("과거");
 
-        verify(availabilityRepository, never()).saveAll(any());
+        verify(availabilityRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("24시간 초과 슬롯 생성 → IllegalStateException")
+    void create_over24Hours_throws() {
+        LocalDateTime start = LocalDateTime.of(FUTURE_DATE, LocalTime.of(9, 0));
+        LocalDateTime end   = start.plusHours(25);
+
+        assertThatThrownBy(() ->
+                availabilityService.create(applicant,
+                        new WorkerAvailabilityCreateRequest(start, end, null)))
+                .isInstanceOf(IllegalStateException.class)
+                .hasMessageContaining("24시간");
+
+        verify(availabilityRepository, never()).save(any());
     }
 
     @Test
@@ -141,10 +144,10 @@ class WorkerAvailabilityServiceTest {
         LocalDateTime start = LocalDateTime.of(FUTURE_DATE, LocalTime.of(9, 0));
         LocalDateTime end   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(18, 0));
 
-        // 겹치는 그룹이 이미 존재
-        when(availabilityRepository.findOverlappingGroupIds(
+        WorkerAvailability existing = savedSlot(3L, applicant, start, end);
+        when(availabilityRepository.findOverlapping(
                 eq(applicant.getId()), eq(start), eq(end), isNull()))
-                .thenReturn(List.of("existing-group-id"));
+                .thenReturn(List.of(existing));
 
         assertThatThrownBy(() ->
                 availabilityService.create(applicant,
@@ -152,7 +155,7 @@ class WorkerAvailabilityServiceTest {
                 .isInstanceOf(DuplicateException.class)
                 .hasMessageContaining("이미 가용시간");
 
-        verify(availabilityRepository, never()).saveAll(any());
+        verify(availabilityRepository, never()).save(any());
     }
 
     @Test
@@ -161,48 +164,78 @@ class WorkerAvailabilityServiceTest {
         LocalDateTime start = LocalDateTime.of(FUTURE_DATE, LocalTime.of(18, 0));
         LocalDateTime end   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(22, 0));
 
-        // 겹침 쿼리 — 열린 부등호(groupEndAt > newStart AND groupStartAt < newEnd)이므로
-        // 기존 09:00–18:00 과 신규 18:00–22:00 는 경계점에서 겹치지 않는다 → 빈 목록
-        when(availabilityRepository.findOverlappingGroupIds(
+        when(availabilityRepository.findOverlapping(
                 eq(applicant.getId()), eq(start), eq(end), isNull()))
-                .thenReturn(List.of());
+                .thenReturn(List.of()); // 열린 부등호라 경계에서 겹치지 않음
+        WorkerAvailability saved = savedSlot(7L, applicant, start, end);
+        when(availabilityRepository.save(any(WorkerAvailability.class))).thenReturn(saved);
 
         WorkerAvailabilityResponse response =
                 availabilityService.create(applicant,
                         new WorkerAvailabilityCreateRequest(start, end, null));
 
-        verify(availabilityRepository).saveAll(any());
+        verify(availabilityRepository).save(any());
         assertThat(response.crossesMidnight()).isFalse();
     }
 
     // ─── 수정 — 정상 ─────────────────────────────────────────────
 
     @Test
-    @DisplayName("자기 자신 그룹과 시간 겹치는 update → excludeGroupId 로 제외, 정상 수정")
-    void update_selfOverlap_succeeds() {
-        String groupId = "my-group-uuid";
-        WorkerAvailability existing = singleRecord(5L, applicant, FUTURE_DATE, 9, 18, groupId);
+    @DisplayName("update → ID 보존 확인 (delete+insert 아님)")
+    void update_preservesId() {
+        LocalDateTime oldStart = LocalDateTime.of(FUTURE_DATE, LocalTime.of(9, 0));
+        LocalDateTime oldEnd   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(18, 0));
+        WorkerAvailability existing = savedSlot(5L, applicant, oldStart, oldEnd);
 
-        // 신규 시간: 10:00–19:00 (기존과 겹치지만 자기 자신이라 허용)
         LocalDateTime newStart = LocalDateTime.of(FUTURE_DATE, LocalTime.of(10, 0));
         LocalDateTime newEnd   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(19, 0));
 
         when(availabilityRepository.findById(5L)).thenReturn(Optional.of(existing));
-        // 자기 자신 그룹 제외 후 겹침 없음
-        when(availabilityRepository.findOverlappingGroupIds(
-                eq(applicant.getId()), eq(newStart), eq(newEnd), eq(groupId)))
+        when(availabilityRepository.findOverlapping(
+                eq(applicant.getId()), eq(newStart), eq(newEnd), eq(5L)))
                 .thenReturn(List.of());
-        when(availabilityRepository.findByLinkedGroupId(groupId))
-                .thenReturn(List.of(existing));
+
+        WorkerAvailability updated = savedSlot(5L, applicant, newStart, newEnd);
+        when(availabilityRepository.save(any(WorkerAvailability.class))).thenReturn(updated);
 
         WorkerAvailabilityResponse response = availabilityService.update(
-                applicant, 5L,
-                new WorkerAvailabilityUpdateRequest(newStart, newEnd, null));
+                applicant, 5L, new WorkerAvailabilityUpdateRequest(newStart, newEnd, null));
 
-        verify(availabilityRepository).deleteAll(List.of(existing));  // 기존 삭제
-        verify(availabilityRepository).saveAll(any());                // 새 그룹 저장
+        // delete 호출 없음 — 단순 save
+        verify(availabilityRepository, never()).delete(any());
+        verify(availabilityRepository, never()).deleteAll(any());
+
+        // 저장 인수의 id 가 기존 id(5L)로 보존됐는지 확인
+        ArgumentCaptor<WorkerAvailability> captor = ArgumentCaptor.forClass(WorkerAvailability.class);
+        verify(availabilityRepository).save(captor.capture());
+        assertThat(captor.getValue().getId()).isEqualTo(5L);
+
         assertThat(response.startAt()).isEqualTo(newStart);
         assertThat(response.endAt()).isEqualTo(newEnd);
+    }
+
+    @Test
+    @DisplayName("update 시 자기 자신 겹침 제외 → 정상 수정 (excludeId = 기존 id)")
+    void update_selfOverlap_excludedSuccessfully() {
+        LocalDateTime oldStart = LocalDateTime.of(FUTURE_DATE, LocalTime.of(9, 0));
+        LocalDateTime oldEnd   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(18, 0));
+        WorkerAvailability existing = savedSlot(5L, applicant, oldStart, oldEnd);
+
+        // 새 시간이 기존 시간과 겹치지만 자기 자신(id=5)이라 허용
+        LocalDateTime newStart = LocalDateTime.of(FUTURE_DATE, LocalTime.of(10, 0));
+        LocalDateTime newEnd   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(17, 0));
+
+        when(availabilityRepository.findById(5L)).thenReturn(Optional.of(existing));
+        // excludeId = 5L 로 자기 자신 제외 → 겹침 없음
+        when(availabilityRepository.findOverlapping(
+                eq(applicant.getId()), eq(newStart), eq(newEnd), eq(5L)))
+                .thenReturn(List.of());
+        WorkerAvailability updated = savedSlot(5L, applicant, newStart, newEnd);
+        when(availabilityRepository.save(any(WorkerAvailability.class))).thenReturn(updated);
+
+        assertThatNoException().isThrownBy(() ->
+                availabilityService.update(applicant, 5L,
+                        new WorkerAvailabilityUpdateRequest(newStart, newEnd, null)));
     }
 
     // ─── 수정 — 예외 ─────────────────────────────────────────────
@@ -210,21 +243,21 @@ class WorkerAvailabilityServiceTest {
     @Test
     @DisplayName("다른 사람 슬롯 update → AccessDeniedException")
     void update_notOwner_throws() {
-        // otherApplicant 소유의 슬롯을 applicant 가 수정 시도
-        WorkerAvailability othersSlot = singleRecord(10L, otherApplicant, FUTURE_DATE, 9, 18, "other-group");
+        LocalDateTime start = LocalDateTime.of(FUTURE_DATE, LocalTime.of(9, 0));
+        LocalDateTime end   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(18, 0));
+        WorkerAvailability othersSlot = savedSlot(10L, otherApplicant, start, end);
 
         when(availabilityRepository.findById(10L)).thenReturn(Optional.of(othersSlot));
 
-        LocalDateTime start = LocalDateTime.of(FUTURE_DATE, LocalTime.of(10, 0));
-        LocalDateTime end   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(19, 0));
+        LocalDateTime newStart = LocalDateTime.of(FUTURE_DATE, LocalTime.of(10, 0));
+        LocalDateTime newEnd   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(19, 0));
 
         assertThatThrownBy(() ->
                 availabilityService.update(applicant, 10L,
-                        new WorkerAvailabilityUpdateRequest(start, end, null)))
+                        new WorkerAvailabilityUpdateRequest(newStart, newEnd, null)))
                 .isInstanceOf(AccessDeniedException.class);
 
-        verify(availabilityRepository, never()).deleteAll(any());
-        verify(availabilityRepository, never()).saveAll(any());
+        verify(availabilityRepository, never()).save(any());
     }
 
     @Test
@@ -244,86 +277,66 @@ class WorkerAvailabilityServiceTest {
     // ─── 삭제 ────────────────────────────────────────────────────
 
     @Test
-    @DisplayName("자정 분할 슬롯 delete → 그룹 내 2개 레코드 모두 삭제")
-    void delete_splitGroup_deletesBothRecords() {
-        String groupId = "split-group";
+    @DisplayName("delete → 단건 삭제 (deleteAll 아님)")
+    void delete_singleRecord_deletedOnce() {
+        LocalDateTime start = LocalDateTime.of(FUTURE_DATE, LocalTime.of(9, 0));
+        LocalDateTime end   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(18, 0));
+        WorkerAvailability slot = savedSlot(1L, applicant, start, end);
 
-        WorkerAvailability day1 = WorkerAvailability.builder()
-                .id(1L).user(applicant)
-                .date(FUTURE_DATE).startTime(LocalTime.of(22, 0)).endTime(LocalTime.MAX)
-                .linkedGroupId(groupId)
-                .groupStartAt(LocalDateTime.of(FUTURE_DATE, LocalTime.of(22, 0)))
-                .groupEndAt(LocalDateTime.of(FUTURE_DATE_NEXT, LocalTime.of(6, 0)))
-                .build();
-        WorkerAvailability day2 = WorkerAvailability.builder()
-                .id(2L).user(applicant)
-                .date(FUTURE_DATE_NEXT).startTime(LocalTime.MIN).endTime(LocalTime.of(6, 0))
-                .linkedGroupId(groupId)
-                .groupStartAt(LocalDateTime.of(FUTURE_DATE, LocalTime.of(22, 0)))
-                .groupEndAt(LocalDateTime.of(FUTURE_DATE_NEXT, LocalTime.of(6, 0)))
-                .build();
-
-        when(availabilityRepository.findById(1L)).thenReturn(Optional.of(day1));
-        when(availabilityRepository.findByLinkedGroupId(groupId)).thenReturn(List.of(day1, day2));
+        when(availabilityRepository.findById(1L)).thenReturn(Optional.of(slot));
 
         availabilityService.delete(applicant, 1L);
 
-        // deleteAll 에 2개 레코드가 전달됐는지 확인
-        ArgumentCaptor<List<WorkerAvailability>> captor = listCaptor();
-        verify(availabilityRepository).deleteAll(captor.capture());
-        assertThat(captor.getValue()).hasSize(2)
-                .extracting(WorkerAvailability::getId)
-                .containsExactlyInAnyOrder(1L, 2L);
+        verify(availabilityRepository).delete(slot);
+        verify(availabilityRepository, never()).deleteAll(any());
+    }
+
+    @Test
+    @DisplayName("야간 슬롯 delete → 단건만 삭제")
+    void delete_overnightSlot_deletedOnce() {
+        LocalDateTime start = LocalDateTime.of(FUTURE_DATE, LocalTime.of(22, 0));
+        LocalDateTime end   = LocalDateTime.of(FUTURE_DATE_NEXT, LocalTime.of(6, 0));
+        WorkerAvailability slot = savedSlot(2L, applicant, start, end);
+
+        when(availabilityRepository.findById(2L)).thenReturn(Optional.of(slot));
+
+        availabilityService.delete(applicant, 2L);
+
+        verify(availabilityRepository).delete(slot);
     }
 
     // ─── 범위 조회 ───────────────────────────────────────────────
 
     @Test
-    @DisplayName("범위 조회: Day1 만 범위 안에 있고 Day2 가 범위 밖 → 그룹 전체 반환 (crossesMidnight=true)")
-    void getRange_day1InRangeDay2Outside_returnsFullGroup() {
-        String groupId = "overnight-group";
+    @DisplayName("범위 조회: 야간 슬롯이 범위 경계에 걸쳐 있어도 overlap 쿼리로 반환")
+    void getRange_overnightSlotAtBoundary_returned() {
+        // 야간 슬롯: 2030-06-01 22:00 ~ 2030-06-02 06:00
+        LocalDateTime start = LocalDateTime.of(FUTURE_DATE, LocalTime.of(22, 0));
+        LocalDateTime end   = LocalDateTime.of(FUTURE_DATE_NEXT, LocalTime.of(6, 0));
+        WorkerAvailability slot = savedSlot(1L, applicant, start, end);
 
-        // Day1 = 2030-06-01 (범위 안), Day2 = 2030-06-02 (범위 밖)
-        WorkerAvailability day1 = WorkerAvailability.builder()
-                .id(1L).user(applicant)
-                .date(FUTURE_DATE).startTime(LocalTime.of(22, 0)).endTime(LocalTime.MAX)
-                .linkedGroupId(groupId)
-                .groupStartAt(LocalDateTime.of(FUTURE_DATE, LocalTime.of(22, 0)))
-                .groupEndAt(LocalDateTime.of(FUTURE_DATE_NEXT, LocalTime.of(6, 0)))
-                .build();
-        WorkerAvailability day2 = WorkerAvailability.builder()
-                .id(2L).user(applicant)
-                .date(FUTURE_DATE_NEXT).startTime(LocalTime.MIN).endTime(LocalTime.of(6, 0))
-                .linkedGroupId(groupId)
-                .groupStartAt(LocalDateTime.of(FUTURE_DATE, LocalTime.of(22, 0)))
-                .groupEndAt(LocalDateTime.of(FUTURE_DATE_NEXT, LocalTime.of(6, 0)))
-                .build();
+        // 조회 범위: 2030-06-01 only → fromStart=2030-06-01T00:00, toEnd=2030-06-02T00:00
+        LocalDateTime fromStart = FUTURE_DATE.atStartOfDay();
+        LocalDateTime toEnd     = FUTURE_DATE.plusDays(1).atStartOfDay();
 
-        // 쿼리 범위: 2030-06-01 only → Day1 만 반환
-        when(availabilityRepository.findByUserIdAndDateBetweenOrderByDateAscStartTimeAsc(
-                eq(applicant.getId()), eq(FUTURE_DATE), eq(FUTURE_DATE)))
-                .thenReturn(List.of(day1));
-
-        // IN 쿼리로 그룹 전체 조회 → Day1+Day2 (Pre-correction 0-2)
-        when(availabilityRepository.findByLinkedGroupIdInOrderByDateAscStartTimeAsc(List.of(groupId)))
-                .thenReturn(List.of(day1, day2));
+        when(availabilityRepository.findByUserIdAndRange(
+                eq(applicant.getId()), eq(fromStart), eq(toEnd)))
+                .thenReturn(List.of(slot));
 
         List<WorkerAvailabilityResponse> result =
                 availabilityService.getRange(applicant, FUTURE_DATE, FUTURE_DATE);
 
         assertThat(result).hasSize(1);
         WorkerAvailabilityResponse resp = result.get(0);
-        assertThat(resp.linkedGroupId()).isEqualTo(groupId);
         assertThat(resp.crossesMidnight()).isTrue();
-        assertThat(resp.startAt()).isEqualTo(LocalDateTime.of(FUTURE_DATE, LocalTime.of(22, 0)));
-        assertThat(resp.endAt()).isEqualTo(LocalDateTime.of(FUTURE_DATE_NEXT, LocalTime.of(6, 0)));
+        assertThat(resp.startAt()).isEqualTo(start);
+        assertThat(resp.endAt()).isEqualTo(end);
     }
 
     @Test
     @DisplayName("범위 조회: 범위 내 슬롯 없음 → 빈 목록")
     void getRange_empty_returnsEmptyList() {
-        when(availabilityRepository.findByUserIdAndDateBetweenOrderByDateAscStartTimeAsc(
-                anyLong(), any(), any()))
+        when(availabilityRepository.findByUserIdAndRange(anyLong(), any(), any()))
                 .thenReturn(List.of());
 
         List<WorkerAvailabilityResponse> result =
@@ -332,66 +345,77 @@ class WorkerAvailabilityServiceTest {
         assertThat(result).isEmpty();
     }
 
-    // ─── Pre-correction 0-1: linkedGroupId 보존 검증 ──────────────
+    @Test
+    @DisplayName("범위 조회: 여러 슬롯 → availStartAt 오름차순 반환")
+    void getRange_multipleSlots_returnedInOrder() {
+        LocalDateTime start1 = LocalDateTime.of(FUTURE_DATE, LocalTime.of(9, 0));
+        LocalDateTime end1   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(12, 0));
+        LocalDateTime start2 = LocalDateTime.of(FUTURE_DATE, LocalTime.of(14, 0));
+        LocalDateTime end2   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(18, 0));
+
+        WorkerAvailability slot1 = savedSlot(1L, applicant, start1, end1);
+        WorkerAvailability slot2 = savedSlot(2L, applicant, start2, end2);
+
+        when(availabilityRepository.findByUserIdAndRange(
+                eq(applicant.getId()), any(), any()))
+                .thenReturn(List.of(slot1, slot2)); // 이미 ORDER BY availStartAt ASC
+
+        List<WorkerAvailabilityResponse> result =
+                availabilityService.getRange(applicant, FUTURE_DATE, FUTURE_DATE);
+
+        assertThat(result).hasSize(2);
+        assertThat(result.get(0).startAt()).isEqualTo(start1);
+        assertThat(result.get(1).startAt()).isEqualTo(start2);
+    }
+
+    // ─── AvailabilityCreatedEvent 발행 검증 ──────────────────────
 
     @Test
-    @DisplayName("update 후 linkedGroupId 는 기존 값과 동일해야 한다 (Pre-correction 0-1)")
-    void update_preservesLinkedGroupId() {
-        String originalGroupId = "original-group-uuid";
-        WorkerAvailability existing = singleRecord(7L, applicant, FUTURE_DATE, 9, 18, originalGroupId);
+    @DisplayName("create 후 AvailabilityCreatedEvent 발행 — availabilityId, availStartAt, availEndAt 포함")
+    void create_publishesAvailabilityCreatedEvent() {
+        LocalDateTime start = LocalDateTime.of(FUTURE_DATE, LocalTime.of(9, 0));
+        LocalDateTime end   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(18, 0));
 
-        LocalDateTime newStart = LocalDateTime.of(FUTURE_DATE, LocalTime.of(8, 0));
-        LocalDateTime newEnd   = LocalDateTime.of(FUTURE_DATE, LocalTime.of(17, 0));
+        givenNoOverlap();
+        WorkerAvailability saved = savedSlot(5L, applicant, start, end);
+        when(availabilityRepository.save(any(WorkerAvailability.class))).thenReturn(saved);
 
-        when(availabilityRepository.findById(7L)).thenReturn(Optional.of(existing));
-        when(availabilityRepository.findOverlappingGroupIds(
-                eq(applicant.getId()), eq(newStart), eq(newEnd), eq(originalGroupId)))
-                .thenReturn(List.of());
-        when(availabilityRepository.findByLinkedGroupId(originalGroupId))
-                .thenReturn(List.of(existing));
-        // saveAll → 인수 그대로 반환 (setUp 에서 lenient 스텁 설정됨)
+        availabilityService.create(applicant, new WorkerAvailabilityCreateRequest(start, end, 0));
 
-        WorkerAvailabilityResponse response = availabilityService.update(
-                applicant, 7L, new WorkerAvailabilityUpdateRequest(newStart, newEnd, null));
+        ArgumentCaptor<AutoMatchEvents.AvailabilityCreatedEvent> captor =
+                ArgumentCaptor.forClass(AutoMatchEvents.AvailabilityCreatedEvent.class);
+        verify(eventPublisher).publishEvent(captor.capture());
 
-        // linkedGroupId 는 originalGroupId 와 동일해야 한다
-        assertThat(response.linkedGroupId()).isEqualTo(originalGroupId);
-
-        // 저장된 레코드의 linkedGroupId 도 검증
-        ArgumentCaptor<List<WorkerAvailability>> captor = listCaptor();
-        verify(availabilityRepository).saveAll(captor.capture());
-        assertThat(captor.getValue()).allSatisfy(wa ->
-                assertThat(wa.getLinkedGroupId()).isEqualTo(originalGroupId));
+        AutoMatchEvents.AvailabilityCreatedEvent event = captor.getValue();
+        assertThat(event.userId()).isEqualTo(applicant.getId());
+        assertThat(event.availabilityId()).isEqualTo(5L);
+        assertThat(event.availStartAt()).isEqualTo(start);
+        assertThat(event.availEndAt()).isEqualTo(end);
     }
 
     // ─── helpers ─────────────────────────────────────────────────
 
-    /** findOverlappingGroupIds 가 빈 목록 반환(겹침 없음)하도록 스텁. */
+    /** findOverlapping 이 빈 목록 반환(겹침 없음)하도록 lenient 스텁. */
     private void givenNoOverlap() {
-        lenient().when(availabilityRepository.findOverlappingGroupIds(
+        lenient().when(availabilityRepository.findOverlapping(
                 anyLong(), any(), any(), any()))
                 .thenReturn(List.of());
     }
 
-    /** 단일 레코드(분할 없는 슬롯) 빌더 헬퍼. */
-    private static WorkerAvailability singleRecord(
-            Long id, User owner, LocalDate date, int startHour, int endHour, String groupId) {
-        LocalDateTime groupStart = LocalDateTime.of(date, LocalTime.of(startHour, 0));
-        LocalDateTime groupEnd   = LocalDateTime.of(date, LocalTime.of(endHour, 0));
+    /**
+     * 저장된 것처럼 id/createdAt/updatedAt 이 채워진 WorkerAvailability 빌더 헬퍼.
+     * {@code @PrePersist} 는 실제 저장 시 동작하므로 여기서는 직접 값 주입.
+     */
+    private static WorkerAvailability savedSlot(
+            Long id, User owner, LocalDateTime start, LocalDateTime end) {
         return WorkerAvailability.builder()
-                .id(id).user(owner)
-                .date(date)
-                .startTime(LocalTime.of(startHour, 0))
-                .endTime(LocalTime.of(endHour, 0))
-                .linkedGroupId(groupId)
-                .groupStartAt(groupStart)
-                .groupEndAt(groupEnd)
+                .id(id)
+                .user(owner)
+                .availStartAt(start)
+                .availEndAt(end)
+                .minDurationMinutes(0)
+                .createdAt(LocalDateTime.of(2030, 1, 1, 0, 0))
+                .updatedAt(LocalDateTime.of(2030, 1, 1, 0, 0))
                 .build();
-    }
-
-    /** List<WorkerAvailability> ArgumentCaptor 생성 헬퍼 (타입 캐스팅 경고 억제). */
-    @SuppressWarnings("unchecked")
-    private static ArgumentCaptor<List<WorkerAvailability>> listCaptor() {
-        return ArgumentCaptor.forClass(List.class);
     }
 }

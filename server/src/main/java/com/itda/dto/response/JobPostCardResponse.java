@@ -43,23 +43,28 @@ public record JobPostCardResponse(
 
         // 급구 여부
         Boolean urgentEnabled,
-        Integer urgentWageIncrease
+        Integer urgentWageIncrease,
+
+        // 맞춤 추천(RECOMMENDED) 정렬 시 산출된 랭킹 점수.
+        // 다른 정렬 방식(최신순 등)에서는 null.
+        Integer score
 ) {
-    // liked 없는 기본 변환 (비로그인 or liked 불필요한 경우)
+    // liked·score 없는 기본 변환 (비로그인 or liked/score 불필요한 경우)
     public static JobPostCardResponse from(JobPost post) {
-        return from(post, false);
+        return from(post, false, null);
     }
 
-    // liked 포함 변환
+    // liked 포함, score 없는 변환
     public static JobPostCardResponse from(JobPost post, boolean liked) {
+        return from(post, liked, null);
+    }
+
+    // liked·score 모두 포함하는 풀 변환 (RECOMMENDED 정렬에서 사용)
+    public static JobPostCardResponse from(JobPost post, boolean liked, Integer score) {
         long leftDays = ChronoUnit.DAYS.between(LocalDate.now(), post.getDeadline());
 
-        // workEnd 표시: 자정 분할 Day1 의 workEnd=LocalTime.MAX 를 원래 값으로 되돌린다.
-        // groupEndAt.toLocalTime() = 사용자 원래 입력값 (예: 06:00, 00:00).
-        // groupEndAt 이 null 이면 (migration 전 old data) workEnd 를 그대로 사용.
-        String workEndDisplay = post.getGroupEndAt() != null
-                ? post.getGroupEndAt().toLocalTime().toString()
-                : post.getWorkEnd().toString();
+        // workEnd 는 단일 레코드에 항상 사용자 원래 입력값이 저장되어 있음.
+        String workEndDisplay = post.getWorkEnd().toString();
 
         return new JobPostCardResponse(
                 post.getId(),
@@ -81,7 +86,8 @@ public record JobPostCardResponse(
                 post.getJobSubcategory(),
                 liked,
                 post.getUrgentEnabled(),
-                post.getUrgentWageIncrease()
+                post.getUrgentWageIncrease(),
+                score
         );
     }
 }

@@ -7,6 +7,7 @@ import com.itda.enums.WageType;
 import lombok.Getter;
 import lombok.Setter;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -84,8 +85,18 @@ public class JobPostCreateRequest {
     private Boolean autoOfferEnabled = false;
 
     // S3 업로드 완료 후 contentUrl을 받아서 엔티티 생성하는 버전
-    // 기존 toEntity(workplace)는 그대로 유지
     public JobPost toEntity(Workplace workplace, String contentUrl) {
+        LocalDate  parsedWorkDate  = LocalDate.parse(workDate);
+        LocalTime  parsedWorkStart = LocalTime.parse(workStart);
+        LocalTime  parsedWorkEnd   = LocalTime.parse(workEnd);
+
+        // 매칭 전용 datetime 계산
+        // workEnd <= workStart 이면 자정 넘김 — workEndAt 을 다음날로 계산
+        LocalDateTime startAt = LocalDateTime.of(parsedWorkDate, parsedWorkStart);
+        LocalDateTime endAt   = parsedWorkEnd.isAfter(parsedWorkStart)
+                ? LocalDateTime.of(parsedWorkDate, parsedWorkEnd)
+                : LocalDateTime.of(parsedWorkDate.plusDays(1), parsedWorkEnd);
+
         return JobPost.builder()
                 .workplace(workplace)
                 .title(title)
@@ -93,9 +104,11 @@ public class JobPostCreateRequest {
                 .jobSubcategory(jobSubcategory)
                 .wage(wage)
                 .wageType(WageType.valueOf(wageType))
-                .workDate(LocalDate.parse(workDate))
-                .workStart(LocalTime.parse(workStart))
-                .workEnd(LocalTime.parse(workEnd))
+                .workDate(parsedWorkDate)
+                .workStart(parsedWorkStart)
+                .workEnd(parsedWorkEnd)
+                .workStartAt(startAt)
+                .workEndAt(endAt)
                 .totalSlots(totalSlots)
                 .status(JobPostStatus.OPEN)
                 .deadline(LocalDate.parse(deadline))

@@ -9,8 +9,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.temporal.ChronoUnit;
-import java.util.Comparator;
+import java.time.Duration;
 import java.util.List;
 
 /**
@@ -29,8 +28,8 @@ import java.util.List;
  *
  * <h3>매칭 조건 (avail ⊇ post)</h3>
  * <ul>
- *   <li>{@code avail.groupStartAt ≤ post.groupStartAt}: 가용시간이 공고 시작 전에 시작</li>
- *   <li>{@code avail.groupEndAt ≥ post.groupEndAt}: 가용시간이 공고 종료 이후까지 연장</li>
+ *   <li>{@code avail.availStartAt ≤ post.workStartAt}: 가용시간이 공고 시작 전에 시작</li>
+ *   <li>{@code avail.availEndAt ≥ post.workEndAt}: 가용시간이 공고 종료 이후까지 연장</li>
  *   <li>{@code avail.minDurationMinutes ≤ postDurationMinutes}: 공고 길이가 최소 근무 요건 충족</li>
  *   <li>고용주 본인 공고 / 본인 가용시간 제외</li>
  * </ul>
@@ -57,39 +56,32 @@ public class AutoMatchService {
     /**
      * 구직자 가용시간 등록/수정 이벤트에 대한 자동 매칭.
      *
-     * <p>가용시간 범위 [groupStartAt, groupEndAt] 에 완전히 포함되는 OPEN 공고를 탐색하고,
+     * <p>가용시간 범위 [availStartAt, availEndAt] 에 완전히 포함되는 OPEN 공고를 탐색하고,
      * 공고 근무 시간이 {@code minDurationMinutes} 이상이면 Application 생성을 시도한다.
      */
     public void matchForAvailability(AutoMatchEvents.AvailabilityCreatedEvent event) {
-        List<String> postGroupIds = jobPostRepository.findMatchingJobPostGroupIdsForAvailability(
-                event.groupStartAt(), event.groupEndAt(), event.userId());
+        List<Long> postIds = jobPostRepository.findMatchingJobPostIdsForAvailability(
+                event.availStartAt(), event.availEndAt(), event.userId());
 
-        if (postGroupIds.isEmpty()) return;
+        if (postIds.isEmpty()) return;
 
-        for (String groupId : postGroupIds) {
-            List<JobPost> group = jobPostRepository.findByLinkedGroupId(groupId);
-            if (group.isEmpty()) continue;   // 방어 코드 — 정상 흐름에서는 발생하지 않음
-
-            // 날짜 오름차순 첫 번째 레코드 = Day1 대표
-            JobPost day1 = group.stream()
-                    .min(Comparator.comparing(JobPost::getWorkDate))
-                    .orElse(null);
-            if (day1 == null) continue;
-
+        // 배치 조회로 N+1 방지
+        List<JobPost> posts = jobPostRepository.findAllById(postIds);
+        for (JobPost jobPost : posts) {
             // 공고 근무 시간(분) < 구직자 최소 요구 시간 → 스킵
-            int postDurationMinutes = (int) ChronoUnit.MINUTES.between(
-                    day1.getGroupStartAt(), day1.getGroupEndAt());
+            int postDurationMinutes = (int) Duration.between(
+                    jobPost.getWorkStartAt(), jobPost.getWorkEndAt()).toMinutes();
             if (postDurationMinutes < event.minDurationMinutes()) {
                 log.debug("[AutoMatch] 최소 근무 시간 미달 스킵 — post={}min, required={}min, jobPostId={}",
-                        postDurationMinutes, event.minDurationMinutes(), day1.getId());
+                        postDurationMinutes, event.minDurationMinutes(), jobPost.getId());
                 continue;
             }
 
             try {
-                txSupport.tryCreate(event.userId(), day1.getId());
+                txSupport.tryCreate(event.userId(), jobPost.getId());
             } catch (Exception e) {
                 log.warn("[AutoMatch] availabilityEvent 매칭 실패 — userId={}, jobPostId={}, err={}",
-                        event.userId(), day1.getId(), e.getMessage());
+                        event.userId(), jobPost.getId(), e.getMessage());
             }
         }
     }
@@ -99,25 +91,25 @@ public class AutoMatchService {
     /**
      * 구인 공고 등록 이벤트에 대한 자동 매칭.
      *
-     * <p>공고 시간대 [groupStartAt, groupEndAt] 를 완전히 포함하는 가용시간을 가진 구직자를
+     * <p>공고 시간대 [workStartAt, workEndAt] 를 완전히 포함하는 가용시간을 가진 구직자를
      * 탐색하고, 각 구직자에 대해 Application 생성을 시도한다.
      */
     public void matchForJobPost(AutoMatchEvents.JobPostCreatedEvent event) {
-        int postDurationMinutes = (int) ChronoUnit.MINUTES.between(
-                event.groupStartAt(), event.groupEndAt());
+        int postDurationMinutes = (int) Duration.between(
+                event.workStartAt(), event.workEndAt()).toMinutes();
 
-        List<Long> applicantUserIds = availabilityRepository.findMatchingAvailabilityUserIds(
-                event.groupStartAt(), event.groupEndAt(),
+        List<Long> applicantUserIds = availabilityRepository.findMatchingUserIdsForJobPost(
+                event.workStartAt(), event.workEndAt(),
                 postDurationMinutes, event.employerUserId());
 
         if (applicantUserIds.isEmpty()) return;
 
         for (Long applicantUserId : applicantUserIds) {
             try {
-                txSupport.tryCreate(applicantUserId, event.jobPostRepresentativeId());
+                txSupport.tryCreate(applicantUserId, event.jobPostId());
             } catch (Exception e) {
                 log.warn("[AutoMatch] jobPostEvent 매칭 실패 — applicantUserId={}, jobPostId={}, err={}",
-                        applicantUserId, event.jobPostRepresentativeId(), e.getMessage());
+                        applicantUserId, event.jobPostId(), e.getMessage());
             }
         }
     }

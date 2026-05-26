@@ -38,14 +38,15 @@ import java.util.stream.Collectors;
  * 호출 조건: sortType="RECOMMENDED" 이고 인증된 사용자가 APPLICANT 일 때.
  * 다른 케이스(비로그인, EMPLOYER 등)에서는 호출하지 않는다 — 호출자가 분기 처리.
  *
- * 시그널 (가중치 합 100점, APPLIED/PENDING −10점 감점):
+ * 시그널 (가중치 합 ~108점, APPLIED/PENDING −10점 감점):
  *   1. 지역 근접           최대 30  user.location ↔ workplace.address 단계 매칭
  *   2. 업종 카테고리 일치   20      Career.jobTitle / Application 이력 최빈 카테고리
  *   3. 근무 일정 가용       15      HIRED 일정과 겹치지 않으면 15
  *   4. 급여 수준           최대 15  동일 카테고리 백분위 (상위 25%=15, 25~50=10, 50~75=5)
  *   5. 마감 임박/신선도    10      D-day ≤ 7일 또는 등록 24h 이내
- *   6. 좋아요한 사업장      5       JobPostLike → employer 또는 ResumeLike 역방향
- *   7. 과거 HIRED 사업장   5       같은 employer 재고용 가능성
+ *   6. 급구               8       urgentEnabled=true 공고 가산
+ *   7. 좋아요한 사업장      5       JobPostLike → employer 또는 ResumeLike 역방향
+ *   8. 과거 HIRED 사업장   5       같은 employer 재고용 가능성
  *
  * 정책:
  *   - HIRED 공고는 SQL 단계에서 후보에서 제외
@@ -124,10 +125,10 @@ public class JobPostRankingService {
             page = page.subList(0, size);
         }
 
-        // 7) DTO 변환 (liked 표시는 사용자 자신의 JobPostLike 셋 사용)
+        // 7) DTO 변환 (liked 표시는 사용자 자신의 JobPostLike 셋, score 포함)
         List<JobPostCardResponse> cards = page.stream()
                 .map(s -> JobPostCardResponse.from(
-                        s.post(), snap.likedPostIds().contains(s.post().getId())))
+                        s.post(), snap.likedPostIds().contains(s.post().getId()), s.score()))
                 .toList();
 
         Long nextCursor = hasNext ? (long) (offset + cards.size()) : null;
@@ -149,6 +150,7 @@ public class JobPostRankingService {
         score += scheduleScore(snap.hiredWorkDates(), post.getWorkDate());
         score += wageScore(post, wagesByCategory);
         score += freshnessScore(post.getDeadline(), post.getCreatedAt(), today, now);
+        score += urgentScore(post.getUrgentEnabled());
 
         Long employerUserId = post.getWorkplace().getEmployer().getUser().getId();
         if (snap.likedEmployerIds().contains(employerUserId)) score += weights.likedEmployer();
@@ -203,6 +205,10 @@ public class JobPostRankingService {
         if (percentile >= 0.50) return tier.mid5075();
         if (percentile >= 0.25) return tier.mid2550();
         return 0;
+    }
+
+    int urgentScore(Boolean urgentEnabled) {
+        return Boolean.TRUE.equals(urgentEnabled) ? weights.urgent() : 0;
     }
 
     int freshnessScore(LocalDate deadline, LocalDateTime createdAt,

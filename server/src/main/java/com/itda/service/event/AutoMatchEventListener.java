@@ -33,8 +33,8 @@ public class AutoMatchEventListener {
         try {
             autoMatchService.matchForAvailability(event);
         } catch (Exception e) {
-            log.warn("[AutoMatch] AvailabilityCreatedEvent 처리 실패 — userId={}, linkedGroupId={}, err={}",
-                    event.userId(), event.linkedGroupId(), e.getMessage());
+            log.warn("[AutoMatch] AvailabilityCreatedEvent 처리 실패 — userId={}, availId={}, err={}",
+                    event.userId(), event.availabilityId(), e.getMessage());
         }
     }
 
@@ -48,8 +48,8 @@ public class AutoMatchEventListener {
         try {
             autoMatchService.matchForJobPost(event);
         } catch (Exception e) {
-            log.warn("[AutoMatch] JobPostCreatedEvent 처리 실패 — linkedGroupId={}, err={}",
-                    event.linkedGroupId(), e.getMessage());
+            log.warn("[AutoMatch] JobPostCreatedEvent 처리 실패 — jobPostId={}, err={}",
+                    event.jobPostId(), e.getMessage());
         }
     }
 }

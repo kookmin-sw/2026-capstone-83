@@ -6,12 +6,13 @@ import com.itda.entity.Employer;
 import com.itda.entity.JobPost;
 import com.itda.entity.User;
 import com.itda.entity.Workplace;
-import com.itda.enums.JobPostStatus;
 import com.itda.enums.UserRole;
 import com.itda.enums.WageType;
 import com.itda.repository.ApplicationRepository;
 import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
+import com.itda.repository.LongTermWorkerRepository;
+import com.itda.repository.UserRepository;
 import com.itda.repository.WorkplaceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -24,13 +25,19 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.context.ApplicationEventPublisher;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.List;
 
 import static org.assertj.core.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
+/**
+ * JobPostService 단위 테스트.
+ *
+ * <p>V3 이후 JobPost 는 항상 단일 레코드로 저장된다.
+ * 자정 넘김 공고도 1개 레코드에 {@code workStartAt}/{@code workEndAt} 으로 범위를 표현한다.
+ */
 @ExtendWith(MockitoExtension.class)
 class JobPostServiceTest {
 
@@ -43,6 +50,9 @@ class JobPostServiceTest {
     @Mock private WorkplaceRepository     workplaceRepository;
     @Mock private JobPostRankingService   rankingService;
     @Mock private ApplicationEventPublisher eventPublisher;
+    @Mock private LongTermWorkerRepository longTermWorkerRepository;
+    @Mock private UserRepository          userRepository;
+    @Mock private ApplicationService      applicationService;
 
     @InjectMocks
     private JobPostService jobPostService;
@@ -52,7 +62,6 @@ class JobPostServiceTest {
 
     @BeforeEach
     void setUp() {
-        // Workplace → Employer → User 체인 구성 (from() 호출 시 NPE 방지)
         User user = User.builder()
                 .id(1L).name("테스트고용주").email("emp@test.com").phone("010-0000-0000")
                 .role(UserRole.EMPLOYER).build();
@@ -62,22 +71,20 @@ class JobPostServiceTest {
                 .name("테스트사업장").companyName("테스트(주)").address("서울시 강남구")
                 .businessNumber("123-45-67890").build();
 
-        // save() 는 인수를 그대로 반환 (ID 없이도 테스트 가능).
-        // lenient: IAE 테스트에서 save() 미호출 시 UnnecessaryStubbingException 방지.
+        // save() 는 인수를 그대로 반환
         lenient().when(jobPostRepository.save(any(JobPost.class)))
                 .thenAnswer(invocation -> invocation.getArgument(0));
     }
 
-    // ─── 등록 정상 케이스 ────────────────────────────────────────
+    // ─── 등록 — 단일 레코드 저장 검증 ──────────────────────────────
 
     @Test
-    @DisplayName("같은 날 공고 (09:00–18:00) → JobPost 1개 저장, linkedGroupId 부여됨")
+    @DisplayName("같은 날 공고 (09:00–18:00) → JobPost 1개 저장, workStartAt/workEndAt 당일로 세팅")
     void createJobPost_sameDay_savesOnePost() {
         JobPostCreateRequest req = buildRequest("2026-06-01", "09:00", "18:00");
 
-        JobPostDetailResponse response = jobPostService.createJobPost(req, mockWorkplace, null, null);
+        jobPostService.createJobPost(req, mockWorkplace, null, null);
 
-        // save() 는 1번만 호출돼야 함
         ArgumentCaptor<JobPost> captor = ArgumentCaptor.forClass(JobPost.class);
         verify(jobPostRepository, times(1)).save(captor.capture());
 
@@ -86,92 +93,64 @@ class JobPostServiceTest {
         assertThat(saved.getWorkStart()).isEqualTo(LocalTime.of(9, 0));
         assertThat(saved.getWorkEnd()).isEqualTo(LocalTime.of(18, 0));
 
-        // 그룹 컬럼 부여 확인
-        assertThat(saved.getLinkedGroupId()).isNotNull().hasSize(36);
-        assertThat(saved.getGroupStartAt()).isEqualTo(saved.getWorkDate().atTime(saved.getWorkStart()));
-        assertThat(saved.getGroupEndAt()).isEqualTo(saved.getWorkDate().atTime(saved.getWorkEnd()));
-
-        // 응답 workEnd 는 groupEndAt.toLocalTime() = 18:00
-        assertThat(response.workEnd()).isEqualTo("18:00");
+        // 매칭용 datetime — 당일 범위
+        assertThat(saved.getWorkStartAt())
+                .isEqualTo(LocalDateTime.of(2026, 6, 1, 9, 0));
+        assertThat(saved.getWorkEndAt())
+                .isEqualTo(LocalDateTime.of(2026, 6, 1, 18, 0));
+        assertThat(saved.getWorkEndAt()).isAfter(saved.getWorkStartAt());
     }
 
     @Test
-    @DisplayName("자정 넘김 공고 (22:00–익일 06:00) → JobPost 2개 저장, 동일 linkedGroupId·groupStartAt·groupEndAt")
-    void createJobPost_overnight_savesTwoPosts() {
+    @DisplayName("자정 넘김 공고 (22:00–익일 06:00) → JobPost 1개 저장, workEndAt 이 다음날")
+    void createJobPost_overnight_savesOnePost() {
         JobPostCreateRequest req = buildRequest("2026-06-01", "22:00", "06:00");
 
         jobPostService.createJobPost(req, mockWorkplace, null, null);
 
-        // save() 는 2번 호출돼야 함
-        ArgumentCaptor<JobPost> captor = ArgumentCaptor.forClass(JobPost.class);
-        verify(jobPostRepository, times(2)).save(captor.capture());
-
-        List<JobPost> saved = captor.getAllValues();
-        JobPost day1 = saved.get(0);
-        JobPost day2 = saved.get(1);
-
-        // Day1 검증
-        assertThat(day1.getWorkDate()).isEqualTo(LocalDate.of(2026, 6, 1));
-        assertThat(day1.getWorkStart()).isEqualTo(LocalTime.of(22, 0));
-        assertThat(day1.getWorkEnd()).isEqualTo(LocalTime.MAX);   // 자정 분할 sentinel
-
-        // Day2 검증
-        assertThat(day2.getWorkDate()).isEqualTo(LocalDate.of(2026, 6, 2));
-        assertThat(day2.getWorkStart()).isEqualTo(LocalTime.MIN);  // 00:00
-        assertThat(day2.getWorkEnd()).isEqualTo(LocalTime.of(6, 0));
-
-        // 동일한 그룹 컬럼
-        assertThat(day1.getLinkedGroupId()).isEqualTo(day2.getLinkedGroupId());
-        assertThat(day1.getGroupStartAt()).isEqualTo(day2.getGroupStartAt());
-        assertThat(day1.getGroupEndAt()).isEqualTo(day2.getGroupEndAt());
-
-        // groupStartAt / groupEndAt 값 확인
-        assertThat(day1.getGroupStartAt())
-                .isEqualTo(LocalDate.of(2026, 6, 1).atTime(22, 0));
-        assertThat(day1.getGroupEndAt())
-                .isEqualTo(LocalDate.of(2026, 6, 2).atTime(6, 0));
-    }
-
-    @Test
-    @DisplayName("자정 넘김 공고 응답 — workDate=시작날짜, workStart=22:00, workEnd=06:00 (LocalTime.MAX 아님)")
-    void createJobPost_overnight_responseShowsOriginalWorkEnd() {
-        JobPostCreateRequest req = buildRequest("2026-06-01", "22:00", "06:00");
-
-        JobPostDetailResponse response = jobPostService.createJobPost(req, mockWorkplace, null, null);
-
-        // 응답의 workDate/workStart/workEnd 는 사용자 원래 입력값이어야 함
-        assertThat(response.workDate()).isEqualTo("2026-06-01");
-        assertThat(response.workStart()).isEqualTo("22:00");
-        assertThat(response.workEnd()).isEqualTo("06:00");  // groupEndAt.toLocalTime()
-    }
-
-    @Test
-    @DisplayName("자정 정각 종료 공고 (22:00–익일 00:00) → JobPost 1개, workEnd=LocalTime.MAX 저장")
-    void createJobPost_midnightExact_savesOnePost() {
-        // workEnd = "00:00" (자정 정각) → 다음날 00:00으로 계산 → 단일 레코드, endTime=LocalTime.MAX
-        JobPostCreateRequest req = buildRequest("2026-06-01", "22:00", "00:00");
-
-        JobPostDetailResponse response = jobPostService.createJobPost(req, mockWorkplace, null, null);
-
-        // 자정 정각 → 분할 없이 1개 저장
+        // save() 는 1번만 호출돼야 함 (분할 없음)
         ArgumentCaptor<JobPost> captor = ArgumentCaptor.forClass(JobPost.class);
         verify(jobPostRepository, times(1)).save(captor.capture());
 
         JobPost saved = captor.getValue();
+
+        // 표시용 필드 — 원래 입력값 그대로
         assertThat(saved.getWorkDate()).isEqualTo(LocalDate.of(2026, 6, 1));
         assertThat(saved.getWorkStart()).isEqualTo(LocalTime.of(22, 0));
-        assertThat(saved.getWorkEnd()).isEqualTo(LocalTime.MAX);    // 자정 정각 sentinel
+        assertThat(saved.getWorkEnd()).isEqualTo(LocalTime.of(6, 0));   // MAX sentinel 없음
 
-        // groupEndAt = 익일 00:00
-        assertThat(saved.getGroupEndAt())
-                .isEqualTo(LocalDate.of(2026, 6, 2).atStartOfDay());
-
-        // 응답 workEnd 는 groupEndAt.toLocalTime() = 00:00
-        assertThat(response.workEnd()).isEqualTo("00:00");
+        // 매칭용 datetime — workEndAt 이 익일
+        assertThat(saved.getWorkStartAt())
+                .isEqualTo(LocalDateTime.of(2026, 6, 1, 22, 0));
+        assertThat(saved.getWorkEndAt())
+                .isEqualTo(LocalDateTime.of(2026, 6, 2, 6, 0));
+        assertThat(saved.getWorkEndAt()).isAfter(saved.getWorkStartAt());
     }
 
     @Test
-    @DisplayName("자정 시작 공고 (00:00–06:00) → JobPost 1개, 분할 없음")
+    @DisplayName("자정 정각 종료 공고 (22:00–00:00) → 1개 저장, workEnd=00:00, workEndAt=익일 00:00")
+    void createJobPost_midnightExact_savesOnePost() {
+        // workEnd=00:00 은 workStart(22:00) 보다 작으므로 자정 넘김 처리
+        JobPostCreateRequest req = buildRequest("2026-06-01", "22:00", "00:00");
+
+        jobPostService.createJobPost(req, mockWorkplace, null, null);
+
+        ArgumentCaptor<JobPost> captor = ArgumentCaptor.forClass(JobPost.class);
+        verify(jobPostRepository, times(1)).save(captor.capture());
+
+        JobPost saved = captor.getValue();
+
+        // workEnd 는 00:00 그대로 (LocalTime.MAX sentinel 없음)
+        assertThat(saved.getWorkEnd()).isEqualTo(LocalTime.of(0, 0));
+
+        // workEndAt = 익일 자정
+        assertThat(saved.getWorkEndAt())
+                .isEqualTo(LocalDate.of(2026, 6, 2).atStartOfDay());
+        assertThat(saved.getWorkEndAt()).isAfter(saved.getWorkStartAt());
+    }
+
+    @Test
+    @DisplayName("자정 시작 공고 (00:00–06:00) → 1개 저장, 분할 없음")
     void createJobPost_startsAtMidnight_savesOnePost() {
         JobPostCreateRequest req = buildRequest("2026-06-01", "00:00", "06:00");
 
@@ -180,19 +159,28 @@ class JobPostServiceTest {
         verify(jobPostRepository, times(1)).save(any(JobPost.class));
     }
 
-    // ─── 등록 예외 케이스 ────────────────────────────────────────
+    // ─── 등록 응답 검증 ──────────────────────────────────────────
 
     @Test
-    @DisplayName("24시간 이상 공고 (09:00–익일 09:00) → TimeSlotSplitter 에서 IllegalArgumentException")
-    void createJobPost_exactly24Hours_throws() {
-        // 09:00–09:00 → compareTo == 0 → 다음날로 계산 → 정확히 24시간 → IAE
-        JobPostCreateRequest req = buildRequest("2026-06-01", "09:00", "09:00");
+    @DisplayName("자정 넘김 공고 응답 — workDate·workStart·workEnd 는 원래 입력값 그대로")
+    void createJobPost_overnight_responseShowsOriginalFields() {
+        JobPostCreateRequest req = buildRequest("2026-06-01", "22:00", "06:00");
 
-        assertThatIllegalArgumentException()
-                .isThrownBy(() -> jobPostService.createJobPost(req, mockWorkplace, null, null));
+        JobPostDetailResponse response = jobPostService.createJobPost(req, mockWorkplace, null, null);
 
-        // 잘못된 요청이므로 save 는 호출되면 안 됨
-        verify(jobPostRepository, never()).save(any());
+        assertThat(response.workDate()).isEqualTo("2026-06-01");
+        assertThat(response.workStart()).isEqualTo("22:00");
+        assertThat(response.workEnd()).isEqualTo("06:00");
+    }
+
+    @Test
+    @DisplayName("자정 정각 종료 응답 — workEnd=00:00 (LocalTime.MAX 아님)")
+    void createJobPost_midnightExact_responseShowsZeroEnd() {
+        JobPostCreateRequest req = buildRequest("2026-06-01", "22:00", "00:00");
+
+        JobPostDetailResponse response = jobPostService.createJobPost(req, mockWorkplace, null, null);
+
+        assertThat(response.workEnd()).isEqualTo("00:00");
     }
 
     // ─── 헬퍼 ────────────────────────────────────────────────────

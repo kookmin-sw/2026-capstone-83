@@ -17,7 +17,7 @@ import org.springframework.validation.annotation.Validated;
  * 함수가 누적하는 정수 점수에 그대로 곱해진다.
  *
  * 기본값은 본 프로젝트의 랭킹 표 (지역 30 / 카테고리 20 / 일정 15 /
- * 급여 15 / 신선도 10 / 좋아요 사업장 5 / HIRED 사업장 5 / APPLIED·PENDING -10).
+ * 급여 15 / 신선도 10 / 급구 8 / 좋아요 사업장 5 / HIRED 사업장 5 / APPLIED·PENDING -10).
  */
 @ConfigurationProperties(prefix = "ranking.weights")
 @Validated
@@ -37,6 +37,9 @@ public record RankingProperties(
 
         /** 마감 7일 이내 또는 등록 24시간 이내 가산 */
         @Min(0) int freshness,
+
+        /** 급구(urgentEnabled = true) 공고 가산 — 빠른 채용이 필요한 공고를 상위 노출 */
+        @Min(0) int urgent,
 
         /** 사용자가 좋아요한 공고의 employer / 사용자 이력서를 좋아요한 employer 가산 */
         @Min(0) int likedEmployer,

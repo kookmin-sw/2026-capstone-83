@@ -1,0 +1,69 @@
+sequenceDiagram
+    autonumber
+    actor U as 구직자<br/>(APPLICANT)
+    participant FE as Frontend<br/>(React)
+    participant CTL as JobPostController
+    participant SVC as JobPostService
+    participant RNK as JobPostRankingService
+    participant DB as DB<br/>(JobPost/Application/Resume/Career/Like)
+    participant PUB as ApplicationEventPublisher
+    participant LIS as InteractionEventListener<br/>(@Async eventsExecutor)
+    participant LOG as ImpressionLog / ClickLog
+
+    U->>FE: 공고 목록 페이지 진입 (추천 정렬 선택)
+    FE->>CTL: GET /api/v1/job-posts?sortType=RECOMMENDED<br/>Authorization: Bearer <JWT>
+
+    CTL->>CTL: requestId = UUID.randomUUID()
+    CTL->>SVC: getJobPosts(filter, user, requestId)
+
+    alt sortType == RECOMMENDED && user.role == APPLICANT
+        SVC->>RNK: recommend(user, cursor, size)
+
+        RNK->>DB: applicationRepository.findByApplicantUserId(userId)
+        DB-->>RNK: 지원 이력 (HIRED / APPLIED / PENDING)
+        RNK->>DB: resumeRepository.findByUserId + careerRepository.findByResumeId
+        DB-->>RNK: 이력서·경력
+        RNK->>DB: jobPostLikeRepository.findByUserId + resumeLikeRepository.findByResumeId
+        DB-->>RNK: 좋아요/역방향 좋아요
+        RNK->>RNK: UserSnapshot 구축<br/>(location, topCategory, hiredDates,<br/> likedEmployerIds, hiredEmployerIds, ...)
+
+        RNK->>DB: findOpenPostsExcluding(hiredPostIds)
+        DB-->>RNK: 후보 List<JobPost>
+
+        RNK->>RNK: buildWageDistribution() — 카테고리별 시급 분포
+        loop 각 후보 공고
+            RNK->>RNK: scoreOne()<br/>지역(30) + 업종(20) + 일정(15)<br/>+ 급여백분위(15) + 신선도(10)<br/>+ 좋아요(5) + HIRED(5) − APPLIED(10)
+        end
+        RNK->>RNK: sort by score DESC, id DESC
+        RNK->>RNK: page slice (offset = cursor, size+1 로 hasNext 판단)
+
+        RNK-->>SVC: CursorPageResponse<JobPostCardResponse>
+    else 그 외 정렬 (LATEST / DEADLINE / 비로그인)
+        SVC->>DB: jobPostRepository.findByDynamicFilter(filter)
+        DB-->>SVC: posts
+        SVC->>SVC: liked 마킹 후 카드 DTO 변환
+    end
+
+    SVC->>PUB: publishEvent(ImpressionBatchEvent<br/>requestId, userId, sortType, positions[])
+    SVC-->>CTL: response
+    CTL-->>FE: 200 OK<br/>Headers: X-Request-Id, Cache-Control: no-store<br/>Body: 추천 카드 목록 + nextCursor
+    FE-->>U: 추천 공고 카드 렌더
+
+    Note over PUB,LOG: 이하 비동기 처리 — 사용자 응답을 막지 않음
+    PUB-)LIS: onImpressionBatch(event)
+    LIS->>LOG: impressionRepo.saveAll(JobPostImpressionLog × N)
+
+    rect rgba(200,220,255,0.25)
+        Note over U,LOG: ── 이후 카드 클릭 시 ──
+        U->>FE: 추천 카드 클릭
+        FE->>CTL: GET /api/v1/job-posts/{id}<br/>X-Request-Id, X-Referrer-Sort-Type=RECOMMENDED
+        CTL->>SVC: getJobPost(id, user, requestId, referrerSortType)
+        SVC->>DB: jobPostRepository.findById(id)
+        DB-->>SVC: JobPost
+        SVC->>PUB: publishEvent(ClickEvent)
+        SVC-->>CTL: JobPostDetailResponse
+        CTL-->>FE: 200 OK
+        PUB-)LIS: onClick(event)
+        LIS->>LOG: clickRepo.save(JobPostClickLog)
+        Note over LOG: ImpressionLog × ClickLog 를 requestId 로 조인<br/>→ CTR / CVR / NDCG@10 산출 (매니저 대시보드)
+    end

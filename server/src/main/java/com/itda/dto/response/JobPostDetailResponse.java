@@ -51,7 +51,10 @@ public record JobPostDetailResponse(
 ) {
     // liked 포함 버전
     public static JobPostDetailResponse from(JobPost post, boolean liked) {
+        // workEnd 는 단일 레코드에 항상 사용자 원래 입력값이 저장되어 있음.
+        // (자정 넘김 공고도 LocalTime.MAX sentinel 없이 실제 종료 시각 그대로 저장)
         long leftDays = ChronoUnit.DAYS.between(LocalDate.now(), post.getDeadline());
+
         return new JobPostDetailResponse(
                 post.getId(),
                 post.getTitle(),
