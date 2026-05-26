@@ -27,6 +27,8 @@ export interface JobPostCardProps {
   headerActions?: ReactNode;
   /** @deprecated headerActions 사용 */
   bottomActions?: ReactNode;
+  /** 카드 하단(링크 밖) — 리뷰 등 */
+  footerSlot?: ReactNode;
 }
 
 export const JobPostCard = ({
@@ -35,6 +37,7 @@ export const JobPostCard = ({
   extraActions,
   headerActions,
   bottomActions,
+  footerSlot,
 }: JobPostCardProps) => {
   const topActions = headerActions ?? bottomActions;
   const theme = useTheme();
@@ -138,6 +141,9 @@ export const JobPostCard = ({
 
         </S.CardContainer>
       </Link>
+      {footerSlot && (
+        <S.CardFooter onClick={(e) => e.preventDefault()}>{footerSlot}</S.CardFooter>
+      )}
     </S.CardOuter>
   );
 };

@@ -4,8 +4,8 @@ import {
   type ReviewTag,
   type ReviewTagPair,
 } from 'entities/review/model/types/review.type';
-import { getEmployerReviewTagVariant } from './lib/reviewTagVariant';
-import type { EmployerReviewTag } from 'entities/review/model/types/review.type';
+import { getEmployeeReviewTagVariant } from './lib/reviewTagVariant';
+import type { EmployeeReviewTag } from 'entities/review/model/types/review.type';
 
 interface Props<T extends ReviewTag> {
   pairs: ReviewTagPair<T>[];
@@ -22,7 +22,7 @@ function TagOptionButton<T extends ReviewTag>({
   selected: boolean;
   onToggle: (tag: T) => void;
 }) {
-  const variant = getEmployerReviewTagVariant(tag as EmployerReviewTag);
+  const variant = getEmployeeReviewTagVariant(tag as EmployeeReviewTag);
 
   return (
     <S.TagOption
@@ -74,14 +74,9 @@ const S = {
   `,
   Row: styled.div`
     display: grid;
-    grid-template-columns: repeat(6, minmax(0, 1fr));
-    gap: 6px;
+    grid-template-columns: repeat(auto-fill, minmax(128px, 1fr));
+    gap: 8px;
     align-items: stretch;
-
-    @media (${({ theme }) => theme.mediaQuery.tablet_small}) {
-      grid-template-columns: repeat(6, minmax(72px, 1fr));
-      overflow-x: auto;
-    }
   `,
   TagOption: styled.button<{ $selected: boolean; $variant: 'positive' | 'negative' }>`
     padding: 6px 8px;
@@ -95,9 +90,9 @@ const S = {
     font-weight: ${({ theme, $selected }) =>
       $selected ? theme.fontWeight.medium : theme.fontWeight.regular};
     cursor: pointer;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    line-height: 1.35;
+    text-align: center;
     background: ${({ theme, $selected, $variant }) => {
       if (!$selected) return theme.color.white;
       return $variant === 'negative'

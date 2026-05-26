@@ -20,6 +20,10 @@ export const CardContainer = styled.article`
   ${hoverOverlay}
 `;
 
+export const CardFooter = styled.div`
+  border-top: 1px solid ${({ theme }) => theme.color.border};
+`;
+
 export const TopRow = styled.div<{ $withLogo?: boolean }>`
   display: flex;
   gap: 12px;
