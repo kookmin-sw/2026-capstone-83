@@ -125,10 +125,10 @@ public class JobPostRankingService {
             page = page.subList(0, size);
         }
 
-        // 7) DTO 변환 (liked 표시는 사용자 자신의 JobPostLike 셋 사용)
+        // 7) DTO 변환 (liked 표시는 사용자 자신의 JobPostLike 셋, score 포함)
         List<JobPostCardResponse> cards = page.stream()
                 .map(s -> JobPostCardResponse.from(
-                        s.post(), snap.likedPostIds().contains(s.post().getId())))
+                        s.post(), snap.likedPostIds().contains(s.post().getId()), s.score()))
                 .toList();
 
         Long nextCursor = hasNext ? (long) (offset + cards.size()) : null;
