@@ -47,6 +47,7 @@ ranking:
       mid-50-75: 10           # 50~75 백분위
       mid-25-50: 5            # 25~50 백분위
     freshness: 10             # D-day ≤ 7일 또는 등록 ≤ 24h
+    urgent: 8                 # 급구(urgentEnabled=true) 공고 가산
     liked-employer: 5         # 좋아요한 사업장 (양방향)
     hired-employer: 5         # 과거 HIRED 사업장
     applied-penalty: 10       # APPLIED/PENDING 공고 감점 (점수에서 빼짐)
