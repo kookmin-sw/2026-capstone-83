@@ -1,6 +1,14 @@
 import { authClient, httpClient } from "shared/api/httpClient"
 import { useAuthStore } from "entities/auth/model/store/authStore";
-import type { Career, CareerRequest, GetResumesParams, ResumeListCursor, ResumeRequest, ResumeResponse } from "../model/types/resume.type";
+import type {
+  Career,
+  CareerRequest,
+  GetResumesParams,
+  ResumeListCursor,
+  ResumeRequest,
+  ResumeResponse,
+} from '../model/types/resume.type';
+import type { CursorParams } from 'shared/api/types';
 import mockResumeData from "shared/mocks/data/mockResumeData.json";
 
 
@@ -27,7 +35,13 @@ export const fetchResumes = async (params?: GetResumesParams): Promise<ResumeLis
   const client = useAuthStore.getState().accessToken ? authClient : httpClient;
   const response = await client.get<ResumeListCursor>('/api/v1/resumes', { params });
   return response.data;
-}
+};
+
+/** 고용주가 좋아요한 이력서 목록 */
+export const fetchLikedResumes = async (params?: CursorParams): Promise<ResumeListCursor> => {
+  const response = await authClient.get<ResumeListCursor>('/api/v1/resume/liked', { params });
+  return response.data;
+};
 
 export const updateResume = async (data: ResumeRequest) => {
   const response = await authClient.put(`/api/v1/resume`, data);

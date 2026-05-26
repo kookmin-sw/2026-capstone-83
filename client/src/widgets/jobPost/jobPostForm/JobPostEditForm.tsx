@@ -14,7 +14,6 @@ import { JobPostLocationField } from 'entities/jobPost/ui/InputFields/JobPostLoc
 import { JobPostDescriptionField } from 'entities/jobPost/ui/InputFields/JobPostDescriptionField';
 import { JobPostWorkContentFields } from 'entities/jobPost/ui/InputFields/JobPostWorkContentFields';
 import { JobPostUrgentFields } from 'entities/jobPost/ui/InputFields/JobPostUrgentFields';
-import { JobPostAutoOfferFields } from 'entities/jobPost/ui/InputFields/JobPostAutoOfferFields';
 import { useImageUpload } from 'features/control-Image/hooks/useImageUpload';
 import { ImageUploadButton } from 'features/control-Image/UploadButton';
 import { ImageRemoveButton } from 'features/control-Image/RemoveButton';
@@ -224,7 +223,6 @@ export const JobPostEditForm = ({ postId }: Props) => {
               previewUrl={post.companyLogoUrl}
             />
             <JobPostUrgentFields register={register} watch={watch} setValue={setValue} />
-            <JobPostAutoOfferFields register={register} />
             <JobPostWorkContentFields register={register} setValue={setValue} watch={watch} />
             <JobPostLocationField
               register={register}

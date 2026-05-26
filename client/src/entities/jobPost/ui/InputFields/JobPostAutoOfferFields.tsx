@@ -1,26 +1,45 @@
-import type { UseFormRegister } from 'react-hook-form';
+import type { UseFormRegister, UseFormWatch } from 'react-hook-form';
 import type { JobPostCreate } from '../../model/types/jobPost.type';
+import { AutoOfferTargetPicker } from 'features/offer/AutoOfferTargetPicker';
 import * as S from './JobPostInputFields.styled';
 import InputHeader from 'shared/ui/Input/InputHeader';
 
 interface Props {
   register: UseFormRegister<JobPostCreate>;
+  watch: UseFormWatch<JobPostCreate>;
+  selectedOfferUserIds: Set<number>;
+  onSelectedOfferUserIdsChange: (next: Set<number>) => void;
 }
 
-export const JobPostAutoOfferFields = ({ register }: Props) => (
-  <S.SectionWrapper>
-    <InputHeader title="자동 채용 제안" />
+export const JobPostAutoOfferFields = ({
+  register,
+  watch,
+  selectedOfferUserIds,
+  onSelectedOfferUserIdsChange,
+}: Props) => {
+  const autoOfferEnabled = watch('autoOfferEnabled');
 
-    <S.FormStack>
-      <S.CheckboxWrapper>
-        <input type="checkbox" id="autoOfferEnabled" {...register('autoOfferEnabled')} />
-        <label htmlFor="autoOfferEnabled">공고 등록 시 우선 대상에게 자동 제안</label>
-      </S.CheckboxWrapper>
+  return (
+    <S.SectionWrapper>
+      <InputHeader title="채용 제안 대상 선택" />
 
-      <S.HelperText>
-        체크 시 저장 직후 장기근무자·관심 인재 등 우선 대상에게 일괄 채용 제안이 발송됩니다.
-        대상이 없으면 제안은 보내지 않습니다.
-      </S.HelperText>
-    </S.FormStack>
-  </S.SectionWrapper>
-);
+      <S.FormStack>
+        <S.CheckboxWrapper>
+          <input type="checkbox" id="autoOfferEnabled" {...register('autoOfferEnabled')} />
+          <label htmlFor="autoOfferEnabled">공고 등록 후 선택한 구직자에게 채용 제안 보내기</label>
+        </S.CheckboxWrapper>
+
+        <S.HelperText>
+          체크하면 좋아요·장기근무 목록이 표시됩니다. 제안을 보낼 구직자를 선택한 뒤 공고를
+          등록하세요.
+        </S.HelperText>
+
+        <AutoOfferTargetPicker
+          enabled={!!autoOfferEnabled}
+          selectedUserIds={selectedOfferUserIds}
+          onChange={onSelectedOfferUserIdsChange}
+        />
+      </S.FormStack>
+    </S.SectionWrapper>
+  );
+};

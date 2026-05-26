@@ -52,8 +52,10 @@ export const JobPostCreateForm = () => {
       autoOfferEnabled: false,
     },
   });
+  const [selectedOfferUserIds, setSelectedOfferUserIds] = useState<Set<number>>(new Set());
   const { mutate } = useCreateJobPost();
   const errorModal = useErrorAlertModal();
+  const autoOfferEnabled = watch('autoOfferEnabled');
 
   // 작업장 선택 시 관련 필드 자동 채우기
   useEffect(() => {
@@ -74,6 +76,11 @@ export const JobPostCreateForm = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [workplaces]);
 
+  useEffect(() => {
+    if (!autoOfferEnabled) {
+      setSelectedOfferUserIds(new Set());
+    }
+  }, [autoOfferEnabled]);
 
   const onSubmit = (data: JobPostCreate) => {
     console.log('Submitting job post:', data);
@@ -83,21 +90,32 @@ export const JobPostCreateForm = () => {
       ...rest,
       urgentEnabled: !!data.urgentEnabled,
       urgentWageIncrease: data.urgentEnabled ? data.urgentWageIncrease : undefined,
-      autoOfferEnabled: !!data.autoOfferEnabled,
       requirements: mergeJobPostRequirements(requirementsText, certRequirements),
       benefits: splitByComma(data.benefits),
       tasks: splitByComma(data.tasks),
       items: splitByComma(data.items),
     };
 
+    const offerUserIds =
+      data.autoOfferEnabled && selectedOfferUserIds.size > 0
+        ? Array.from(selectedOfferUserIds)
+        : undefined;
+
+    if (data.autoOfferEnabled && !offerUserIds?.length) {
+      alert('채용 제안을 보낼 구직자를 한 명 이상 선택해 주세요.');
+      return;
+    }
+
     console.log('가공된 데이터:', requestBody);
-    mutate(requestBody, {
-      onSuccess: (response) => {
-        console.log('Job post created successfully:', response);
-        // 페이지 이동 등
+    mutate(
+      { data: requestBody, offerUserIds },
+      {
+        onSuccess: (response) => {
+          console.log('Job post created successfully:', response);
+        },
+        onError: errorModal.onMutationError('공고 등록에 실패했습니다.'),
       },
-      onError: errorModal.onMutationError('공고 등록에 실패했습니다.'),
-    });
+    );
   };
 
   const {
@@ -203,7 +221,12 @@ export const JobPostCreateForm = () => {
               }
             />
             <JobPostUrgentFields register={register} watch={watch} setValue={setValue} />
-            <JobPostAutoOfferFields register={register} />
+            <JobPostAutoOfferFields
+              register={register}
+              watch={watch}
+              selectedOfferUserIds={selectedOfferUserIds}
+              onSelectedOfferUserIdsChange={setSelectedOfferUserIds}
+            />
             <JobPostWorkContentFields register={register} setValue={setValue} watch={watch} />
             <JobPostLocationField
               register={register}

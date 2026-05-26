@@ -89,6 +89,7 @@ export interface ResumeCardItem {
   gender: string;
   age: number;
   liked: boolean;
+  longTerm?: boolean;
   firstCareerTitle: string | null;
   firstCareerYears: number;
   firstCareerMonths: number;
