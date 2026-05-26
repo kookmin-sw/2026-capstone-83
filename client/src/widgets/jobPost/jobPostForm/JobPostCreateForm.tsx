@@ -136,6 +136,9 @@ export const JobPostCreateForm = () => {
       benefits: splitByComma(values.benefits),
       tasks: splitByComma(values.tasks),
       items: splitByComma(values.items),
+      urgentEnabled: !!values.urgentEnabled,
+      urgentWageIncrease: values.urgentEnabled ? Number(values.urgentWageIncrease) : undefined,
+      autoOfferEnabled: !!values.autoOfferEnabled,
     };
   };
 
@@ -153,6 +156,9 @@ export const JobPostCreateForm = () => {
     if (tpl.benefits?.length) setValue('benefits', tpl.benefits.join(', '));
     if (tpl.tasks?.length) setValue('tasks', tpl.tasks.join(', '));
     if (tpl.items?.length) setValue('items', tpl.items.join(', '));
+    setValue('urgentEnabled', Boolean(tpl.urgentEnabled));
+    setValue('urgentWageIncrease', tpl.urgentEnabled ? tpl.urgentWageIncrease ?? undefined : undefined);
+    setValue('autoOfferEnabled', Boolean(tpl.autoOfferEnabled));
   };
 
 

@@ -78,5 +78,6 @@ export const WORKER_APPLICATION_STATUS_ORDER: ApplicationStatus[] = [
   'OFFERED',
   'PENDING',
   'HIRED',
+  'COMPLETED',
   'REJECTED',
 ];

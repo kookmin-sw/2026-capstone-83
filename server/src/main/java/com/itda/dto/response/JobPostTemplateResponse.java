@@ -23,6 +23,9 @@ public record JobPostTemplateResponse(
         List<String> benefits,
         List<String> tasks,
         List<String> items,
+        Boolean urgentEnabled,
+        Integer urgentWageIncrease,
+        Boolean autoOfferEnabled,
         String createdAt,
         String updatedAt
 ) {
@@ -43,6 +46,9 @@ public record JobPostTemplateResponse(
                 t.getBenefits(),
                 t.getTasks(),
                 t.getItems(),
+                t.getUrgentEnabled(),
+                t.getUrgentWageIncrease(),
+                t.getAutoOfferEnabled(),
                 t.getCreatedAt() != null ? t.getCreatedAt().toString() : null,
                 t.getUpdatedAt() != null ? t.getUpdatedAt().toString() : null
         );

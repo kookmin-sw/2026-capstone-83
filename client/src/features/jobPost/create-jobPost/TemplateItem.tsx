@@ -1,6 +1,7 @@
 import styled from 'styled-components';
 import { Trash2 } from 'lucide-react';
 import type { JobPostTemplateResponse } from 'entities/jobPost/model/types/template.type';
+import { isUrgentEnabled } from 'entities/jobPost/lib/urgentJobPost';
 import { hoverOverlay } from 'shared/styles/hoverOverlay';
 
 interface Props {
@@ -14,7 +15,10 @@ export const TemplateItem = ({ template, onLoad, onDelete }: Props) => {
     <S.Item>
       <S.Content onClick={() => onLoad(template)}>
         <S.Name>{template.templateName}</S.Name>
-        <S.Desc>{template.title || '제목 없음'}</S.Desc>
+        <S.Desc>
+          {template.title || '제목 없음'}
+          {isUrgentEnabled(template.urgentEnabled) && ' · 급구'}
+        </S.Desc>
       </S.Content>
       <S.DeleteButton
         onClick={(e) => {

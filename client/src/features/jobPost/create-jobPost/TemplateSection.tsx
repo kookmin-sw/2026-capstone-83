@@ -43,6 +43,9 @@ export const TemplateSection = ({ getFormValues, onLoadTemplate }: Props) => {
       benefits: formValues.benefits?.length ? formValues.benefits : undefined,
       tasks: formValues.tasks?.length ? formValues.tasks : undefined,
       items: formValues.items?.length ? formValues.items : undefined,
+      urgentEnabled: formValues.urgentEnabled ?? false,
+      urgentWageIncrease: formValues.urgentEnabled ? formValues.urgentWageIncrease : undefined,
+      autoOfferEnabled: formValues.autoOfferEnabled ?? false,
     };
 
     createTemplate(cleaned, {
