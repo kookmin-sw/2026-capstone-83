@@ -15,25 +15,28 @@ import java.util.List;
  * 고용주가 사업장(Workplace) 기준으로 공고를 등록.
  * 이미지(회사 로고, 상세 이미지)는 S3에 저장하고 URL만 DB에 보관.
  *
- * <h3>자정 넘김 공고와 그룹 컬럼</h3>
- * <p>WorkerAvailability 와 동일한 "1 레코드 = 1일치" 원칙을 따른다.
- * 22:00–익일 06:00 처럼 자정을 넘기는 공고는 두 레코드로 분할 저장되며,
- * 분할된 두 레코드는 같은 {@code linkedGroupId}(UUID) 를 공유한다.
- *
+ * <h3>시간 이중 표현</h3>
+ * <p>시간은 두 가지 표현으로 저장된다:
  * <ul>
- *   <li><b>{@code linkedGroupId} / {@code groupStartAt} / {@code groupEndAt}</b> 는
- *       매칭(WorkerAvailability ⊇ JobPost 포함 비교)과 자정 분할 전용 컬럼이다.
- *       목록 표시·필터·캘린더에는 기존 {@code workDate}/{@code workStart}/{@code workEnd} 를 사용한다.</li>
- *   <li>{@code groupStartAt} / {@code groupEndAt} 은 비정규화 컬럼 —
- *       분할된 두 레코드 모두 동일한 값을 보관한다.</li>
- *   <li>삭제·마감 등 운영 작업은 반드시 {@code linkedGroupId} 기준으로 그룹 전체를 대상으로 해야 한다.</li>
+ *   <li><b>표시용</b>: {@code workDate}/{@code workStart}/{@code workEnd} —
+ *       목록 표시·필터·캘린더·응답 DTO 에 사용한다.
+ *       자정 넘김 공고는 {@code workEnd &lt;= workStart} 이다 (기존 정책 유지).</li>
+ *   <li><b>매칭 전용</b>: {@code workStartAt}/{@code workEndAt} —
+ *       WorkerAvailability ⊇ JobPost 포함 비교에만 사용한다.
+ *       항상 {@code workEndAt &gt; workStartAt} 을 만족한다.</li>
  * </ul>
+ *
+ * <p>두 표현은 항상 동기화되어야 한다. 동기화 책임은 서비스 레이어에 있다.
+ * (저장: {@code JobPostCreateRequest.toEntity()}, 수정: {@code JobPostService.updateJobPost()})
+ *
+ * <p>{@link com.itda.entity.WorkerAvailability} 는 캘린더 UI 1:1 매핑을 위해 분할 구조를 유지하지만,
+ * {@code JobPost} 는 항상 단일 레코드로 저장된다.
  */
 @Entity
 @Table(name = "job_posts",
         indexes = {
-                @Index(name = "idx_jobpost_group_range",
-                        columnList = "group_start_at, group_end_at")
+                @Index(name = "idx_jobpost_work_range",
+                        columnList = "work_start_at, work_end_at")
         })
 @Getter
 @NoArgsConstructor
@@ -137,29 +140,21 @@ public class JobPost {
     @Column(name = "age_requirements", columnDefinition = "TEXT")
     private List<String> ageRequirements;
 
-    // ─── 그룹 컬럼 (매칭·자정 분할 전용) ─────────────────────────
+    // ─── 매칭 전용 datetime 컬럼 ────────────────────────────────
 
     /**
-     * 그룹 식별자 (UUID, 36자).
-     * 자정 분할된 두 레코드가 같은 값을 가지며, 분할되지 않은 단일 레코드도 자기 UUID를 보유한다.
+     * 근무 시작 일시 (매칭 전용).
+     * {@code workDate + workStart} 와 항상 동기화된다.
      */
-    @Column(name = "linked_group_id", nullable = false, length = 36)
-    private String linkedGroupId;
+    @Column(name = "work_start_at", nullable = false)
+    private LocalDateTime workStartAt;
 
     /**
-     * 그룹 전체 시작 일시 (비정규화).
-     * 매칭 쿼리의 포함 범위 비교({@code groupStartAt ≤ avail.groupStartAt})에 사용된다.
+     * 근무 종료 일시 (매칭 전용).
+     * 자정 넘김 공고는 {@code workDate + 1일 + workEnd} 로 저장되어 항상 {@code workStartAt} 보다 크다.
      */
-    @Column(name = "group_start_at", nullable = false)
-    private LocalDateTime groupStartAt;
-
-    /**
-     * 그룹 전체 종료 일시 (비정규화).
-     * 매칭 쿼리의 포함 범위 비교({@code groupEndAt ≥ avail.groupEndAt})에 사용된다.
-     * 사용자에게 표시할 workEnd 는 이 컬럼의 LocalTime 부분에서 읽는다.
-     */
-    @Column(name = "group_end_at", nullable = false)
-    private LocalDateTime groupEndAt;
+    @Column(name = "work_end_at", nullable = false)
+    private LocalDateTime workEndAt;
 
     // ─── Audit 컬럼 ──────────────────────────────────────────────
 

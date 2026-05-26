@@ -20,7 +20,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.List;
 
 import static org.mockito.Mockito.*;
@@ -34,7 +33,8 @@ import static org.mockito.Mockito.*;
  *   <li>B1~B3: {@link AutoMatchService#matchForJobPost} 관련</li>
  * </ul>
  *
- * <p>Application 생성/알림 등 트랜잭션 처리는 {@link AutoMatchTransactionalSupport} 에 위임되므로
+ * <p>V3 이후 JobPost 는 단일 레코드 구조이므로 그룹 ID 기반 로직이 제거됨.
+ * Application 생성/알림 등 트랜잭션 처리는 {@link AutoMatchTransactionalSupport} 에 위임되므로
  * 이 테스트에서는 {@code txSupport.tryCreate()} 의 호출 여부·횟수만 검증한다.
  */
 @ExtendWith(MockitoExtension.class)
@@ -71,7 +71,6 @@ class AutoMatchServiceTest {
     private static final int POST_DURATION_MIN     = 480; // 8시간
 
     private static final String AVAIL_GROUP_ID = "avail-group-uuid";
-    private static final String POST_GROUP_ID  = "post-group-uuid";
 
     private AutoMatchEvents.AvailabilityCreatedEvent availEvent;
     private AutoMatchEvents.JobPostCreatedEvent postEvent;
@@ -81,7 +80,7 @@ class AutoMatchServiceTest {
         availEvent = new AutoMatchEvents.AvailabilityCreatedEvent(
                 APPLICANT_USER_ID, AVAIL_GROUP_ID, AVAIL_START, AVAIL_END, 0);
         postEvent = new AutoMatchEvents.JobPostCreatedEvent(
-                10L, POST_GROUP_ID, POST_START, POST_END, EMPLOYER_USER_ID);
+                10L, POST_START, POST_END, EMPLOYER_USER_ID);
     }
 
     // ═══════════════════════════════════════════════════════════════
@@ -91,7 +90,7 @@ class AutoMatchServiceTest {
     @Test
     @DisplayName("A1: 매칭 공고 없음 → txSupport 호출 없음")
     void A1_noMatchingPosts_tryCreateNotCalled() {
-        when(jobPostRepository.findMatchingJobPostGroupIdsForAvailability(
+        when(jobPostRepository.findMatchingJobPostIdsForAvailability(
                 AVAIL_START, AVAIL_END, APPLICANT_USER_ID))
                 .thenReturn(List.of());
 
@@ -103,13 +102,13 @@ class AutoMatchServiceTest {
     @Test
     @DisplayName("A2: 1개 매칭 공고, minDuration 통과 → txSupport.tryCreate 1회 호출")
     void A2_oneMatchingPost_tryCreateCalledOnce() {
-        JobPost day1 = buildPost(10L, POST_GROUP_ID, POST_START, POST_END);
+        JobPost post = buildPost(10L, POST_START, POST_END);
 
-        when(jobPostRepository.findMatchingJobPostGroupIdsForAvailability(
+        when(jobPostRepository.findMatchingJobPostIdsForAvailability(
                 AVAIL_START, AVAIL_END, APPLICANT_USER_ID))
-                .thenReturn(List.of(POST_GROUP_ID));
-        when(jobPostRepository.findByLinkedGroupId(POST_GROUP_ID))
-                .thenReturn(List.of(day1));
+                .thenReturn(List.of(10L));
+        when(jobPostRepository.findAllById(List.of(10L)))
+                .thenReturn(List.of(post));
 
         autoMatchService.matchForAvailability(availEvent); // minDuration=0 → 항상 통과
 
@@ -124,13 +123,13 @@ class AutoMatchServiceTest {
                 new AutoMatchEvents.AvailabilityCreatedEvent(
                         APPLICANT_USER_ID, AVAIL_GROUP_ID, AVAIL_START, AVAIL_END, 600);
 
-        JobPost day1 = buildPost(10L, POST_GROUP_ID, POST_START, POST_END);
+        JobPost post = buildPost(10L, POST_START, POST_END);
 
-        when(jobPostRepository.findMatchingJobPostGroupIdsForAvailability(
+        when(jobPostRepository.findMatchingJobPostIdsForAvailability(
                 AVAIL_START, AVAIL_END, APPLICANT_USER_ID))
-                .thenReturn(List.of(POST_GROUP_ID));
-        when(jobPostRepository.findByLinkedGroupId(POST_GROUP_ID))
-                .thenReturn(List.of(day1));
+                .thenReturn(List.of(10L));
+        when(jobPostRepository.findAllById(List.of(10L)))
+                .thenReturn(List.of(post));
 
         autoMatchService.matchForAvailability(strictEvent);
 
@@ -138,13 +137,13 @@ class AutoMatchServiceTest {
     }
 
     @Test
-    @DisplayName("A4: findByLinkedGroupId 가 빈 목록 반환 → 방어 로직으로 스킵")
-    void A4_groupRecordsEmpty_skipped() {
-        when(jobPostRepository.findMatchingJobPostGroupIdsForAvailability(
+    @DisplayName("A4: findAllById 가 빈 목록 반환 → 방어 로직으로 스킵")
+    void A4_allByIdEmpty_skipped() {
+        when(jobPostRepository.findMatchingJobPostIdsForAvailability(
                 AVAIL_START, AVAIL_END, APPLICANT_USER_ID))
-                .thenReturn(List.of(POST_GROUP_ID));
-        when(jobPostRepository.findByLinkedGroupId(POST_GROUP_ID))
-                .thenReturn(List.of());   // 방어: 빈 목록
+                .thenReturn(List.of(10L));
+        when(jobPostRepository.findAllById(List.of(10L)))
+                .thenReturn(List.of()); // 방어: 빈 목록
 
         autoMatchService.matchForAvailability(availEvent);
 
@@ -154,13 +153,13 @@ class AutoMatchServiceTest {
     @Test
     @DisplayName("A5: txSupport.tryCreate 가 예외 던짐 → 예외 흡수, 호출자에 전파되지 않음")
     void A5_txSupportThrows_exceptionAbsorbed() {
-        JobPost day1 = buildPost(10L, POST_GROUP_ID, POST_START, POST_END);
+        JobPost post = buildPost(10L, POST_START, POST_END);
 
-        when(jobPostRepository.findMatchingJobPostGroupIdsForAvailability(
+        when(jobPostRepository.findMatchingJobPostIdsForAvailability(
                 AVAIL_START, AVAIL_END, APPLICANT_USER_ID))
-                .thenReturn(List.of(POST_GROUP_ID));
-        when(jobPostRepository.findByLinkedGroupId(POST_GROUP_ID))
-                .thenReturn(List.of(day1));
+                .thenReturn(List.of(10L));
+        when(jobPostRepository.findAllById(List.of(10L)))
+                .thenReturn(List.of(post));
         doThrow(new RuntimeException("DB 오류"))
                 .when(txSupport).tryCreate(APPLICANT_USER_ID, 10L);
 
@@ -172,14 +171,14 @@ class AutoMatchServiceTest {
     @Test
     @DisplayName("A6: 2개 매칭 공고, 둘 다 통과 → tryCreate 2회 호출")
     void A6_twoMatchingPosts_tryCreateCalledTwice() {
-        JobPost day1a = buildPost(10L, "group-a", POST_START, POST_END);
-        JobPost day1b = buildPost(20L, "group-b", POST_START, POST_END);
+        JobPost postA = buildPost(10L, POST_START, POST_END);
+        JobPost postB = buildPost(20L, POST_START, POST_END);
 
-        when(jobPostRepository.findMatchingJobPostGroupIdsForAvailability(
+        when(jobPostRepository.findMatchingJobPostIdsForAvailability(
                 AVAIL_START, AVAIL_END, APPLICANT_USER_ID))
-                .thenReturn(List.of("group-a", "group-b"));
-        when(jobPostRepository.findByLinkedGroupId("group-a")).thenReturn(List.of(day1a));
-        when(jobPostRepository.findByLinkedGroupId("group-b")).thenReturn(List.of(day1b));
+                .thenReturn(List.of(10L, 20L));
+        when(jobPostRepository.findAllById(List.of(10L, 20L)))
+                .thenReturn(List.of(postA, postB));
 
         autoMatchService.matchForAvailability(availEvent);
 
@@ -191,14 +190,14 @@ class AutoMatchServiceTest {
     @Test
     @DisplayName("A7: 2개 매칭 공고, 첫 번째 tryCreate 실패 → 두 번째 tryCreate 는 여전히 호출됨 (실패 격리)")
     void A7_firstTryCreateFails_secondStillCalled() {
-        JobPost day1a = buildPost(10L, "group-a", POST_START, POST_END);
-        JobPost day1b = buildPost(20L, "group-b", POST_START, POST_END);
+        JobPost postA = buildPost(10L, POST_START, POST_END);
+        JobPost postB = buildPost(20L, POST_START, POST_END);
 
-        when(jobPostRepository.findMatchingJobPostGroupIdsForAvailability(
+        when(jobPostRepository.findMatchingJobPostIdsForAvailability(
                 AVAIL_START, AVAIL_END, APPLICANT_USER_ID))
-                .thenReturn(List.of("group-a", "group-b"));
-        when(jobPostRepository.findByLinkedGroupId("group-a")).thenReturn(List.of(day1a));
-        when(jobPostRepository.findByLinkedGroupId("group-b")).thenReturn(List.of(day1b));
+                .thenReturn(List.of(10L, 20L));
+        when(jobPostRepository.findAllById(List.of(10L, 20L)))
+                .thenReturn(List.of(postA, postB));
 
         // 첫 번째만 실패
         doThrow(new RuntimeException("첫 번째 실패"))
@@ -260,8 +259,9 @@ class AutoMatchServiceTest {
     /**
      * 테스트용 JobPost 빌더 헬퍼.
      * 고용주 User ID = {@value #EMPLOYER_USER_ID}.
+     * V3 이후 linkedGroupId/groupStartAt/groupEndAt 없음; workStartAt/workEndAt 사용.
      */
-    private static JobPost buildPost(Long id, String groupId,
+    private static JobPost buildPost(Long id,
                                      LocalDateTime startAt, LocalDateTime endAt) {
         User empUser = User.builder()
                 .id(EMPLOYER_USER_ID)
@@ -284,14 +284,13 @@ class AutoMatchServiceTest {
                 .workDate(startAt.toLocalDate())
                 .workStart(startAt.toLocalTime())
                 .workEnd(endAt.toLocalTime())
+                .workStartAt(startAt)
+                .workEndAt(endAt)
                 .wage(10000)
                 .wageType(WageType.HOURLY)
                 .totalSlots(2)
                 .status(JobPostStatus.OPEN)
                 .deadline(LocalDate.of(2030, 5, 31))
-                .linkedGroupId(groupId)
-                .groupStartAt(startAt)
-                .groupEndAt(endAt)
                 .build();
     }
 }
