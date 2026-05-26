@@ -218,6 +218,11 @@ public class JobPost {
     @Builder.Default
     private Boolean urgentEnabled = false;
 
+    // 급구 트리거 발동 여부 (중복 인상 방지)
+    @Column(name = "urgent_triggered")
+    @Builder.Default
+    private Boolean urgentTriggered = false;
+
     @Column(name = "urgent_wage_increase")
     private Integer urgentWageIncrease;
 
@@ -228,8 +233,10 @@ public class JobPost {
 
     // 급구 트리거 발동 메서드
     public void applyUrgentWage() {
-        if (this.urgentEnabled && this.urgentWageIncrease != null) {
+        if (this.urgentEnabled && this.urgentWageIncrease != null
+                && !Boolean.TRUE.equals(this.urgentTriggered)) {
             this.wage += this.urgentWageIncrease;
+            this.urgentTriggered = true;
         }
     }
 }
