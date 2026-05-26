@@ -52,7 +52,7 @@ public class JobPostScheduler {
     @Transactional
     public void completeFinishedWork() {
         List<Application> targets = applicationRepository.findCompletableApplications(
-                LocalDate.now(), LocalTime.now());
+                LocalDateTime.now());
 
         if (targets.isEmpty()) return;
 

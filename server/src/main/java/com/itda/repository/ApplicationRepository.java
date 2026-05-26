@@ -8,7 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.time.LocalDate;
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 
@@ -76,14 +76,12 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
      * 오늘 근무하고, 근무 종료 시각이 지난 HIRED 상태 Application
      */
     @Query("""
-        SELECT a FROM Application a
-        WHERE a.status = 'HIRED'
-          AND a.jobPost.workDate = :today
-          AND a.jobPost.workEnd < :now
-        """)
+    SELECT a FROM Application a
+    WHERE a.status = 'HIRED'
+      AND a.jobPost.workEndAt <= :now
+    """)
     List<Application> findCompletableApplications(
-            @Param("today") LocalDate today,
-            @Param("now") LocalTime now);
+            @Param("now") LocalDateTime now);
     // 근무 완료 후 7일 이내 리뷰 미작성 지원 조회 (자동 무난해요 처리용)
     @Query("""
     SELECT a FROM Application a
