@@ -169,6 +169,7 @@ public class JobPostService {
                     .companyName(workplace.getCompanyName())
                     .businessNumber(workplace.getBusinessNumber())
                     .address(workplace.getAddress())
+                    .district(workplace.getDistrict())
                     .companyLogoUrl(logoUrl)
                     .build());
         }
@@ -201,7 +202,8 @@ public class JobPostService {
                 saved.getId(),
                 saved.getWorkStartAt(),
                 saved.getWorkEndAt(),
-                workplace.getEmployer().getUser().getId()));
+                workplace.getEmployer().getUser().getId(),
+                workplace.getDistrict()));
 
         return JobPostDetailResponse.from(saved, false);
     }

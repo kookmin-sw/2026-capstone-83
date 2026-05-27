@@ -9,5 +9,8 @@ public record WorkplaceUpdateRequest(
         String name,
         String companyName,
         String businessNumber,
-        String address
+        String address,
+
+        /** 시/구 단위 행정구역 (예: "서울 강남구"). null 이면 기존 값 유지. */
+        String district
 ) {}

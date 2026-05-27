@@ -1,9 +1,11 @@
 package com.itda.dto.request;
 
 import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 구직자 가용시간 수정 요청 DTO (전체 교체 방식).
@@ -22,7 +24,11 @@ public record WorkerAvailabilityUpdateRequest(
         LocalDateTime endAt,
 
         @Min(value = 0, message = "최소 근무 시간은 0 이상이어야 합니다.")
-        Integer minDurationMinutes
+        Integer minDurationMinutes,
+
+        /** 희망 근무 지역 목록 (시/구 단위). 예: ["서울 강남구", "서울 마포구"]. 최소 1개 필수. */
+        @NotEmpty(message = "희망 근무 지역을 최소 1개 이상 입력해주세요.")
+        List<String> preferredDistricts
 ) {
     /** null 방어 — null 이면 0(제한 없음) 반환. */
     public int getMinDurationMinutes() {

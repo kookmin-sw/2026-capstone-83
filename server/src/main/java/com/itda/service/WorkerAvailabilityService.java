@@ -58,6 +58,7 @@ public class WorkerAvailabilityService {
                 .availStartAt(req.startAt())
                 .availEndAt(req.endAt())
                 .minDurationMinutes(req.getMinDurationMinutes())
+                .preferredDistricts(req.preferredDistricts())
                 .build();
         WorkerAvailability saved = availabilityRepository.save(slot);
 
@@ -68,7 +69,8 @@ public class WorkerAvailabilityService {
                 saved.getId(),
                 saved.getAvailStartAt(),
                 saved.getAvailEndAt(),
-                saved.getMinDurationMinutes()));
+                saved.getMinDurationMinutes(),
+                saved.getPreferredDistricts()));
 
         return response;
     }
@@ -107,6 +109,7 @@ public class WorkerAvailabilityService {
                 .availStartAt(req.startAt())
                 .availEndAt(req.endAt())
                 .minDurationMinutes(req.getMinDurationMinutes())
+                .preferredDistricts(req.preferredDistricts())
                 .createdAt(existing.getCreatedAt())
                 .build();
         WorkerAvailability saved = availabilityRepository.save(updated);
@@ -118,7 +121,8 @@ public class WorkerAvailabilityService {
                 saved.getId(),
                 saved.getAvailStartAt(),
                 saved.getAvailEndAt(),
-                saved.getMinDurationMinutes()));
+                saved.getMinDurationMinutes(),
+                saved.getPreferredDistricts()));
 
         return response;
     }

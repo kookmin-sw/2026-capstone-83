@@ -31,6 +31,7 @@ import java.util.List;
  *   <li>{@code avail.availStartAt ≤ post.workStartAt}: 가용시간이 공고 시작 전에 시작</li>
  *   <li>{@code avail.availEndAt ≥ post.workEndAt}: 가용시간이 공고 종료 이후까지 연장</li>
  *   <li>{@code avail.minDurationMinutes ≤ postDurationMinutes}: 공고 길이가 최소 근무 요건 충족</li>
+ *   <li>{@code post.workplace.district ∈ avail.preferredDistricts}: 사업장 행정구역이 희망 지역 목록에 포함</li>
  *   <li>고용주 본인 공고 / 본인 가용시간 제외</li>
  * </ul>
  *
@@ -56,12 +57,14 @@ public class AutoMatchService {
     /**
      * 구직자 가용시간 등록/수정 이벤트에 대한 자동 매칭.
      *
-     * <p>가용시간 범위 [availStartAt, availEndAt] 에 완전히 포함되는 OPEN 공고를 탐색하고,
+     * <p>가용시간 범위 [availStartAt, availEndAt] 에 완전히 포함되고
+     * 희망 지역({@code preferredDistricts})에 해당하는 OPEN 공고를 탐색하고,
      * 공고 근무 시간이 {@code minDurationMinutes} 이상이면 Application 생성을 시도한다.
      */
     public void matchForAvailability(AutoMatchEvents.AvailabilityCreatedEvent event) {
         List<Long> postIds = jobPostRepository.findMatchingJobPostIdsForAvailability(
-                event.availStartAt(), event.availEndAt(), event.userId());
+                event.availStartAt(), event.availEndAt(), event.userId(),
+                event.preferredDistricts());
 
         if (postIds.isEmpty()) return;
 
@@ -91,7 +94,8 @@ public class AutoMatchService {
     /**
      * 구인 공고 등록 이벤트에 대한 자동 매칭.
      *
-     * <p>공고 시간대 [workStartAt, workEndAt] 를 완전히 포함하는 가용시간을 가진 구직자를
+     * <p>공고 시간대 [workStartAt, workEndAt] 를 완전히 포함하고,
+     * 희망 지역에 공고 사업장({@code workplaceDistrict})을 포함하는 구직자를
      * 탐색하고, 각 구직자에 대해 Application 생성을 시도한다.
      */
     public void matchForJobPost(AutoMatchEvents.JobPostCreatedEvent event) {
@@ -100,7 +104,8 @@ public class AutoMatchService {
 
         List<Long> applicantUserIds = availabilityRepository.findMatchingUserIdsForJobPost(
                 event.workStartAt(), event.workEndAt(),
-                postDurationMinutes, event.employerUserId());
+                postDurationMinutes, event.employerUserId(),
+                event.workplaceDistrict());
 
         if (applicantUserIds.isEmpty()) return;
 

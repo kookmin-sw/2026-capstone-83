@@ -12,6 +12,7 @@ public record WorkplaceResponse(
         String companyName,
         String businessNumber,
         String address,
+        String district,
         String companyLogoUrl
 ) {
     public static WorkplaceResponse from(Workplace w) {
@@ -21,6 +22,7 @@ public record WorkplaceResponse(
                 w.getCompanyName(),
                 w.getBusinessNumber(),
                 w.getAddress(),
+                w.getDistrict(),
                 w.getCompanyLogoUrl()
         );
     }

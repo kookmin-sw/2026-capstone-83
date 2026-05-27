@@ -41,6 +41,13 @@ public class Workplace {
     @Column(nullable = false, length = 255)
     private String address;
 
+    /**
+     * 사업장 행정구역 — 시/구 단위 (예: "서울 강남구").
+     * 자동 매칭 지역 필터 및 공고 카드 지역 표시에 사용된다.
+     */
+    @Column(nullable = false, length = 50)
+    private String district;
+
     // 회사 로고 이미지 S3 URL (공고 카드에 표시)
     @Column(name = "company_logo_url", length = 500)
     private String companyLogoUrl;

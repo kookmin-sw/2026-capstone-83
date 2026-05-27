@@ -65,24 +65,30 @@ public interface WorkerAvailabilityRepository extends JpaRepository<WorkerAvaila
             @Param("excludeId") Long excludeId);
 
     /**
-     * 매칭용 — JobPost 시간을 완전히 포함하는 가용시간을 가진 구직자 ID 목록.
-     * avail ⊇ post, minDuration 필터, 자기 공고 제외.
+     * 매칭용 — JobPost 시간을 완전히 포함하고 희망 지역이 일치하는 구직자 ID 목록.
+     * avail ⊇ post, minDuration 필터, 지역 필터, 자기 공고 제외.
+     *
+     * <p>preferred_districts 는 JSON 배열 텍스트로 저장되므로 {@code JSON_CONTAINS} 네이티브 함수로
+     * workplaceDistrict 가 목록에 포함되는지 검사한다.
      *
      * @param postStartAt          공고 근무 시작 일시
      * @param postEndAt            공고 근무 종료 일시
      * @param postDurationMinutes  공고 근무 길이(분)
      * @param employerUserId       공고 등록 고용주 User ID (본인 제외)
+     * @param workplaceDistrict    공고 사업장 행정구역 (시/구 단위)
      */
-    @Query("""
-            SELECT DISTINCT w.user.id FROM WorkerAvailability w
-            WHERE w.availStartAt <= :postStartAt
-              AND w.availEndAt   >= :postEndAt
-              AND w.minDurationMinutes <= :postDurationMinutes
-              AND w.user.id <> :employerUserId
-            """)
+    @Query(value = """
+            SELECT DISTINCT w.user_id FROM worker_availability w
+            WHERE w.avail_start_at <= :postStartAt
+              AND w.avail_end_at   >= :postEndAt
+              AND w.min_duration_minutes <= :postDurationMinutes
+              AND w.user_id <> :employerUserId
+              AND JSON_CONTAINS(w.preferred_districts, JSON_QUOTE(:workplaceDistrict))
+            """, nativeQuery = true)
     List<Long> findMatchingUserIdsForJobPost(
             @Param("postStartAt") LocalDateTime postStartAt,
             @Param("postEndAt") LocalDateTime postEndAt,
             @Param("postDurationMinutes") int postDurationMinutes,
-            @Param("employerUserId") Long employerUserId);
+            @Param("employerUserId") Long employerUserId,
+            @Param("workplaceDistrict") String workplaceDistrict);
 }

@@ -3,6 +3,7 @@ package com.itda.dto.response;
 import com.itda.entity.WorkerAvailability;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 구직자 가용시간 조회 응답 DTO.
@@ -22,6 +23,7 @@ public record WorkerAvailabilityResponse(
         LocalDateTime startAt,
         LocalDateTime endAt,
         int minDurationMinutes,
+        List<String> preferredDistricts,
         boolean crossesMidnight,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
@@ -37,6 +39,7 @@ public record WorkerAvailabilityResponse(
                 w.getAvailStartAt(),
                 w.getAvailEndAt(),
                 w.getMinDurationMinutes(),
+                w.getPreferredDistricts(),
                 w.getAvailEndAt().toLocalDate().isAfter(w.getAvailStartAt().toLocalDate()),
                 w.getCreatedAt(),
                 w.getUpdatedAt()

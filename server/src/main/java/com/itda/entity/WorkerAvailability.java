@@ -1,9 +1,11 @@
 package com.itda.entity;
 
+import com.itda.converter.StringListConverter;
 import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 구직자 가용시간(WorkerAvailability) Entity
@@ -62,6 +64,15 @@ public class WorkerAvailability {
     @Builder.Default
     @Column(name = "min_duration_minutes", nullable = false)
     private Integer minDurationMinutes = 0;
+
+    /**
+     * 희망 근무 지역 목록 — 시/구 단위 행정구역 (예: ["서울 강남구", "서울 마포구"]).
+     * 자동 매칭 시 공고 사업장의 district 가 이 목록에 포함되어야 매칭된다.
+     * 빈 목록은 허용되지 않으며, 최소 1개 이상의 지역을 입력해야 한다.
+     */
+    @Convert(converter = StringListConverter.class)
+    @Column(name = "preferred_districts", nullable = false, columnDefinition = "TEXT")
+    private List<String> preferredDistricts;
 
     /** 레코드 최초 생성 일시 */
     @Column(name = "created_at", updatable = false)
