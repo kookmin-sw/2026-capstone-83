@@ -219,7 +219,7 @@ export const HiredWeeklyTimetable = ({ schedules, currentDate, onPrev, onNext }:
                           )}
                           onClick={() => toggleSelect(s.jobPostId)}
                         >
-                          <S.BarTitle>{s.title}</S.BarTitle>
+                          <S.BarTitle $wrap>{s.title}</S.BarTitle>
                           <S.BarMeta>
                             <Clock size={10} /> {s.workStart} - {s.workEnd}
                           </S.BarMeta>
@@ -511,7 +511,8 @@ const S = {
     display: flex;
     flex-direction: column;
     gap: 4px;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
     cursor: pointer;
     transition: all 0.15s ease;
     z-index: 2;
@@ -528,22 +529,32 @@ const S = {
       }
     }
   `,
-  BarTitle: styled.span`
+  BarTitle: styled.span<{ $wrap?: boolean }>`
     font-size: ${({ theme }) => theme.fontSize.xsmall};
     font-weight: ${({ theme }) => theme.fontWeight.semibold};
     color: ${({ theme }) => theme.color.text};
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    line-height: 1.35;
+    flex-shrink: 0;
+
+    ${({ $wrap }) =>
+      $wrap
+        ? `
+      white-space: normal;
+      word-break: keep-all;
+      overflow-wrap: break-word;
+    `
+        : `
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    `}
   `,
   BarMeta: styled.span`
     display: flex;
     align-items: center;
     gap: 3px;
     font-size: 10px;
+    flex-shrink: 0;
     color: ${({ theme }) => theme.color.subText};
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   `,
 };
