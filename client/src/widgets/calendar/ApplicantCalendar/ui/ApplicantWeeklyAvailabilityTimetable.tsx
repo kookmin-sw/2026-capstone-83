@@ -80,10 +80,16 @@ type ViewHourRange = {
 
 type ViewBoundsDragState = {
   edge: 'top' | 'bottom';
-  startY: number;
   anchorMin: number;
   anchorMax: number;
+  baseMin: number;
+  baseMax: number;
+  accumulatedDeltaY: number;
+  lastClientY: number;
 };
+
+const VIEW_BOUNDS_EDGE_ZONE_PX = 56;
+const VIEW_BOUNDS_EDGE_BOOST_PX = 3;
 
 export const ApplicantWeeklyAvailabilityTimetable = ({
   schedules,
@@ -122,7 +128,95 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
   const gridPointerRef = useRef<{ dateStr: string; day: Date } | null>(null);
   const resizePointerRef = useRef<ResizeState | null>(null);
   const viewBoundsDragRef = useRef<ViewBoundsDragState | null>(null);
+  const viewBoundsEdgeRafRef = useRef<number | null>(null);
   const gridBodyScrollRef = useRef<HTMLDivElement>(null);
+
+  const stopViewBoundsEdgeLoop = () => {
+    if (viewBoundsEdgeRafRef.current !== null) {
+      cancelAnimationFrame(viewBoundsEdgeRafRef.current);
+      viewBoundsEdgeRafRef.current = null;
+    }
+  };
+
+  const applyViewBoundsFromDragState = () => {
+    const state = viewBoundsDragRef.current;
+    if (!state) return;
+
+    const deltaHours = Math.round(state.accumulatedDeltaY / DESKTOP_HOUR_HEIGHT);
+
+    if (state.edge === 'bottom') {
+      const maxHour = Math.min(
+        24,
+        Math.max(state.baseMax, state.anchorMax + deltaHours),
+      );
+      setCustomViewHours({ minHour: state.anchorMin, maxHour });
+      return;
+    }
+
+    const minHour = Math.max(
+      0,
+      Math.min(state.baseMin, state.anchorMin + deltaHours),
+    );
+    setCustomViewHours({ minHour, maxHour: state.anchorMax });
+  };
+
+  const autoScrollPageDuringViewBoundsDrag = (clientY: number, edge: 'top' | 'bottom') => {
+    const scrollParent = gridBodyScrollRef.current?.closest('main') as HTMLElement | null;
+    if (!scrollParent) return;
+
+    if (edge === 'bottom' && clientY > window.innerHeight - VIEW_BOUNDS_EDGE_ZONE_PX) {
+      scrollParent.scrollTop += Math.ceil(
+        (clientY - (window.innerHeight - VIEW_BOUNDS_EDGE_ZONE_PX)) / 4,
+      );
+    }
+    if (edge === 'top' && clientY < VIEW_BOUNDS_EDGE_ZONE_PX + 72) {
+      scrollParent.scrollTop -= Math.ceil(
+        (VIEW_BOUNDS_EDGE_ZONE_PX + 72 - clientY) / 4,
+      );
+    }
+  };
+
+  const syncViewBoundsScroll = (clientY: number, edge: 'top' | 'bottom') => {
+    autoScrollGridBodyDuringDrag(clientY, edge);
+    autoScrollPageDuringViewBoundsDrag(clientY, edge);
+    requestAnimationFrame(() => scrollGridBodyToEdge(edge));
+  };
+
+  const startViewBoundsEdgeLoop = () => {
+    stopViewBoundsEdgeLoop();
+
+    const tick = () => {
+      const state = viewBoundsDragRef.current;
+      if (!state) return;
+
+      const { edge, lastClientY } = state;
+      const scrollEl = gridBodyScrollRef.current;
+      const scrollRect = scrollEl?.getBoundingClientRect();
+      let boost = 0;
+
+      if (edge === 'bottom') {
+        const nearViewport = lastClientY > window.innerHeight - VIEW_BOUNDS_EDGE_ZONE_PX;
+        const nearScroll =
+          scrollRect && lastClientY > scrollRect.bottom - VIEW_BOUNDS_EDGE_ZONE_PX;
+        if (nearViewport || nearScroll) boost = VIEW_BOUNDS_EDGE_BOOST_PX;
+      } else {
+        const nearViewport = lastClientY < VIEW_BOUNDS_EDGE_ZONE_PX + 72;
+        const nearScroll =
+          scrollRect && lastClientY < scrollRect.top + VIEW_BOUNDS_EDGE_ZONE_PX;
+        if (nearViewport || nearScroll) boost = -VIEW_BOUNDS_EDGE_BOOST_PX;
+      }
+
+      if (boost !== 0) {
+        state.accumulatedDeltaY += boost;
+        applyViewBoundsFromDragState();
+        syncViewBoundsScroll(lastClientY, edge);
+      }
+
+      viewBoundsEdgeRafRef.current = requestAnimationFrame(tick);
+    };
+
+    viewBoundsEdgeRafRef.current = requestAnimationFrame(tick);
+  };
 
   const scrollGridBodyToEdge = (edge: 'top' | 'bottom') => {
     const el = gridBodyScrollRef.current;
@@ -181,6 +275,8 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
   useEffect(() => {
     setCustomViewHours(null);
   }, [weekFrom, weekTo]);
+
+  useEffect(() => () => stopViewBoundsEdgeLoop(), []);
 
   const gridHeightDesktop = hours.length * DESKTOP_HOUR_HEIGHT;
   const gridHeightTablet = hours.length * TABLET_HOUR_HEIGHT;
@@ -351,36 +447,31 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
     e.currentTarget.setPointerCapture(e.pointerId);
     viewBoundsDragRef.current = {
       edge,
-      startY: e.clientY,
       anchorMin: customViewHours?.minHour ?? baseBounds.minHour,
       anchorMax: customViewHours?.maxHour ?? baseBounds.maxHour,
+      baseMin: baseBounds.minHour,
+      baseMax: baseBounds.maxHour,
+      accumulatedDeltaY: 0,
+      lastClientY: e.clientY,
     };
+    startViewBoundsEdgeLoop();
   };
 
   const handleViewBoundsPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
-    if (!viewBoundsDragRef.current) return;
+    const state = viewBoundsDragRef.current;
+    if (!state) return;
 
-    const { edge, startY, anchorMin, anchorMax } = viewBoundsDragRef.current;
-    const deltaHours = Math.round((e.clientY - startY) / DESKTOP_HOUR_HEIGHT);
-
-    if (edge === 'bottom') {
-      const maxHour = Math.min(24, Math.max(baseBounds.maxHour, anchorMax + deltaHours));
-      setCustomViewHours({ minHour: anchorMin, maxHour });
-      autoScrollGridBodyDuringDrag(e.clientY, 'bottom');
-      requestAnimationFrame(() => scrollGridBodyToEdge('bottom'));
-      return;
-    }
-
-    const minHour = Math.max(0, Math.min(baseBounds.minHour, anchorMin + deltaHours));
-    setCustomViewHours({ minHour, maxHour: anchorMax });
-    autoScrollGridBodyDuringDrag(e.clientY, 'top');
-    requestAnimationFrame(() => scrollGridBodyToEdge('top'));
+    state.accumulatedDeltaY += e.movementY;
+    state.lastClientY = e.clientY;
+    applyViewBoundsFromDragState();
+    syncViewBoundsScroll(e.clientY, state.edge);
   };
 
   const handleViewBoundsPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
     if (!viewBoundsDragRef.current) return;
     e.currentTarget.releasePointerCapture(e.pointerId);
     viewBoundsDragRef.current = null;
+    stopViewBoundsEdgeLoop();
   };
 
   const viewBoundsHandleProps = (edge: 'top' | 'bottom', overlay = false) => ({
@@ -473,6 +564,8 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
     if (!gridPointerRef.current || !drag) return;
     const minute = clampEditableMinuteForDay(gridPointerRef.current.dateStr, rawMinute, now);
     setDrag((prev) => (prev ? { ...prev, endMinute: minute } : null));
+    autoScrollPageDuringViewBoundsDrag(e.clientY, 'bottom');
+    autoScrollPageDuringViewBoundsDrag(e.clientY, 'top');
   };
 
   const handleGridPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -791,7 +884,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
               </S.DayHeadersRow>
             </S.GridHeaderRow>
 
-            <S.GridBodyScroll ref={gridBodyScrollRef} $maxHeight={MAX_VISIBLE_GRID_HEIGHT}>
+            <S.GridBodyScroll ref={gridBodyScrollRef} $height={MAX_VISIBLE_GRID_HEIGHT}>
               <S.GridBodyRow $heightDesktop={gridHeightDesktop}>
                 <S.TimeLabelsColumn>
                   {hours.map((h) => (
@@ -1453,7 +1546,7 @@ const S = {
     overflow-x: auto;
     min-width: 0;
     position: relative;
-    margin-bottom: 24px;
+    margin-bottom: 48px;
 
     @media (${({ theme }) => theme.mediaQuery.tablet_small}) {
       display: none;
@@ -1473,8 +1566,8 @@ const S = {
     z-index: 4;
     background-color: ${({ theme }) => theme.color.white};
   `,
-  GridBodyScroll: styled.div<{ $maxHeight: number }>`
-    max-height: ${({ $maxHeight }) => $maxHeight}px;
+  GridBodyScroll: styled.div<{ $height: number }>`
+    height: ${({ $height }) => $height}px;
     overflow-y: auto;
     overflow-x: hidden;
     min-width: min(100%, ${60 + 7 * 120}px);
