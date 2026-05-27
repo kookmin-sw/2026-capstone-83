@@ -14,6 +14,9 @@ export const getNotificationNavigatePath = (
       case 'OFFER_RECEIVED':
       case 'HIRED':
       case 'REJECTED':
+      case 'JOB_POST_DELETED':
+      case 'AUTO_MATCHED':
+      case 'WORK_COMPLETED':
         return '/dashboard/applications';
       default:
         return '/dashboard';

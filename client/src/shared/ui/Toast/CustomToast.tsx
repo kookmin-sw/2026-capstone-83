@@ -1,5 +1,5 @@
 import styled, { useTheme } from 'styled-components';
-import { UserPlus, CheckCircle, Pencil, Info } from 'lucide-react';
+import { UserPlus, CheckCircle, Pencil, Info, Trash2, Sparkles } from 'lucide-react';
 import toast, { type Toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
@@ -19,6 +19,8 @@ const ICON_MAP: Record<NotificationType, typeof UserPlus> = {
   HIRED: CheckCircle,
   REJECTED: Info,
   WORK_COMPLETED: Pencil,
+  JOB_POST_DELETED: Trash2,
+  AUTO_MATCHED: Sparkles,
 };
 
 export const CustomToast = ({ t, notification }: Props) => {
@@ -28,7 +30,11 @@ export const CustomToast = ({ t, notification }: Props) => {
   const markAsRead = useNotificationStore((s) => s.markAsRead);
   const { type, message } = notification;
   const Icon = ICON_MAP[type];
-  const isHighlight = type === 'NEW_APPLICATION' || type === 'OFFER_ACCEPTED' || type === 'HIRED';
+  const isHighlight =
+    type === 'NEW_APPLICATION' ||
+    type === 'OFFER_ACCEPTED' ||
+    type === 'HIRED' ||
+    type === 'AUTO_MATCHED';
   const iconColor = isHighlight ? theme.color.primary : theme.color.subText;
 
   const handleClick = () => {

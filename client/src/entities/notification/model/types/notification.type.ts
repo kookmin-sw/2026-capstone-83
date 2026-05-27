@@ -4,7 +4,9 @@ export type NotificationType =
   | 'OFFER_ACCEPTED'
   | 'HIRED'
   | 'REJECTED'
-  | 'WORK_COMPLETED';
+  | 'WORK_COMPLETED'
+  | 'JOB_POST_DELETED'
+  | 'AUTO_MATCHED';
 
 export interface Notification {
   id: number;

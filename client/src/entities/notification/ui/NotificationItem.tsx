@@ -1,5 +1,5 @@
 import styled from 'styled-components';
-import { UserPlus, CheckCircle, Pencil, Info } from 'lucide-react';
+import { UserPlus, CheckCircle, Pencil, Info, Trash2, Sparkles } from 'lucide-react';
 import { useTheme } from 'styled-components';
 import type { Notification, NotificationType } from '../model/types/notification.type';
 
@@ -15,6 +15,8 @@ const ICON_MAP: Record<NotificationType, typeof UserPlus> = {
   HIRED: CheckCircle,
   REJECTED: Info,
   WORK_COMPLETED: Pencil,
+  JOB_POST_DELETED: Trash2,
+  AUTO_MATCHED: Sparkles,
 };
 
 const formatTimeAgo = (dateStr: string) => {
@@ -37,7 +39,11 @@ export const NotificationItem = ({ data, onClick }: Props) => {
   const { type, message, createdAt, isRead } = data;
   const IconComponent = ICON_MAP[type];
 
-  const isHighlight = type === 'NEW_APPLICATION' || type === 'OFFER_ACCEPTED' || type === 'HIRED';
+  const isHighlight =
+    type === 'NEW_APPLICATION' ||
+    type === 'OFFER_ACCEPTED' ||
+    type === 'HIRED' ||
+    type === 'AUTO_MATCHED';
 
   const iconBgColor = isHighlight
     ? theme.color.secondary

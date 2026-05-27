@@ -24,6 +24,8 @@ const TestPage = () => {
       HIRED: "채용이 확정되었습니다.",
       REJECTED: "지원이 거절되었습니다.",
       WORK_COMPLETED: "성수동 카페 작업이 완료되었습니다.",
+      JOB_POST_DELETED: "채용 확정된 공고가 삭제되었습니다.",
+      AUTO_MATCHED: "가용 시간에 맞는 새 공고가 자동 매칭되었습니다.",
     };
     showNotificationToast({
       id: Date.now(),
