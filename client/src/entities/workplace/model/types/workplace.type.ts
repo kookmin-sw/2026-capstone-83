@@ -6,6 +6,7 @@ export interface Workplace {
   companyName: string;
   businessNumber: string;
   address: string;
+  district: string;
   companyLogoUrl: string;
 }
 
@@ -16,6 +17,7 @@ export interface WorkplaceFormData {
   companyName: string;
   businessNumber: string;
   address: string;
+  district: string;
 }
 
 /** @deprecated WorkplaceFormData 사용 */

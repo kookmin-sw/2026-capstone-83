@@ -137,6 +137,13 @@ public class WorkplaceService {
         }
         return workplace;
     }
+    /**
+     * 본인 소유 사업장 엔티티 반환 (공고 등록 등 내부 로직에서 엔티티가 필요한 경우 사용)
+     */
+    public Workplace getOwnedWorkplace(User user, Long workplaceId) {
+        return findOwnedWorkplace(workplaceId, user);
+    }
+
     // 사업장 존재 여부 확인
     public boolean hasWorkplace(User user) {
         Employer employer = employerRepository.findByUserId(user.getId())
