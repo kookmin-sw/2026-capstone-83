@@ -326,6 +326,9 @@ public class JobPostService {
         // 연관 Application 삭제
         applicationRepository.deleteAll(applications);
 
+        // 연관 JobPostLike 삭제 (JobPost FK 제약 방지 — JobPostLike → JobPost 참조)
+        jobPostLikeRepository.deleteByJobPostId(jobPostId);
+
         // S3 이미지 삭제
         s3Service.delete(jobPost.getS3ContentUrl());
 
