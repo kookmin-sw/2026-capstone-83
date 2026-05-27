@@ -21,6 +21,7 @@ import com.itda.exception.NotFoundException;
 import com.itda.repository.ApplicationRepository;
 import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
+import com.itda.repository.ReviewRepository;
 import com.itda.repository.WorkplaceRepository;
 import com.itda.repository.LongTermWorkerRepository;
 import com.itda.repository.UserRepository;
@@ -46,6 +47,7 @@ public class JobPostService {
 
     private final JobPostRepository jobPostRepository;
     private final ApplicationRepository applicationRepository;
+    private final ReviewRepository reviewRepository;
     private final JobPostLikeRepository jobPostLikeRepository;
     private final LikeService likeService;
     private final S3Service s3Service;
@@ -317,8 +319,11 @@ public class JobPostService {
                         jobPostId
                 ));
 
-        // 연관 Application 삭제 (FK 제약 방지)
+        // 연관 Review 삭제 (Application FK 제약 방지 — Review → Application 참조)
         List<Application> applications = applicationRepository.findByJobPostId(jobPostId);
+        reviewRepository.deleteByApplicationIn(applications);
+
+        // 연관 Application 삭제
         applicationRepository.deleteAll(applications);
 
         // S3 이미지 삭제
