@@ -5,6 +5,9 @@ export const DAYS_KR = ['월', '화', '수', '목', '금', '토', '일'] as cons
 
 export const DESKTOP_HOUR_HEIGHT = 60;
 export const TABLET_HOUR_HEIGHT = 48;
+/** 시간표 본문(격자) 최대 표시 높이 — 이를 넘으면 내부 세로 스크롤 */
+export const MAX_VISIBLE_GRID_HOURS = 12;
+export const MAX_VISIBLE_GRID_HEIGHT = MAX_VISIBLE_GRID_HOURS * DESKTOP_HOUR_HEIGHT;
 export const SNAP_MINUTES = 15;
 
 export const getWeekDays = (date: Date) => {
@@ -81,19 +84,52 @@ export const clipIntervalToDay = (
   return { startMinute, endMinute };
 };
 
-export const getHiredSchedulesForWeek = (
+/** 시간표에 표시할 확정·완료 근무 */
+export const isTimetableWorkSchedule = (schedule: ApplicantSchedule) =>
+  schedule.applyStatus === 'HIRED' || schedule.applyStatus === 'COMPLETED';
+
+export const getWorkScheduleBarVariant = (
+  status: ApplicantSchedule['applyStatus'],
+): 'hired' | 'completed' => (status === 'COMPLETED' ? 'completed' : 'hired');
+
+export const getWorkScheduleStatusLabel = (status: ApplicantSchedule['applyStatus']) =>
+  status === 'COMPLETED' ? '근무 완료' : '채용 확정';
+
+/** 해당 날짜·근무 종료 시각 (로컬) */
+export const buildWorkEndDateTime = (dateStr: string, workEnd: string) => {
+  const endMinute = timeToMinutes(workEnd);
+  return buildDateTimeRange(dateStr, 0, endMinute).end;
+};
+
+/** 근무 완료는 예정 종료 시각이 지난 뒤(현재 이전)에만 시간표에 표시 */
+export const isCompletedWorkVisibleOnTimetable = (
+  schedule: ApplicantSchedule,
+  dateStr: string,
+  now: Date,
+) => {
+  if (schedule.applyStatus !== 'COMPLETED') return true;
+  return buildWorkEndDateTime(dateStr, schedule.workEnd).getTime() <= now.getTime();
+};
+
+export const getWorkSchedulesForWeek = (
   schedules: Record<string, ApplicantSchedule[]>,
   weekDays: Date[],
+  now: Date = new Date(),
 ) => {
-  const hiredSchedules: Record<string, ApplicantSchedule[]> = {};
+  const workSchedules: Record<string, ApplicantSchedule[]> = {};
   weekDays.forEach((day) => {
     const dateStr = formatDateStr(day);
     const daySchedules = schedules[dateStr] || [];
-    const hired = daySchedules.filter((s) => s.applyStatus === 'HIRED');
-    if (hired.length > 0) hiredSchedules[dateStr] = hired;
+    const work = daySchedules.filter(
+      (s) => isTimetableWorkSchedule(s) && isCompletedWorkVisibleOnTimetable(s, dateStr, now),
+    );
+    if (work.length > 0) workSchedules[dateStr] = work;
   });
-  return hiredSchedules;
+  return workSchedules;
 };
+
+/** @deprecated getWorkSchedulesForWeek 사용 */
+export const getHiredSchedulesForWeek = getWorkSchedulesForWeek;
 
 export const getAvailabilitySegmentsForDay = (
   slot: WorkerAvailabilityResponse,
@@ -272,7 +308,7 @@ export const validateAvailabilityRange = (
         return '가용시간은 최소 15분 이상이어야 합니다.';
       }
       if (overlapsHiredOnDay(dateStr, startMinute, endMinute, hiredByDay)) {
-        return '채용 확정된 근무 시간과 겹칩니다.';
+        return '확정·완료된 근무 시간과 겹칩니다.';
       }
       if (overlapsAvailabilityOnDay(day, startMinute, endMinute, availability, excludeId)) {
         return '이미 등록된 가용시간과 겹칩니다.';

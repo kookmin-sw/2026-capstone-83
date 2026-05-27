@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { CalendarClock, ChevronDown, ChevronLeft, ChevronRight, Clock, MapPin, Trash2 } from 'lucide-react';
 import styled, { css } from 'styled-components';
 import type { ApplicantSchedule } from 'entities/schedule/model/types/schedule.type';
@@ -23,12 +23,15 @@ import {
   formatDateStr,
   formatHour,
   getAvailabilitySegmentsForDay,
-  getHiredSchedulesForWeek,
+  getWorkScheduleBarVariant,
+  getWorkScheduleStatusLabel,
+  getWorkSchedulesForWeek,
   getMinEditableMinuteForDay,
   getPastOverlayHeight,
   getWeekDays,
   getWeekNumber,
   isDayFullyPast,
+  MAX_VISIBLE_GRID_HEIGHT,
   minutesToTime,
   overlapsAvailabilityOnDay,
   overlapsHiredOnDay,
@@ -119,17 +122,41 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
   const gridPointerRef = useRef<{ dateStr: string; day: Date } | null>(null);
   const resizePointerRef = useRef<ResizeState | null>(null);
   const viewBoundsDragRef = useRef<ViewBoundsDragState | null>(null);
+  const gridBodyScrollRef = useRef<HTMLDivElement>(null);
 
-  const hiredByDay = useMemo(
-    () => getHiredSchedulesForWeek(schedules, weekDays),
-    [schedules, weekDays],
+  const scrollGridBodyToEdge = (edge: 'top' | 'bottom') => {
+    const el = gridBodyScrollRef.current;
+    if (!el) return;
+    el.scrollTop = edge === 'bottom' ? el.scrollHeight - el.clientHeight : 0;
+  };
+
+  const autoScrollGridBodyDuringDrag = (clientY: number, edge: 'top' | 'bottom') => {
+    const el = gridBodyScrollRef.current;
+    if (!el) return;
+
+    const rect = el.getBoundingClientRect();
+    const edgeZone = 56;
+    if (edge === 'bottom' && clientY > rect.bottom - edgeZone) {
+      el.scrollTop += Math.ceil((clientY - (rect.bottom - edgeZone)) / 4);
+    }
+    if (edge === 'top' && clientY < rect.top + edgeZone) {
+      el.scrollTop -= Math.ceil((rect.top + edgeZone - clientY) / 4);
+    }
+  };
+
+  const now = new Date();
+  const nowKey = `${formatDateStr(now)}-${now.getHours()}-${now.getMinutes()}`;
+
+  const workByDay = useMemo(
+    () => getWorkSchedulesForWeek(schedules, weekDays, now),
+    [schedules, weekDays, nowKey],
   );
 
   const draftForBounds = draft ?? drag ?? (editDraft ? editDraft : null);
   const baseBounds = useMemo(
     () =>
       computeHourBounds(
-        hiredByDay,
+        workByDay,
         availability,
         weekDays,
         draftForBounds
@@ -139,7 +166,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
             }
           : null,
       ),
-    [hiredByDay, availability, weekDays, draftForBounds],
+    [workByDay, availability, weekDays, draftForBounds],
   );
 
   const { minHour, maxHour, hours } = useMemo(() => {
@@ -158,8 +185,31 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
   const gridHeightDesktop = hours.length * DESKTOP_HOUR_HEIGHT;
   const gridHeightTablet = hours.length * TABLET_HOUR_HEIGHT;
 
+  useLayoutEffect(() => {
+    const scrollToShowSelectionBottom = (bottomMinute: number) => {
+      const el = gridBodyScrollRef.current;
+      if (!el) return;
+      const yEnd = ((bottomMinute - minHour * 60) / 60) * DESKTOP_HOUR_HEIGHT;
+      const margin = 56;
+      const visibleBottom = el.scrollTop + el.clientHeight;
+      if (yEnd + margin > visibleBottom) {
+        el.scrollTop = Math.min(
+          Math.max(0, yEnd + margin - el.clientHeight),
+          el.scrollHeight - el.clientHeight,
+        );
+      }
+    };
+
+    if (drag) {
+      scrollToShowSelectionBottom(Math.max(drag.startMinute, drag.endMinute));
+      return;
+    }
+    if (resize && editDraft && resize.edge === 'bottom') {
+      scrollToShowSelectionBottom(Math.max(editDraft.startMinute, editDraft.endMinute));
+    }
+  }, [drag, editDraft, resize, minHour, gridHeightDesktop]);
+
   const weekNum = getWeekNumber(currentDate);
-  const now = new Date();
   const todayStr = formatDateStr(now);
 
   const selectedSlot = editDraft
@@ -202,8 +252,8 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
     const { start } = buildDateTimeRange(dateStr, startMinute, endMinute);
     if (start.getTime() < Date.now()) return '과거 시간에는 가용시간을 등록할 수 없습니다.';
 
-    if (overlapsHiredOnDay(dateStr, startMinute, endMinute, hiredByDay)) {
-      return '채용 확정된 근무 시간과 겹칩니다.';
+    if (overlapsHiredOnDay(dateStr, startMinute, endMinute, workByDay)) {
+      return '확정·완료된 근무 시간과 겹칩니다.';
     }
     if (overlapsAvailabilityOnDay(day, startMinute, endMinute, availability, excludeId)) {
       return '이미 등록된 가용시간과 겹칩니다.';
@@ -242,7 +292,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
       editDraft.startMinute,
       editDraft.endMinute,
     );
-    const err = validateAvailabilityRange(start, end, hiredByDay, availability, selectedSlot.id);
+    const err = validateAvailabilityRange(start, end, workByDay, availability, selectedSlot.id);
     if (err) {
       errorModal.showError(new Error(err), err);
       return;
@@ -316,11 +366,15 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
     if (edge === 'bottom') {
       const maxHour = Math.min(24, Math.max(baseBounds.maxHour, anchorMax + deltaHours));
       setCustomViewHours({ minHour: anchorMin, maxHour });
+      autoScrollGridBodyDuringDrag(e.clientY, 'bottom');
+      requestAnimationFrame(() => scrollGridBodyToEdge('bottom'));
       return;
     }
 
     const minHour = Math.max(0, Math.min(baseBounds.minHour, anchorMin + deltaHours));
     setCustomViewHours({ minHour, maxHour: anchorMax });
+    autoScrollGridBodyDuringDrag(e.clientY, 'top');
+    requestAnimationFrame(() => scrollGridBodyToEdge('top'));
   };
 
   const handleViewBoundsPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
@@ -437,7 +491,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
         const err = validateAvailabilityRange(
           start,
           end,
-          hiredByDay,
+          workByDay,
           availability,
           selectedSlot.id,
         );
@@ -546,7 +600,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                 <S.IntroBlockTitle>왜 필요한가요?</S.IntroBlockTitle>
                 <ul>
                   <li>매번 공고를 찾아 직접 지원하지 않아도 됩니다.</li>
-                  <li>내 일정(채용 확정 근무)과 겹치지 않는 시간만 등록하면 됩니다.</li>
+                  <li>내 일정(채용 확정·근무 완료)과 겹치지 않는 시간만 등록하면 됩니다.</li>
                   <li>최소 근무 시간을 정해 두면, 너무 짧은 공고는 걸러집니다.</li>
                 </ul>
               </S.IntroBlock>
@@ -561,7 +615,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                     <strong>모바일</strong>: 해당 요일의 「+ 가용시간 추가」에서 시작·종료 시간과
                     최소 근무 시간을 입력하세요.
                   </li>
-                  <li>회색 블록(채용 확정 근무) 위에는 등록할 수 없습니다.</li>
+                  <li>회색 블록(확정·완료 근무) 위에는 등록할 수 없습니다.</li>
                 </ul>
               </S.IntroBlock>
             </S.IntroGrid>
@@ -572,6 +626,10 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
           <S.LegendItem>
             <S.LegendSwatch $variant="hired" />
             채용 확정
+          </S.LegendItem>
+          <S.LegendItem>
+            <S.LegendSwatch $variant="completed" />
+            근무 완료
           </S.LegendItem>
           <S.LegendItem>
             <S.LegendSwatch $variant="avail" />
@@ -592,7 +650,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
           <S.ListView>
             {weekDays.map((day, idx) => {
               const dateStr = formatDateStr(day);
-              const dayHired = hiredByDay[dateStr] || [];
+              const dayHired = workByDay[dateStr] || [];
               const dayAvail = availability
                 .map((slot) => getAvailabilitySegmentsForDay(slot, day))
                 .filter((s): s is NonNullable<typeof s> => s !== null);
@@ -608,19 +666,22 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                   </S.ListDayHeader>
 
                   {dayHired.map((s) => {
+                    const workVariant = getWorkScheduleBarVariant(s.applyStatus);
                     const isHiredSelected = selectedJobPostId === s.jobPostId;
                     return (
                       <S.ListCard
-                        key={`hired-${s.jobPostId}`}
+                        key={`work-${s.jobPostId}`}
                         type="button"
-                        $variant="hired"
+                        $variant={workVariant}
                         $selected={isHiredSelected}
                         onClick={() => {
                           setSelectedJobPostId(isHiredSelected ? null : s.jobPostId);
                         }}
                       >
                         <S.ListCardTitle>{s.title}</S.ListCardTitle>
-                        <S.ListCardBadge $variant="hired">채용 확정</S.ListCardBadge>
+                        <S.ListCardBadge $variant={workVariant}>
+                          {getWorkScheduleStatusLabel(s.applyStatus)}
+                        </S.ListCardBadge>
                         <S.ListCardMeta>
                           <Clock size={14} />
                           {s.workStart} - {s.workEnd}
@@ -709,18 +770,8 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
 
           {/* 데스크톱 그리드 */}
           <S.GridWrapper>
-            <S.TimeColumn>
-              <S.DayHeaderPlaceholder />
-              <S.TimeLabelsBlock>
-                {hours.map((h) => (
-                  <S.TimeLabel key={h} $desktopHeight={DESKTOP_HOUR_HEIGHT} $tabletHeight={TABLET_HOUR_HEIGHT}>
-                    {formatHour(h)}
-                  </S.TimeLabel>
-                ))}
-              </S.TimeLabelsBlock>
-            </S.TimeColumn>
-
-            <S.DayGridsArea>
+            <S.GridHeaderRow>
+              <S.TimeHeaderCell />
               <S.DayHeadersRow>
                 {weekDays.map((day, idx) => {
                   const dateStr = formatDateStr(day);
@@ -738,8 +789,19 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                   );
                 })}
               </S.DayHeadersRow>
+            </S.GridHeaderRow>
 
-              <S.DayGridsRow $heightDesktop={gridHeightDesktop} $heightTablet={gridHeightTablet}>
+            <S.GridBodyScroll ref={gridBodyScrollRef} $maxHeight={MAX_VISIBLE_GRID_HEIGHT}>
+              <S.GridBodyRow $heightDesktop={gridHeightDesktop}>
+                <S.TimeLabelsColumn>
+                  {hours.map((h) => (
+                    <S.TimeLabel key={h} $desktopHeight={DESKTOP_HOUR_HEIGHT} $tabletHeight={TABLET_HOUR_HEIGHT}>
+                      {formatHour(h)}
+                    </S.TimeLabel>
+                  ))}
+                </S.TimeLabelsColumn>
+
+                <S.DayGridsRow $heightDesktop={gridHeightDesktop} $heightTablet={gridHeightTablet}>
                 <S.ViewBoundsHandle {...viewBoundsHandleProps('top', true)} />
                 <S.SharedHourLines>
                   {hours.map((_, i) => (
@@ -755,7 +817,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
 
                 {weekDays.map((day) => {
               const dateStr = formatDateStr(day);
-              const dayHired = hiredByDay[dateStr] || [];
+              const dayHired = workByDay[dateStr] || [];
               const dayAvail = availability
                 .map((slot) => getAvailabilitySegmentsForDay(slot, day))
                 .filter((s): s is NonNullable<typeof s> => s !== null);
@@ -789,6 +851,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                     )}
 
                     {dayHired.map((s) => {
+                      const workVariant = getWorkScheduleBarVariant(s.applyStatus);
                       const isSelected = selectedJobPostId === s.jobPostId;
                       const pos = renderBarPosition(
                         timeToMinutes(s.workStart),
@@ -799,6 +862,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                         <S.HiredBar
                           key={s.jobPostId}
                           data-hired-bar
+                          $workStatus={workVariant}
                           $selected={isSelected}
                           $topDesktop={pos.topDesktop}
                           $heightDesktop={pos.heightDesktop}
@@ -931,7 +995,8 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
               );
             })}
               </S.DayGridsRow>
-            </S.DayGridsArea>
+              </S.GridBodyRow>
+            </S.GridBodyScroll>
           </S.GridWrapper>
 
           {selectedSlot && editDraft && (
@@ -1200,12 +1265,13 @@ const S = {
     font-size: ${({ theme }) => theme.fontSize.xsmall};
     color: ${({ theme }) => theme.color.subText};
   `,
-  LegendSwatch: styled.span<{ $variant: 'hired' | 'avail' | 'past' }>`
+  LegendSwatch: styled.span<{ $variant: 'hired' | 'completed' | 'avail' | 'past' }>`
     width: 12px;
     height: 12px;
     border-radius: 3px;
     background: ${({ theme, $variant }) => {
       if ($variant === 'hired') return theme.color.background;
+      if ($variant === 'completed') return theme.color.background;
       if ($variant === 'past') {
         return `color-mix(in srgb, ${theme.color.subBackground} 32%, transparent)`;
       }
@@ -1214,11 +1280,15 @@ const S = {
     border: 1px solid
       ${({ theme, $variant }) => {
         if ($variant === 'hired') return theme.color.border;
+        if ($variant === 'completed') {
+          return `color-mix(in srgb, ${theme.color.subText} 35%, transparent)`;
+        }
         if ($variant === 'past') {
           return `color-mix(in srgb, ${theme.color.subText} 30%, transparent)`;
         }
         return theme.color.tertiary;
       }};
+    border-style: ${({ $variant }) => ($variant === 'completed' ? 'dashed' : 'solid')};
   `,
   EmptyMessage: styled.p`
     text-align: center;
@@ -1265,7 +1335,7 @@ const S = {
       color: ${({ theme }) => theme.color.subText};
     }
   `,
-  ListCard: styled.button<{ $variant: 'hired' | 'avail'; $selected?: boolean }>`
+  ListCard: styled.button<{ $variant: 'hired' | 'completed' | 'avail'; $selected?: boolean }>`
     width: 100%;
     text-align: left;
     padding: 12px 14px;
@@ -1274,11 +1344,19 @@ const S = {
       if ($variant === 'hired') {
         return $selected ? theme.color.secondary : theme.color.background;
       }
+      if ($variant === 'completed') {
+        return $selected ? theme.color.secondary : theme.color.background;
+      }
       return theme.badgeScheme.success.backgroundColor;
     }};
     border: ${({ theme, $variant, $selected }) => {
       if ($variant === 'hired') {
         return $selected ? `2px solid ${theme.color.primary}` : `1px solid ${theme.color.border}`;
+      }
+      if ($variant === 'completed') {
+        return $selected
+          ? `2px solid ${theme.color.primary}`
+          : `1px dashed color-mix(in srgb, ${theme.color.subText} 35%, transparent)`;
       }
       return $selected ? `2px solid ${theme.color.primary}` : `1px solid ${theme.color.tertiary}`;
     }};
@@ -1310,17 +1388,20 @@ const S = {
     font-size: ${({ theme }) => theme.fontSize.small};
     font-weight: ${({ theme }) => theme.fontWeight.semibold};
   `,
-  ListCardBadge: styled.span<{ $variant: 'hired' | 'avail' }>`
+  ListCardBadge: styled.span<{ $variant: 'hired' | 'completed' | 'avail' }>`
     align-self: flex-start;
     font-size: 10px;
     padding: 2px 8px;
     border-radius: 999px;
-    background: ${({ theme, $variant }) =>
-      $variant === 'hired'
-        ? theme.color.border
-        : `color-mix(in srgb, ${theme.color.white} 22%, transparent)`};
+    background: ${({ theme, $variant }) => {
+      if ($variant === 'hired') return theme.color.border;
+      if ($variant === 'completed') {
+        return `color-mix(in srgb, ${theme.color.subText} 12%, transparent)`;
+      }
+      return `color-mix(in srgb, ${theme.color.white} 22%, transparent)`;
+    }};
     color: ${({ theme, $variant }) =>
-      $variant === 'hired' ? theme.color.subText : theme.color.white};
+      $variant === 'avail' ? theme.color.white : theme.color.subText};
   `,
   ListCardMeta: styled.span`
     display: flex;
@@ -1367,6 +1448,7 @@ const S = {
   `,
   GridWrapper: styled.div`
     display: flex;
+    flex-direction: column;
     gap: 0;
     overflow-x: auto;
     min-width: 0;
@@ -1375,6 +1457,38 @@ const S = {
     @media (${({ theme }) => theme.mediaQuery.tablet_small}) {
       display: none;
     }
+  `,
+  GridHeaderRow: styled.div`
+    display: flex;
+    flex-shrink: 0;
+    min-width: min(100%, ${60 + 7 * 120}px);
+  `,
+  TimeHeaderCell: styled.div`
+    flex-shrink: 0;
+    width: 60px;
+    height: 56px;
+    position: sticky;
+    left: 0;
+    z-index: 4;
+    background-color: ${({ theme }) => theme.color.white};
+  `,
+  GridBodyScroll: styled.div<{ $maxHeight: number }>`
+    max-height: ${({ $maxHeight }) => $maxHeight}px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-width: min(100%, ${60 + 7 * 120}px);
+  `,
+  GridBodyRow: styled.div<{ $heightDesktop: number }>`
+    display: flex;
+    min-height: ${({ $heightDesktop }) => $heightDesktop}px;
+  `,
+  TimeLabelsColumn: styled.div`
+    flex-shrink: 0;
+    width: 60px;
+    position: sticky;
+    left: 0;
+    z-index: 3;
+    background-color: ${({ theme }) => theme.color.white};
   `,
   ViewBoundsHandle: styled.div<{ $edge: 'top' | 'bottom'; $overlay?: boolean }>`
     height: 12px;
@@ -1413,30 +1527,10 @@ const S = {
       background: ${({ theme }) => theme.color.primary};
     }
   `,
-  TimeColumn: styled.div`
-    flex-shrink: 0;
-    width: 60px;
-    position: sticky;
-    left: 0;
-    z-index: 3;
-    background-color: ${({ theme }) => theme.color.white};
-  `,
-  DayHeaderPlaceholder: styled.div`
-    height: 56px;
-    flex-shrink: 0;
-  `,
-  TimeLabelsBlock: styled.div`
-    display: flex;
-    flex-direction: column;
-  `,
-  DayGridsArea: styled.div`
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    min-width: 0;
-  `,
   DayHeadersRow: styled.div`
     display: flex;
+    flex: 1;
+    min-width: 0;
   `,
   DayHeaderCell: styled.div`
     flex: 1;
@@ -1445,6 +1539,8 @@ const S = {
   `,
   DayGridsRow: styled.div<{ $heightDesktop: number; $heightTablet: number }>`
     display: flex;
+    flex: 1;
+    min-width: 0;
     position: relative;
     height: ${({ $heightDesktop }) => $heightDesktop}px;
     min-height: ${({ $heightDesktop }) => $heightDesktop}px;
@@ -1525,6 +1621,7 @@ const S = {
     pointer-events: none;
   `,
   HiredBar: styled.div<{
+    $workStatus: 'hired' | 'completed';
     $selected: boolean;
     $topDesktop: number;
     $heightDesktop: number;
@@ -1540,8 +1637,13 @@ const S = {
     border-radius: ${({ theme }) => theme.borderRadius.small};
     background-color: ${({ theme, $selected }) =>
       $selected ? theme.color.secondary : theme.color.background};
-    border: ${({ theme, $selected }) =>
-      $selected ? `2px solid ${theme.color.primary}` : `1px solid ${theme.color.border}`};
+    border: ${({ theme, $selected, $workStatus }) => {
+      if ($selected) return `2px solid ${theme.color.primary}`;
+      if ($workStatus === 'completed') {
+        return `1px dashed color-mix(in srgb, ${theme.color.subText} 35%, transparent)`;
+      }
+      return `1px solid ${theme.color.border}`;
+    }};
     z-index: 4;
     pointer-events: auto;
     cursor: pointer;

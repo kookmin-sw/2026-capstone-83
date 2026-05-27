@@ -4,6 +4,11 @@ import type { ApplicantSchedule } from 'entities/schedule/model/types/schedule.t
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import { calendarHeaderCss } from 'widgets/calendar/styles/calendar.styled';
 import { hoverOverlay } from 'shared/styles/hoverOverlay';
+import {
+  getWorkScheduleBarVariant,
+  getWorkScheduleStatusLabel,
+  getWorkSchedulesForWeek,
+} from '../lib/weeklyTimetableUtils';
 
 interface Props {
   schedules: Record<string, ApplicantSchedule[]>;
@@ -53,15 +58,10 @@ export const HiredWeeklyTimetable = ({ schedules, currentDate, onPrev, onNext }:
   const selectedId = useScheduleStore((s) => s.selectedJobPostId);
   const setSelectedId = useScheduleStore((s) => s.setSelectedJobPostId);
 
-  const hiredSchedules: Record<string, ApplicantSchedule[]> = {};
-  weekDays.forEach((day) => {
-    const dateStr = formatDateStr(day);
-    const daySchedules = (schedules[dateStr] || []) as ApplicantSchedule[];
-    const hired = daySchedules.filter((s) => s.applyStatus === 'HIRED');
-    if (hired.length > 0) hiredSchedules[dateStr] = hired;
-  });
+  const now = new Date();
+  const workSchedules = getWorkSchedulesForWeek(schedules, weekDays, now);
 
-  const allHired = Object.values(hiredSchedules).flat();
+  const allHired = Object.values(workSchedules).flat();
   let minHour = 24;
   let maxHour = 0;
   allHired.forEach((s) => {
@@ -81,7 +81,6 @@ export const HiredWeeklyTimetable = ({ schedules, currentDate, onPrev, onNext }:
 
   const hours = Array.from({ length: maxHour - minHour }, (_, i) => minHour + i);
 
-  const now = new Date();
   const todayStr = formatDateStr(now);
 
   const toggleSelect = (jobPostId: number) => {
@@ -105,14 +104,14 @@ export const HiredWeeklyTimetable = ({ schedules, currentDate, onPrev, onNext }:
       </S.Header>
 
       {allHired.length === 0 ? (
-        <S.EmptyMessage>이번 주 확정된 근무 일정이 없습니다.</S.EmptyMessage>
+        <S.EmptyMessage>이번 주 확정·완료된 근무 일정이 없습니다.</S.EmptyMessage>
       ) : (
         <>
           {/* 모바일: 날짜별 리스트 */}
           <S.ListView>
             {weekDays.map((day, idx) => {
               const dateStr = formatDateStr(day);
-              const dayHired = hiredSchedules[dateStr] || [];
+              const dayHired = workSchedules[dateStr] || [];
               if (dayHired.length === 0) return null;
 
               const isSaturday = idx === 5;
@@ -130,15 +129,20 @@ export const HiredWeeklyTimetable = ({ schedules, currentDate, onPrev, onNext }:
                     <span className="date">{day.getDate()}일</span>
                   </S.ListDayHeader>
                   {dayHired.map((s) => {
+                    const workVariant = getWorkScheduleBarVariant(s.applyStatus);
                     const isSelected = selectedId === s.jobPostId;
                     return (
                       <S.ListCard
                         key={s.jobPostId}
                         type="button"
+                        $workStatus={workVariant}
                         $selected={isSelected}
                         onClick={() => toggleSelect(s.jobPostId)}
                       >
                         <S.ListCardTitle>{s.title}</S.ListCardTitle>
+                        <S.ListCardBadge $variant={workVariant}>
+                          {getWorkScheduleStatusLabel(s.applyStatus)}
+                        </S.ListCardBadge>
                         <S.ListCardMeta>
                           <Clock size={14} />
                           {s.workStart} - {s.workEnd}
@@ -170,7 +174,7 @@ export const HiredWeeklyTimetable = ({ schedules, currentDate, onPrev, onNext }:
 
             {weekDays.map((day, idx) => {
               const dateStr = formatDateStr(day);
-              const dayHired = hiredSchedules[dateStr] || [];
+              const dayHired = workSchedules[dateStr] || [];
               const isSaturday = idx === 5;
               const isSunday = idx === 6;
               const isToday = dateStr === todayStr;
@@ -198,6 +202,7 @@ export const HiredWeeklyTimetable = ({ schedules, currentDate, onPrev, onNext }:
                     ))}
 
                     {dayHired.map((s) => {
+                      const workVariant = getWorkScheduleBarVariant(s.applyStatus);
                       const startMin = timeToMinutes(s.workStart) - minHour * 60;
                       const endMin = timeToMinutes(s.workEnd) - minHour * 60;
                       const isSelected = selectedId === s.jobPostId;
@@ -206,6 +211,7 @@ export const HiredWeeklyTimetable = ({ schedules, currentDate, onPrev, onNext }:
                         <S.ScheduleBar
                           key={s.jobPostId}
                           data-bar
+                          $workStatus={workVariant}
                           $selected={isSelected}
                           $topDesktop={(startMin / 60) * DESKTOP_HOUR_HEIGHT}
                           $heightDesktop={Math.max(
@@ -326,15 +332,20 @@ const S = {
       color: ${({ theme }) => theme.color.subText};
     }
   `,
-  ListCard: styled.button<{ $selected: boolean }>`
+  ListCard: styled.button<{ $workStatus: 'hired' | 'completed'; $selected: boolean }>`
     width: 100%;
     text-align: left;
     padding: 12px 14px;
     border-radius: ${({ theme }) => theme.borderRadius.medium};
     background-color: ${({ theme, $selected }) =>
       $selected ? theme.color.secondary : theme.color.background};
-    border: ${({ theme, $selected }) =>
-      $selected ? `2px solid ${theme.color.primary}` : `1px solid ${theme.color.border}`};
+    border: ${({ theme, $selected, $workStatus }) => {
+      if ($selected) return `2px solid ${theme.color.primary}`;
+      if ($workStatus === 'completed') {
+        return `1px dashed color-mix(in srgb, ${theme.color.subText} 35%, transparent)`;
+      }
+      return `1px solid ${theme.color.border}`;
+    }};
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -342,6 +353,17 @@ const S = {
     transition: all 0.15s ease;
 
     ${hoverOverlay}
+  `,
+  ListCardBadge: styled.span<{ $variant: 'hired' | 'completed' }>`
+    align-self: flex-start;
+    font-size: 10px;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: ${({ theme, $variant }) =>
+      $variant === 'hired'
+        ? theme.color.border
+        : `color-mix(in srgb, ${theme.color.subText} 12%, transparent)`};
+    color: ${({ theme }) => theme.color.subText};
   `,
   ListCardTitle: styled.span`
     font-size: ${({ theme }) => theme.fontSize.small};
@@ -491,6 +513,7 @@ const S = {
     }
   `,
   ScheduleBar: styled.div<{
+    $workStatus: 'hired' | 'completed';
     $selected: boolean;
     $topDesktop: number;
     $heightDesktop: number;
@@ -506,8 +529,13 @@ const S = {
     border-radius: ${({ theme }) => theme.borderRadius.small};
     background-color: ${({ theme, $selected }) =>
       $selected ? theme.color.secondary : theme.color.background};
-    border: ${({ theme, $selected }) =>
-      $selected ? `2px solid ${theme.color.primary}` : `1px solid ${theme.color.border}`};
+    border: ${({ theme, $selected, $workStatus }) => {
+      if ($selected) return `2px solid ${theme.color.primary}`;
+      if ($workStatus === 'completed') {
+        return `1px dashed color-mix(in srgb, ${theme.color.subText} 35%, transparent)`;
+      }
+      return `1px solid ${theme.color.border}`;
+    }};
     display: flex;
     flex-direction: column;
     gap: 4px;
