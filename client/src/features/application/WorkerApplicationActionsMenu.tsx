@@ -1,17 +1,13 @@
 import { useMemo, useState } from 'react';
 import { isAxiosError } from 'axios';
-import type { ApplicationStatus } from 'entities/application/model/types/application.type';
+import { isPendingOfferFlow } from 'entities/application/lib/applicationFlow';
+import type { ApplicationStatus, InitiatedBy } from 'entities/application/model/types/application.type';
 import {
   useAcceptApproval,
   useAcceptOffer,
   useCancelApplication,
 } from 'entities/application/model/hooks/useApplication';
 import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
-import {
-  clearPendingFlowFlag,
-  isPendingAfterOfferAccept,
-  markPendingAfterOfferAccept,
-} from 'entities/application/lib/pendingFlowStorage';
 import { CardActionsMenu, type CardMenuItem } from 'shared/ui/CardActionsMenu/CardActionsMenu';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
@@ -22,16 +18,17 @@ type ModalType = 'acceptOffer' | 'acceptApproval' | 'cancel' | null;
 interface Props {
   applicationId: number;
   status: ApplicationStatus;
+  initiatedBy: InitiatedBy;
 }
 
-export const WorkerApplicationActionsMenu = ({ applicationId, status }: Props) => {
+export const WorkerApplicationActionsMenu = ({ applicationId, status, initiatedBy }: Props) => {
   const [modal, setModal] = useState<ModalType>(null);
   const errorModal = useErrorAlertModal();
   const { mutate: acceptOffer, isPending: isOfferPending } = useAcceptOffer();
   const { mutate: acceptApproval, isPending: isApprovalPending } = useAcceptApproval();
   const { mutate: cancelApplication, isPending: isCancelPending } = useCancelApplication();
 
-  const waitingEmployer = status === 'PENDING' && isPendingAfterOfferAccept(applicationId);
+  const waitingEmployer = status === 'PENDING' && isPendingOfferFlow(initiatedBy);
 
   const menuItems: CardMenuItem[] = useMemo(() => {
     switch (status) {
@@ -61,20 +58,14 @@ export const WorkerApplicationActionsMenu = ({ applicationId, status }: Props) =
 
   const handleAcceptOffer = () => {
     acceptOffer(applicationId, {
-      onSuccess: () => {
-        markPendingAfterOfferAccept(applicationId);
-        closeModal();
-      },
+      onSuccess: closeModal,
       onError: errorModal.onMutationError('제안 수락에 실패했습니다.'),
     });
   };
 
   const handleAcceptApproval = () => {
     acceptApproval(applicationId, {
-      onSuccess: () => {
-        clearPendingFlowFlag(applicationId);
-        closeModal();
-      },
+      onSuccess: closeModal,
       onError: (error) => {
         if (isAxiosError(error) && error.response?.status === 409) {
           errorModal.showError(error, '고용주의 최종 확정을 기다려 주세요.');

@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { getApiErrorMessage } from 'shared/lib/getApiErrorMessage';
-import { clearPendingFlowFlag, markPendingAfterOfferAccept } from '../../lib/pendingFlowStorage';
 import {
   acceptApplicant,
   rejectApplicant,
@@ -132,8 +131,7 @@ export const useAcceptOffer = () => {
 
   return useMutation({
     mutationFn: (applicationId: number) => acceptOffer(applicationId),
-    onSuccess: (_data, applicationId) => {
-      markPendingAfterOfferAccept(applicationId);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications'] });
     },
   });
@@ -145,8 +143,7 @@ export const useAcceptApproval = () => {
 
   return useMutation({
     mutationFn: (applicationId: number) => acceptApproval(applicationId),
-    onSuccess: (_data, applicationId) => {
-      clearPendingFlowFlag(applicationId);
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['applications'] });
     },
   });

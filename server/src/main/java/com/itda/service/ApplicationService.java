@@ -426,7 +426,8 @@ public class ApplicationService {
 
         verifyOwnership(application, userId);
 
-        if (application.getStatus() != ApplicationStatus.PENDING) {
+        if (application.getStatus() != ApplicationStatus.PENDING
+                || application.getInitiatedBy() != InitiatedBy.EMPLOYER) {
             throw new IllegalStateException("구직자가 제안을 수락한 상태에서만 최종 확정할 수 있습니다.");
         }
 

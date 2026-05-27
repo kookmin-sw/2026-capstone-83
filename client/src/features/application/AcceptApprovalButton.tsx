@@ -3,7 +3,6 @@ import { isAxiosError } from 'axios';
 import { Check } from 'lucide-react';
 import { useTheme } from 'styled-components';
 import { useAcceptApproval } from 'entities/application/model/hooks/useApplication';
-import { clearPendingFlowFlag } from 'entities/application/lib/pendingFlowStorage';
 import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
 import Modal, { ModalContent } from 'shared/ui/Modal/Modal';
@@ -28,10 +27,7 @@ export const AcceptApprovalButton = ({ applicationId }: Props) => {
 
   const handleConfirm = () => {
     mutate(applicationId, {
-      onSuccess: () => {
-        clearPendingFlowFlag(applicationId);
-        setIsModalOpen(false);
-      },
+      onSuccess: () => setIsModalOpen(false),
       onError: (error) => {
         if (isAxiosError(error) && error.response?.status === 409) {
           errorModal.showError(error, '고용주의 최종 확정을 기다려 주세요.');

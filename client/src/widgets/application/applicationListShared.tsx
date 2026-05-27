@@ -4,7 +4,7 @@ import { AcceptOfferButton } from 'features/application/AcceptOfferButton';
 import { AcceptApprovalButton } from 'features/application/AcceptApprovalButton';
 import { PendingEmployerConfirmNotice } from 'features/application/PendingEmployerConfirmNotice';
 import { RejectOfferButton } from 'features/application/RejectOfferButton';
-import { isPendingAfterOfferAccept } from 'entities/application/lib/pendingFlowStorage';
+import { isPendingOfferFlow } from 'entities/application/lib/applicationFlow';
 import { CardActionGroup } from 'shared/ui/CardActionGroup/CardActionGroup';
 
 export function groupApplicationsByStatus(applications: ApplicationWithJobPost[]) {
@@ -28,8 +28,7 @@ export function renderApplicationHeaderActions(app: ApplicationWithJobPost): Rea
     );
   }
   if (status === 'PENDING') {
-    const waitingEmployer = isPendingAfterOfferAccept(app.applicationId);
-    if (waitingEmployer) {
+    if (isPendingOfferFlow(app.initiatedBy)) {
       return (
         <>
           <PendingEmployerConfirmNotice />

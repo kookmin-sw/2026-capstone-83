@@ -10,7 +10,8 @@
     "location": "서울 성동구",
     "matchCount": 12,
     "status": "APPLIED",
-    "appliedAt": "2026-05-10"
+    "appliedAt": "2026-05-10",
+    "initiatedBy": "APPLICANT"
   },
   {
     "applicationId": 2,
@@ -23,7 +24,8 @@
     "location": "서울 강남구",
     "matchCount": 5,
     "status": "APPLIED",
-    "appliedAt": "2026-05-11"
+    "appliedAt": "2026-05-11",
+    "initiatedBy": "APPLICANT"
   },
   {
     "applicationId": 3,
@@ -36,7 +38,8 @@
     "location": "서울 마포구",
     "matchCount": 20,
     "status": "PENDING",
-    "appliedAt": "2026-05-09"
+    "appliedAt": "2026-05-09",
+    "initiatedBy": "EMPLOYER"
   },
   {
     "applicationId": 4,
@@ -49,7 +52,8 @@
     "location": "서울 송파구",
     "matchCount": 8,
     "status": "PENDING",
-    "appliedAt": "2026-05-08"
+    "appliedAt": "2026-05-08",
+    "initiatedBy": "APPLICANT"
   },
   {
     "applicationId": 5,
@@ -62,7 +66,8 @@
     "location": "경기 수원시",
     "matchCount": 30,
     "status": "HIRED",
-    "appliedAt": "2026-05-07"
+    "appliedAt": "2026-05-07",
+    "initiatedBy": "APPLICANT"
   },
   {
     "applicationId": 6,
@@ -75,7 +80,8 @@
     "location": "서울 용산구",
     "matchCount": 15,
     "status": "HIRED",
-    "appliedAt": "2026-05-06"
+    "appliedAt": "2026-05-06",
+    "initiatedBy": "EMPLOYER"
   },
   {
     "applicationId": 7,
@@ -88,7 +94,8 @@
     "location": "서울 관악구",
     "matchCount": 3,
     "status": "APPLIED",
-    "appliedAt": "2026-05-12"
+    "appliedAt": "2026-05-12",
+    "initiatedBy": "APPLICANT"
   },
   {
     "applicationId": 8,
@@ -101,6 +108,7 @@
     "location": "서울 서초구",
     "matchCount": 10,
     "status": "PENDING",
-    "appliedAt": "2026-05-10"
+    "appliedAt": "2026-05-10",
+    "initiatedBy": "EMPLOYER"
   }
 ]

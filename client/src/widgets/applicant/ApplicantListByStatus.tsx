@@ -13,6 +13,7 @@ import {
 import type { ApplicantResponse, ApplicationStatus } from 'entities/application/model/types/application.type';
 import { ApplicantCard } from 'entities/application/ui/ApplicantCard';
 import { AcceptApplicantButton } from 'features/applicant/AcceptApplicantButton';
+import { canEmployerConfirmPending } from 'entities/application/lib/applicationFlow';
 import { ConfirmHireButton } from 'features/applicant/ConfirmHireButton';
 import { RejectApplicantButton } from 'features/applicant/RejectApplicantButton';
 import { CancelHireButton } from 'features/applicant/CancelHireButton';
@@ -112,7 +113,9 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
       case 'PENDING':
         return (
           <CardActionGroup>
-            <ConfirmHireButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
+            {canEmployerConfirmPending(applicant.initiatedBy) && (
+              <ConfirmHireButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
+            )}
             <RejectApplicantButton applicationId={applicant.applicationId} jobPostId={jobPostId} />
           </CardActionGroup>
         );

@@ -10,6 +10,9 @@ export type ApplicationStatus =
   | 'COMPLETED'
   | 'CANCELLED';
 
+/** 지원·제안 원천 (서버 InitiatedBy) */
+export type InitiatedBy = 'APPLICANT' | 'EMPLOYER';
+
 /** GET /worker/applications 응답의 jobPost 필드 */
 export interface JobPostInApplicationResponse {
   id: number;
@@ -40,6 +43,8 @@ export interface ApplicationResponse {
   jobPost: JobPostInApplicationResponse;
   /** 공고 등록 고용주 User ID (구직자 → 고용주 신고) */
   employerUserId?: number;
+  instantHire?: boolean;
+  initiatedBy: InitiatedBy;
 }
 
 export function applicationStatusToApplyStatus(status: ApplicationStatus): ApplyStatus {
@@ -62,7 +67,7 @@ export function applicationStatusToApplyStatus(status: ApplicationStatus): Apply
 
 /** API 응답 → JobPostCard 렌더용 타입 */
 export function toApplicationWithJobPost(item: ApplicationResponse): ApplicationWithJobPost {
-  const { jobPost, status, applicationId, appliedAt, employerUserId } = item;
+  const { jobPost, status, applicationId, appliedAt, employerUserId, initiatedBy } = item;
 
   return {
     id: jobPost.id,
@@ -84,6 +89,7 @@ export function toApplicationWithJobPost(item: ApplicationResponse): Application
     applicationStatus: status,
     appliedAt: appliedAt ?? '',
     employerUserId,
+    initiatedBy,
   };
 }
 
@@ -93,6 +99,7 @@ export interface ApplicationWithJobPost extends JobPost {
   applicationStatus: ApplicationStatus;
   appliedAt: string;
   employerUserId?: number;
+  initiatedBy: InitiatedBy;
 }
 
 export interface ApplicantResponse {
@@ -108,6 +115,8 @@ export interface ApplicantResponse {
   matchCount: number;
   status: ApplicationStatus;
   appliedAt: string;
+  instantHire?: boolean;
+  initiatedBy: InitiatedBy;
 }
 
 export type ApplicantListCursor = CursorResponse<ApplicantResponse>;

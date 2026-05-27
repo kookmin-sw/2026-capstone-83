@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
-import type { ApplicationStatus } from 'entities/application/model/types/application.type';
+import { canEmployerConfirmPending } from 'entities/application/lib/applicationFlow';
+import type { ApplicationStatus, InitiatedBy } from 'entities/application/model/types/application.type';
 import {
   useAcceptApplicant,
   useCancelHire,
@@ -20,6 +21,7 @@ interface Props {
   jobPostId: number;
   userId: number;
   status: ApplicationStatus;
+  initiatedBy: InitiatedBy;
 }
 
 export const EmployerApplicantActionsMenu = ({
@@ -27,6 +29,7 @@ export const EmployerApplicantActionsMenu = ({
   jobPostId,
   userId,
   status,
+  initiatedBy,
 }: Props) => {
   const [modal, setModal] = useState<ModalType>(null);
   const errorModal = useErrorAlertModal();
@@ -46,10 +49,12 @@ export const EmployerApplicantActionsMenu = ({
       case 'OFFERED':
         return [{ label: '거절', onClick: () => setModal('reject'), tone: 'danger' }];
       case 'PENDING':
-        return [
-          { label: '채용 확정', onClick: () => setModal('confirmHire'), tone: 'primary' },
-          { label: '거절', onClick: () => setModal('reject'), tone: 'danger' },
-        ];
+        return canEmployerConfirmPending(initiatedBy)
+          ? [
+              { label: '채용 확정', onClick: () => setModal('confirmHire'), tone: 'primary' },
+              { label: '거절', onClick: () => setModal('reject'), tone: 'danger' },
+            ]
+          : [{ label: '거절', onClick: () => setModal('reject'), tone: 'danger' }];
       case 'REJECTED':
         return [{ label: '채용 제안', onClick: () => setModal('offer'), tone: 'primary' }];
       case 'HIRED':
@@ -57,7 +62,7 @@ export const EmployerApplicantActionsMenu = ({
       default:
         return [];
     }
-  }, [status]);
+  }, [status, initiatedBy]);
 
   if (menuItems.length === 0) return null;
 

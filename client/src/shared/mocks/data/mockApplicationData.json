@@ -17,7 +17,8 @@
     "deadline": "2026/05/05",
     "liked": false,
     "applicationStatus": "APPLIED",
-    "appliedAt": "2026-05-01"
+    "appliedAt": "2026-05-01",
+    "initiatedBy": "APPLICANT"
   },
   {
     "applicationId": 2,
@@ -37,7 +38,8 @@
     "deadline": "2026/05/08",
     "liked": true,
     "applicationStatus": "PENDING",
-    "appliedAt": "2026-05-02"
+    "appliedAt": "2026-05-02",
+    "initiatedBy": "APPLICANT"
   },
   {
     "applicationId": 3,
@@ -57,7 +59,8 @@
     "deadline": "2026/05/03",
     "liked": false,
     "applicationStatus": "HIRED",
-    "appliedAt": "2026-04-28"
+    "appliedAt": "2026-04-28",
+    "initiatedBy": "APPLICANT"
   },
   {
     "applicationId": 4,
@@ -77,7 +80,8 @@
     "deadline": "2026/05/12",
     "liked": false,
     "applicationStatus": "APPLIED",
-    "appliedAt": "2026-05-05"
+    "appliedAt": "2026-05-05",
+    "initiatedBy": "APPLICANT"
   },
   {
     "applicationId": 5,
@@ -97,7 +101,8 @@
     "deadline": "2026/05/14",
     "liked": true,
     "applicationStatus": "PENDING",
-    "appliedAt": "2026-05-06"
+    "appliedAt": "2026-05-06",
+    "initiatedBy": "EMPLOYER"
   },
   {
     "applicationId": 6,
@@ -117,7 +122,8 @@
     "deadline": "2026/05/02",
     "liked": false,
     "applicationStatus": "HIRED",
-    "appliedAt": "2026-04-25"
+    "appliedAt": "2026-04-25",
+    "initiatedBy": "EMPLOYER"
   },
   {
     "applicationId": 7,
@@ -137,6 +143,7 @@
     "deadline": "2026/05/16",
     "liked": false,
     "applicationStatus": "REJECTED",
-    "appliedAt": "2026-05-10"
+    "appliedAt": "2026-05-10",
+    "initiatedBy": "APPLICANT"
   }
 ]
