@@ -42,6 +42,15 @@ const Header = () => {
   const notiRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
 
+  const navItems =
+    role === 'MANAGER'
+      ? NAV_ITEMS.map((item) =>
+          item.path === '/dashboard'
+            ? { label: '관리자 대시보드', path: '/admin' }
+            : item,
+        )
+      : NAV_ITEMS;
+
   // 알림 데이터는 App의 useNotificationSSE에서 초기 로드됨
 
   // 외부 클릭 시 드롭다운 닫기
@@ -69,7 +78,7 @@ const Header = () => {
             </Link>
 
             <S.Nav>
-              {NAV_ITEMS.map(({ label, path }) => (
+              {navItems.map(({ label, path }) => (
                 <S.NavLink
                   key={path}
                   to={path}
@@ -148,17 +157,14 @@ const Header = () => {
                 <S.DropdownMenu>
                   {isLoggedIn ? (
                     <>
-                      {role === 'MANAGER' && (
-                        <S.DropdownItem onClick={() => { navigate('/admin'); setIsUserOpen(false); }}>
-                          관리자 페이지
-                        </S.DropdownItem>
-                      )}
                       {role !== 'MANAGER' && (
-                        <S.DropdownItem onClick={() => { navigate('/dashboard/settings'); setIsUserOpen(false); }}>
-                          회원 정보
-                        </S.DropdownItem>
+                        <>
+                          <S.DropdownItem onClick={() => { navigate('/dashboard/settings'); setIsUserOpen(false); }}>
+                            회원 정보
+                          </S.DropdownItem>
+                          <S.DropdownDivider />
+                        </>
                       )}
-                      <S.DropdownDivider />
                       <S.DropdownItem onClick={() => { logoutMutate(); setIsUserOpen(false); }}>
                         로그아웃
                       </S.DropdownItem>
