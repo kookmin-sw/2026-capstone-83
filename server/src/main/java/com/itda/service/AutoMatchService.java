@@ -88,7 +88,7 @@ public class AutoMatchService {
             }
 
             try {
-                txSupport.tryCreate(event.userId(), jobPost.getId());
+                txSupport.tryCreate(event.userId(), jobPost.getId(), event.availabilityId());
             } catch (Exception e) {
                 log.warn("[AutoMatch] availabilityEvent 매칭 실패 — userId={}, jobPostId={}, err={}",
                         event.userId(), jobPost.getId(), e.getMessage());
@@ -126,7 +126,7 @@ public class AutoMatchService {
 
         for (Long applicantUserId : applicantUserIds) {
             try {
-                txSupport.tryCreate(applicantUserId, event.jobPostId());
+                txSupport.tryCreate(applicantUserId, event.jobPostId(), null);
             } catch (Exception e) {
                 log.warn("[AutoMatch] jobPostEvent 매칭 실패 — applicantUserId={}, jobPostId={}, err={}",
                         applicantUserId, event.jobPostId(), e.getMessage());

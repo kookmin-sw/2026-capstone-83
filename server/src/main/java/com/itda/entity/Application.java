@@ -38,6 +38,10 @@ public class Application {
     @Column(name = "applied_at", updatable = false)
     private LocalDateTime appliedAt;
 
+    // 자동 매칭으로 생성된 경우, 원인이 된 가용시간 슬롯 ID
+    @Column(name = "source_availability_id")
+    private Long sourceAvailabilityId;
+
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 

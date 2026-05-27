@@ -146,4 +146,7 @@ public interface ApplicationRepository extends JpaRepository<Application, Long> 
           )
         """)
     List<Application> findUnreviewedCompletedApplications(@Param("deadline") LocalDateTime deadline);
+
+    // 가용시간 삭제 시 자동 매칭된 APPLIED 지원 조회
+    List<Application> findBySourceAvailabilityIdAndStatus(Long sourceAvailabilityId, ApplicationStatus status);
 }

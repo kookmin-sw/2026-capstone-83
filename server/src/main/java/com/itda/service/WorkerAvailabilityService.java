@@ -5,10 +5,13 @@ import com.itda.dto.request.WorkerAvailabilityUpdateRequest;
 import com.itda.dto.response.WorkerAvailabilityResponse;
 import com.itda.entity.User;
 import com.itda.entity.WorkerAvailability;
+import com.itda.entity.Application;
+import com.itda.enums.ApplicationStatus;
 import com.itda.enums.UserRole;
 import com.itda.exception.DuplicateException;
 import com.itda.exception.NotFoundException;
 import com.itda.repository.WorkerAvailabilityRepository;
+import com.itda.repository.ApplicationRepository;
 import com.itda.service.event.AutoMatchEvents;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -27,6 +30,7 @@ import java.util.List;
 public class WorkerAvailabilityService {
 
     private final WorkerAvailabilityRepository availabilityRepository;
+    private final ApplicationRepository applicationRepository;
     private final ApplicationEventPublisher eventPublisher;
 
     // ─── 생성 ────────────────────────────────────────────────────
@@ -138,6 +142,15 @@ public class WorkerAvailabilityService {
     public void delete(User user, Long id) {
         verifyApplicantRole(user);
         WorkerAvailability slot = findOwnedSlot(user, id);
+
+        // 해당 가용시간으로 자동 매칭된 APPLIED 상태 지원을 취소
+        List<Application> autoMatchedApplications =
+                applicationRepository.findBySourceAvailabilityIdAndStatus(id, ApplicationStatus.APPLIED);
+        for (Application app : autoMatchedApplications) {
+            app.cancel();
+        }
+        applicationRepository.saveAll(autoMatchedApplications);
+
         availabilityRepository.delete(slot);
     }
 

@@ -51,7 +51,7 @@ public class AutoMatchTransactionalSupport {
      * @param jobPostId       대표 JobPost ID
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void tryCreate(Long applicantUserId, Long jobPostId) {
+    public void tryCreate(Long applicantUserId, Long jobPostId, Long sourceAvailabilityId) {
         // 지원 이력이 한 번이라도 있으면 자동 재매칭하지 않는다.
         // REJECTED/CANCELLED 포함 — 재지원은 구직자가 수동으로만 가능.
         Optional<Application> existing =
@@ -73,6 +73,7 @@ public class AutoMatchTransactionalSupport {
                 .applicantUser(applicant)
                 .status(ApplicationStatus.APPLIED)
                 .initiatedBy(InitiatedBy.APPLICANT)
+                .sourceAvailabilityId(sourceAvailabilityId)
                 .build());
 
         notificationService.notify(
