@@ -44,8 +44,10 @@ public class Workplace {
     /**
      * 사업장 행정구역 — 시/구 단위 (예: "서울 강남구").
      * 자동 매칭 지역 필터 및 공고 카드 지역 표시에 사용된다.
+     * nullable = true: ddl-auto:update 가 기존 rows 가 있는 테이블에 NOT NULL 컬럼을 추가할 수 없어서
+     * nullable로 선언한다. API 레이어(@NotBlank)에서 신규 등록 시 필수값 검증을 수행한다.
      */
-    @Column(nullable = false, length = 50)
+    @Column(length = 50)
     private String district;
 
     // 회사 로고 이미지 S3 URL (공고 카드에 표시)
