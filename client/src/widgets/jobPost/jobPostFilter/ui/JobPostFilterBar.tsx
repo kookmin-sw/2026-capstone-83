@@ -2,6 +2,12 @@ import { useState } from 'react';
 import styled from 'styled-components';
 import { RotateCcw, Search, SlidersHorizontal, X } from 'lucide-react';
 import type { GetJobPostsParams, TimeTag, WageType } from 'entities/jobPost/model/types/jobPost.type';
+import type { JobPostSortUiState } from 'entities/jobPost/lib/jobPostSort';
+import {
+  DEFAULT_JOB_POST_SORT,
+  isJobPostSortOptionActive,
+  toggleJobPostSort,
+} from 'entities/jobPost/lib/jobPostSort';
 import type { CertificateType } from 'shared/types/certificate';
 import { CERTIFICATE_LABEL } from 'shared/types/certificate';
 import Button from 'shared/ui/Button/Button';
@@ -32,9 +38,9 @@ const CERT_OPTIONS = (Object.keys(CERTIFICATE_LABEL) as CertificateType[]).map((
   value: key,
 }));
 
-const DEFAULT_SORT: GetJobPostsParams['sortType'] = 'RECOMMENDED';
+const DEFAULT_SORT = DEFAULT_JOB_POST_SORT;
 
-const RESET_FILTER_PARAMS: Partial<GetJobPostsParams> = {
+const RESET_FILTER_PARAMS: Partial<GetJobPostsParams> & { sortUiState?: JobPostSortUiState } = {
   keyword: undefined,
   location: undefined,
   locations: undefined,
@@ -55,14 +61,16 @@ const RESET_FILTER_PARAMS: Partial<GetJobPostsParams> = {
   timeFrom: undefined,
   timeTo: undefined,
   sortType: undefined,
+  sortUiState: undefined,
 };
 
 interface Props {
   activeFilters: GetJobPostsParams;
-  onFilterChange: (params: Partial<GetJobPostsParams>) => void;
+  sortUiState?: JobPostSortUiState;
+  onFilterChange: (params: Partial<GetJobPostsParams> & { sortUiState?: JobPostSortUiState }) => void;
 }
 
-export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
+export const JobPostFilterBar = ({ activeFilters, sortUiState, onFilterChange }: Props) => {
   const [keyword, setKeyword] = useState(activeFilters.keyword || '');
   const [isFilterOpen, setIsFilterOpen] = useState(true);
 
@@ -91,9 +99,9 @@ export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
     if (e.key === 'Enter') handleSearch();
   };
 
-  // 정렬은 즉시 반영 (UX 관례)
-  const handleSortChange = (sort: GetJobPostsParams['sortType']) => {
-    onFilterChange({ sortType: sort });
+  // 정렬은 즉시 반영 — 같은 옵션 재클릭 시 해제 (기본 추천순은 sortUiState undefined)
+  const handleSortChange = (sort: NonNullable<GetJobPostsParams['sortType']>) => {
+    onFilterChange({ sortUiState: toggleJobPostSort(sortUiState, sort) });
   };
 
   const toggleDraftTimeTag = (tag: TimeTag) => {
@@ -134,7 +142,7 @@ export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
     !!activeFilters.wageType ||
     (activeFilters.timeTags?.length ?? 0) > 0 ||
     (activeFilters.certRequirements?.length ?? 0) > 0 ||
-    (activeFilters.sortType != null && activeFilters.sortType !== DEFAULT_SORT);
+    (sortUiState != null && sortUiState !== 'cleared' && sortUiState !== DEFAULT_SORT);
 
   const hasDraftFilters =
     !!keyword ||
@@ -193,7 +201,7 @@ export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
             <Button
               key={opt.value}
               type="button"
-              scheme={(activeFilters.sortType ?? DEFAULT_SORT) === opt.value ? 'optionActive' : 'option'}
+              scheme={isJobPostSortOptionActive(sortUiState, opt.value) ? 'optionActive' : 'option'}
               buttonSize="xsmall"
               fontSize="xsmall"
               borderRadius="round"
