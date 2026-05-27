@@ -68,6 +68,10 @@ public record JobPostFilterRequest(
         // 그 외: 최신순(id desc)
         String sortType,
 
+        // ─── 급구 필터 ───────────────────────────────────
+        // true면 urgentEnabled=true인 공고만 조회
+        Boolean urgentOnly,
+
         // ─── 하위 호환용 단일 값 필드 (legacy) ────────────
         String jobCategory,
         String jobSubcategory,

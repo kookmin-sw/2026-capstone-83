@@ -151,6 +151,11 @@ public class JobPostRepositoryImpl implements JobPostRepositoryCustom {
         // ─── 8-2. 우대 조건 (benefits 컬럼) ──────────────
         appendJsonContainsAny(jpql, params, "ben", "j.benefits", req.benefits());
 
+        // ─── 9. 급구 필터 ────────────────────────────────
+        if (Boolean.TRUE.equals(req.urgentOnly())) {
+            jpql.append(" AND j.urgentEnabled = true");
+        }
+
         // ─── 정렬 ────────────────────────────────────────
         jpql.append(buildOrderBy(req.sortType()));
 
