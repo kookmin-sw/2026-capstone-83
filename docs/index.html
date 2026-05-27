@@ -154,7 +154,7 @@
             </svg>
           </div>
           <h3>일용직 특화 공고 탐색</h3>
-          <p>단기·일용직 공고만 필터링하여 한곳에서 탐색. 날짜·지역·직종별 검색과 무한스크롤로 빠르게 원하는 일자리를 찾을 수 있습니다.</p>
+          <p>단기·일용직 공고만 필터링하여 한곳에서 탐색. 맞춤 추천 알고리즘으로 추천순 조회가 가능하며, 날짜·지역·직종별 검색과 무한 스크롤로 빠르게 원하는 일자리를 찾을 수 있습니다.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">
@@ -181,24 +181,26 @@
         <div class="feature-card">
           <div class="feature-icon">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+              <path
+                d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+              <path d="M5 3v4" />
+              <path d="M19 17v4" />
+              <path d="M3 5h4" />
+              <path d="M17 19h4" />
             </svg>
           </div>
-          <h3>역할 기반 맞춤 서비스</h3>
-          <p>구직자와 고용주 역할을 구분하여 각각 최적화된 대시보드와 기능을 제공. 카카오 소셜 로그인과 JWT 인증으로 간편하고 안전합니다.</p>
+          <h3>자동 채용·제안 시스템</h3>
+          <p>고용주는 조건에 맞는 지원자에게 일괄 제안을 보내고, 시스템 자동 매칭 결과를 알림으로 받을 수 있습니다. 지원부터 제안·채용까지 파이프라인을 한곳에서 이어 갑니다.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
-              <circle cx="12" cy="10" r="3" />
+              <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+              <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
             </svg>
           </div>
-          <h3>사업장 & 네이버 지도</h3>
-          <p>사업장 등록 시 주소 검색과 네이버 지도 연동으로 근무지 위치를 직관적으로 제공. 구직자가 거리 기반으로 일자리를 판단할 수 있습니다.</p>
+          <h3>실시간 알림</h3>
+          <p>지원 접수, 제안 수락, 채용 확정, 근무 완료 등 주요 이벤트를 SSE 기반으로 즉시 알려 드립니다. 헤더 알림과 알림 센터에서 놓치는 일 없이 진행 상황을 확인할 수 있습니다.</p>
         </div>
         <div class="feature-card">
           <div class="feature-icon">
@@ -236,7 +238,7 @@
           </ul>
         </div>
         <div class="feature-showcase-media">
-          <img src="./assets/jobpostlist.png" alt="공고 목록 화면 — 추천, 필터, 무한 스크롤" loading="lazy" />
+          <img src="./assets/RecommendedJobPostList.png" alt="추천순 공고 목록 화면 — 맞춤 추천, 필터, 무한 스크롤" loading="lazy" />
         </div>
       </article>
 
@@ -257,6 +259,21 @@
 
       <article class="feature-showcase">
         <div class="feature-showcase-content">
+          <h3>자동 채용·고용 제안 시스템</h3>
+          <ul class="feature-showcase-list">
+            <li>구직자는 주간 가용 시간표로 근무 가능 시간을 등록해 두면, 시스템이 공고 일정과 맞춰 자동 매칭·제안에 활용할 수 있습니다.</li>
+            <li>고용주는 모집 중인 공고에 지원한 인원에게 일괄 고용 제안을 보내고, 수락·거절 응답을 한 화면에서 처리합니다.</li>
+            <li>제안부터 채용 확정까지 상태가 알림과 연동되어 빠르게 인력을 확정할 수 있습니다.</li>
+          </ul>
+        </div>
+        <div class="feature-showcase-media feature-showcase-media--duo">
+          <img src="./assets/AvailableTable.png" alt="구직자 주간 가용 시간표 화면" loading="lazy" />
+          <img src="./assets/bulkOffer.png" alt="일괄 고용 제안 화면" loading="lazy" />
+        </div>
+      </article>
+
+      <article class="feature-showcase feature-showcase--reverse">
+        <div class="feature-showcase-content">
           <h3>공고 템플릿 자동화</h3>
           <ul class="feature-showcase-list">
             <li>반복되는 공고 정보를 템플릿으로 저장해 두고 빠르게 재사용합니다.</li>
@@ -268,7 +285,7 @@
         </div>
       </article>
 
-      <article class="feature-showcase feature-showcase--reverse">
+      <article class="feature-showcase">
         <div class="feature-showcase-content">
           <h3>인력 관리</h3>
           <ul class="feature-showcase-list">
@@ -278,7 +295,7 @@
           </ul>
         </div>
         <div class="feature-showcase-media">
-          <img src="./assets/applicants.png" alt="지원자 목록 및 채용 관리 화면" loading="lazy" />
+          <img src="./assets/applicantList.png" alt="지원자 목록 및 채용 관리 화면" loading="lazy" />
         </div>
       </article>
     </div>
@@ -308,18 +325,20 @@
           </div>
           <div class="arch-tree">
             <pre><code>client/src/
-├── <span class="tree-folder">app/</span>          <span class="tree-comment"># 앱 진입점, 라우터, 테마</span>
+├── <span class="tree-folder">app/</span>          <span class="tree-comment"># 진입점, 라우터, 레이아웃, 가드</span>
 ├── <span class="tree-folder">pages/</span>        <span class="tree-comment"># 페이지 컴포넌트</span>
 │   ├── auth/        <span class="tree-comment">(로그인, 회원가입)</span>
-│   ├── JobPost/     <span class="tree-comment">(공고 CRUD)</span>
+│   ├── JobPost/     <span class="tree-comment">(공고 목록·CRUD)</span>
 │   ├── Resume/      <span class="tree-comment">(이력서 CRUD)</span>
-│   └── dashboard/   <span class="tree-comment">(대시보드)</span>
-├── <span class="tree-folder">widgets/</span>      <span class="tree-comment"># 조합된 UI 블록</span>
-├── <span class="tree-folder">features/</span>     <span class="tree-comment"># 사용자 액션 단위</span>
+│   ├── dashboard/   <span class="tree-comment">(대시보드·캘린더·알림·인재풀)</span>
+│   └── admin/       <span class="tree-comment">(매니저: 유저·신고·지표)</span>
+├── <span class="tree-folder">widgets/</span>      <span class="tree-comment"># header, calendar, landing…</span>
+├── <span class="tree-folder">features/</span>     <span class="tree-comment"># offer, application, review…</span>
 ├── <span class="tree-folder">entities/</span>     <span class="tree-comment"># 도메인 모델</span>
 │   ├── jobPost, resume, application
-│   ├── user, workplace, schedule
-│   └── auth
+│   ├── notification, schedule, workplace
+│   ├── review, report, manager
+│   └── workerAvailability
 └── <span class="tree-folder">shared/</span>       <span class="tree-comment"># 공통 UI, API, 유틸</span></code></pre>
           </div>
         </div>
@@ -339,20 +358,24 @@
           </div>
           <div class="arch-tree">
             <pre><code>server/src/main/java/com/itda/
-├── <span class="tree-folder">config/</span>       <span class="tree-comment"># Security, JWT 설정</span>
-├── <span class="tree-folder">controller/</span>   <span class="tree-comment"># REST API 엔드포인트</span>
-│   ├── AuthController
-│   ├── JobPostController
-│   ├── ResumeController
-│   └── ApplicationController
+├── <span class="tree-folder">config/</span>       <span class="tree-comment"># Security, JWT, S3, Async</span>
+├── <span class="tree-folder">controller/</span>   <span class="tree-comment"># REST API</span>
+│   ├── Auth, User, JobPost, Application
+│   ├── Resume, Workplace, Notification
+│   ├── Review, Report, Calendar, Like
+│   └── ManagerUser, ManagerMetrics
 ├── <span class="tree-folder">service/</span>      <span class="tree-comment"># 비즈니스 로직</span>
+│   ├── JobPostRanking, AutoMatch
+│   └── Notification (SSE)
 ├── <span class="tree-folder">repository/</span>   <span class="tree-comment"># JPA Repository</span>
 ├── <span class="tree-folder">entity/</span>       <span class="tree-comment"># JPA 엔티티</span>
 │   ├── User, Employer, Manager
 │   ├── JobPost, Resume, Application
-│   └── Workplace, Career
+│   ├── Workplace, WorkerAvailability
+│   └── Notification, Report, Review
 ├── <span class="tree-folder">dto/</span>          <span class="tree-comment"># Request/Response DTO</span>
-└── <span class="tree-folder">enums/</span>        <span class="tree-comment"># 열거형 상수</span></code></pre>
+├── <span class="tree-folder">enums/</span>        <span class="tree-comment"># 열거형 상수</span>
+└── <span class="tree-folder">exception/</span>    <span class="tree-comment"># 전역 예외 처리</span></code></pre>
           </div>
         </div>
       </div>
@@ -384,7 +407,7 @@
               <div class="stack-item-desc">타입 안전성</div>
             </div>
             <div class="stack-item">
-              <div class="stack-item-name">Vite</div>
+              <div class="stack-item-name">Vite 8</div>
               <div class="stack-item-desc">빌드 도구</div>
             </div>
             <div class="stack-item">
@@ -410,6 +433,10 @@
             <div class="stack-item">
               <div class="stack-item-name">MSW</div>
               <div class="stack-item-desc">API 모킹</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">Vitest</div>
+              <div class="stack-item-desc">단위·컴포넌트 테스트</div>
             </div>
           </div>
         </div>
@@ -445,8 +472,12 @@
               <div class="stack-item-desc">소셜 로그인</div>
             </div>
             <div class="stack-item">
-              <div class="stack-item-name">MySQL</div>
-              <div class="stack-item-desc">데이터베이스</div>
+              <div class="stack-item-name">AWS RDS MySQL 8</div>
+              <div class="stack-item-desc">관계형 데이터베이스</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">SSE</div>
+              <div class="stack-item-desc">실시간 알림 푸시</div>
             </div>
             <div class="stack-item">
               <div class="stack-item-name">Lombok</div>
@@ -458,24 +489,40 @@
         <div class="stack-category">
           <h3 class="stack-category-title">
             <span class="stack-dot infra-dot"></span>
-            Infra & Tools
+            Infra & Deploy
           </h3>
           <div class="stack-items">
             <div class="stack-item">
+              <div class="stack-item-name">AWS EC2</div>
+              <div class="stack-item-desc">백엔드 서버 호스팅</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">AWS S3</div>
+              <div class="stack-item-desc">이미지·정적 파일 저장</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">AWS Lambda</div>
+              <div class="stack-item-desc">이미지 리사이징</div>
+            </div>
+            <div class="stack-item">
+              <div class="stack-item-name">GitHub Actions</div>
+              <div class="stack-item-desc">CI/CD</div>
+            </div>
+            <div class="stack-item">
               <div class="stack-item-name">Gradle</div>
-              <div class="stack-item-desc">빌드 자동화</div>
+              <div class="stack-item-desc">백엔드 빌드</div>
             </div>
             <div class="stack-item">
               <div class="stack-item-name">ESLint</div>
-              <div class="stack-item-desc">코드 린팅</div>
+              <div class="stack-item-desc">프론트 코드 린팅</div>
             </div>
             <div class="stack-item">
               <div class="stack-item-name">Naver Maps API</div>
-              <div class="stack-item-desc">지도 서비스</div>
+              <div class="stack-item-desc">사업장 지도·주소</div>
             </div>
             <div class="stack-item">
               <div class="stack-item-name">Kakao OAuth</div>
-              <div class="stack-item-desc">소셜 인증</div>
+              <div class="stack-item-desc">소셜 로그인</div>
             </div>
           </div>
         </div>

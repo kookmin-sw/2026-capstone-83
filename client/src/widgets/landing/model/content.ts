@@ -1,10 +1,12 @@
-import jobpostlistImg from 'shared/assets/jobpostlist.png';
+import recommendedJobPostListImg from 'shared/assets/RecommendedJobPostList.png';
 import calendarImg from 'shared/assets/calendar.png';
 import timetableImg from 'shared/assets/timetable.png';
 import postTemplateImg from 'shared/assets/postTemplate.png';
-import applicantsImg from 'shared/assets/applicants.png';
+import applicantListImg from 'shared/assets/applicantList.png';
+import availableTableImg from 'shared/assets/AvailableTable.png';
+import bulkOfferImg from 'shared/assets/bulkOffer.png';
 import type { LucideIcon } from 'lucide-react';
-import { Calendar, CheckCircle, FileText, MapPin, Search, Users } from 'lucide-react';
+import { Bell, Calendar, CheckCircle, FileText, Search, Sparkles } from 'lucide-react';
 
 export const GITHUB_REPO_URL = 'https://github.com/kookmin-sw/2026-capstone-83';
 
@@ -19,7 +21,7 @@ export const CORE_FEATURES: CoreFeatureItem[] = [
     icon: Search,
     title: '일용직 특화 공고 탐색',
     description:
-      '단기·일용직 공고만 필터링하여 한곳에서 탐색. 날짜·지역·직종별 검색과 무한스크롤로 빠르게 원하는 일자리를 찾을 수 있습니다.',
+      '단기·일용직 공고만 필터링하여 한곳에서 탐색. 맞춤 추천 알고리즘으로 추천순 조회가 가능하며, 날짜·지역·직종별 검색과 무한 스크롤로 빠르게 원하는 일자리를 찾을 수 있습니다.',
   },
   {
     icon: CheckCircle,
@@ -34,16 +36,16 @@ export const CORE_FEATURES: CoreFeatureItem[] = [
       '고용주 전용 캘린더 대시보드로 일별 필요 인력과 배치 현황을 시각적으로 파악하고, 공고 등록부터 지원자 확정까지 한 화면에서 관리합니다.',
   },
   {
-    icon: Users,
-    title: '역할 기반 맞춤 서비스',
+    icon: Sparkles,
+    title: '자동 채용·제안 시스템',
     description:
-      '구직자와 고용주 역할을 구분하여 각각 최적화된 대시보드와 기능을 제공. 카카오 소셜 로그인과 JWT 인증으로 간편하고 안전합니다.',
+      '고용주는 조건에 맞는 지원자에게 일괄 제안을 보내고, 시스템 자동 매칭 결과를 알림으로 받을 수 있습니다. 지원부터 제안·채용까지 파이프라인을 한곳에서 이어 갑니다.',
   },
   {
-    icon: MapPin,
-    title: '사업장 & 네이버 지도',
+    icon: Bell,
+    title: '실시간 알림',
     description:
-      '사업장 등록 시 주소 검색과 네이버 지도 연동으로 근무지 위치를 직관적으로 제공. 구직자가 거리 기반으로 일자리를 판단할 수 있습니다.',
+      '지원 접수, 제안 수락, 채용 확정, 근무 완료 등 주요 이벤트를 SSE 기반으로 즉시 알려 드립니다. 헤더 알림과 알림 센터에서 놓치는 일 없이 진행 상황을 확인할 수 있습니다.',
   },
   {
     icon: FileText,
@@ -78,8 +80,8 @@ export const FEATURE_SHOWCASES: FeatureShowcaseItem[] = [
     ],
     images: [
       {
-        src: jobpostlistImg,
-        alt: '공고 목록 화면 — 추천, 필터, 무한 스크롤',
+        src: recommendedJobPostListImg,
+        alt: '추천순 공고 목록 화면 — 맞춤 추천, 필터, 무한 스크롤',
       },
     ],
   },
@@ -99,6 +101,20 @@ export const FEATURE_SHOWCASES: FeatureShowcaseItem[] = [
     duo: true,
   },
   {
+    id: 'auto-offer',
+    title: '자동 채용·고용 제안 시스템',
+    bullets: [
+      '구직자는 주간 가용 시간표로 근무 가능 시간을 등록해 두면, 시스템이 공고 일정과 맞춰 자동 매칭·제안에 활용할 수 있습니다.',
+      '고용주는 모집 중인 공고에 지원한 인원에게 일괄 고용 제안을 보내고, 수락·거절 응답을 한 화면에서 처리합니다.',
+      '제안부터 채용 확정까지 상태가 알림과 연동되어 빠르게 인력을 확정할 수 있습니다.',
+    ],
+    images: [
+      { src: availableTableImg, alt: '구직자 주간 가용 시간표 화면' },
+      { src: bulkOfferImg, alt: '일괄 고용 제안 화면' },
+    ],
+    duo: true,
+  },
+  {
     id: 'template',
     title: '공고 템플릿 자동화',
     bullets: [
@@ -111,6 +127,7 @@ export const FEATURE_SHOWCASES: FeatureShowcaseItem[] = [
         alt: '공고 템플릿 선택 및 작성 화면',
       },
     ],
+    reverse: true,
   },
   {
     id: 'applicants',
@@ -122,10 +139,9 @@ export const FEATURE_SHOWCASES: FeatureShowcaseItem[] = [
     ],
     images: [
       {
-        src: applicantsImg,
+        src: applicantListImg,
         alt: '지원자 목록 및 채용 관리 화면',
       },
     ],
-    reverse: true,
   },
 ];
