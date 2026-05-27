@@ -63,7 +63,7 @@ interface Props {
 
 export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
   const [keyword, setKeyword] = useState(activeFilters.keyword || '');
-  const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [isFilterOpen, setIsFilterOpen] = useState(true);
 
   // 필터 패널 내부 로컬 state (검색 버튼 누를 때만 반영)
   const [draftLocation, setDraftLocation] = useState(activeFilters.location || '');
