@@ -85,6 +85,13 @@ public class JobPostService {
                 && user != null
                 && user.getRole() == UserRole.APPLICANT) {
             response = rankingService.recommend(user, filter.cursor(), filter.getSize());
+            // 급구 필터가 켜져 있으면 추천 결과에서도 급구 공고만 남김
+            if (Boolean.TRUE.equals(filter.urgentOnly()) && response.contents() != null) {
+                List<JobPostCardResponse> filtered = response.contents().stream()
+                        .filter(j -> Boolean.TRUE.equals(j.urgentEnabled()))
+                        .toList();
+                response = CursorPageResponse.of(filtered, response.nextCursor(), response.hasNext());
+            }
         } else {
             int fetchSize = filter.getSize() + 1;
             List<JobPost> posts = jobPostRepository.findByDynamicFilter(filter, fetchSize);
