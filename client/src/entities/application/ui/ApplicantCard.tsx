@@ -8,14 +8,15 @@ interface Props {
   actions?: React.ReactNode;
   reviewSlot?: React.ReactNode;
   onClick?: () => void;
+  onContextMenu?: (e: React.MouseEvent) => void;
 }
 
-export const ApplicantCard = ({ data, actions, reviewSlot, onClick }: Props) => {
+export const ApplicantCard = ({ data, actions, reviewSlot, onClick, onContextMenu }: Props) => {
   const { name, profileImageUrl, gender, age, location, matchCount, appliedAt } = data;
   const genderLabel = gender === 'MALE' ? '남' : '여';
 
   return (
-    <S.Card onClick={onClick}>
+    <S.Card onClick={onClick} onContextMenu={onContextMenu}>
       <S.ProfileImage>
         <img
           src={profileImageUrl || 'https://api.dicebear.com/7.x/identicon/svg?seed=default'}

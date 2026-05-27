@@ -38,6 +38,8 @@ export interface ApplicationResponse {
   status: ApplicationStatus;
   appliedAt: string | null;
   jobPost: JobPostInApplicationResponse;
+  /** 공고 등록 고용주 User ID (구직자 → 고용주 신고) */
+  employerUserId?: number;
 }
 
 export function applicationStatusToApplyStatus(status: ApplicationStatus): ApplyStatus {
@@ -60,7 +62,7 @@ export function applicationStatusToApplyStatus(status: ApplicationStatus): Apply
 
 /** API 응답 → JobPostCard 렌더용 타입 */
 export function toApplicationWithJobPost(item: ApplicationResponse): ApplicationWithJobPost {
-  const { jobPost, status, applicationId, appliedAt } = item;
+  const { jobPost, status, applicationId, appliedAt, employerUserId } = item;
 
   return {
     id: jobPost.id,
@@ -81,6 +83,7 @@ export function toApplicationWithJobPost(item: ApplicationResponse): Application
     applicationId,
     applicationStatus: status,
     appliedAt: appliedAt ?? '',
+    employerUserId,
   };
 }
 
@@ -89,6 +92,7 @@ export interface ApplicationWithJobPost extends JobPost {
   applicationId: number;
   applicationStatus: ApplicationStatus;
   appliedAt: string;
+  employerUserId?: number;
 }
 
 export interface ApplicantResponse {

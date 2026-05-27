@@ -29,6 +29,9 @@ import { EmployerReviewSection } from 'features/review/EmployerReviewSection';
 import { BulkOfferButton } from 'features/offer/BulkOfferButton';
 import { ToggleLongTermWorkerButton } from 'features/longTermWorker/ToggleLongTermWorkerButton';
 import { useJobPost } from 'entities/jobPost/model/hooks/useJobPost';
+import ReportContextMenu from 'features/report/ReportContextMenu';
+import ReportUserModal from 'features/report/ReportUserModal';
+import { useReportEligibility } from 'features/report/useReportEligibility';
 
 interface Props {
   jobPostId: number;
@@ -37,11 +40,17 @@ interface Props {
 export const ApplicantListByStatus = ({ jobPostId }: Props) => {
   const { data: applicants, isLoading } = useApplicants(jobPostId);
   const { data: jobPost } = useJobPost(jobPostId);
+  const canReportTarget = useReportEligibility();
   const canBulkOffer = jobPost?.status === 'OPEN';
   const [activeTab, setActiveTab] = useState<EmployerApplicantTab>('action');
   const [selectedResumeId, setSelectedResumeId] = useState<number | undefined>();
   const [selectedApplicantUserId, setSelectedApplicantUserId] = useState<number | undefined>();
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
+  const [ctxMenu, setCtxMenu] = useState<{
+    anchorRect: DOMRect;
+    applicant: ApplicantResponse;
+  } | null>(null);
+  const [reportApplicant, setReportApplicant] = useState<ApplicantResponse | null>(null);
 
   const {
     data: selectedResume,
@@ -155,6 +164,15 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
                 />
               }
               onClick={() => handleCardClick(applicant)}
+              onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (!canReportTarget(applicant.userId)) return;
+                setCtxMenu({
+                  anchorRect: (e.currentTarget as HTMLElement).getBoundingClientRect(),
+                  applicant,
+                });
+              }}
             />
           ))}
         </S.CardList>
@@ -230,6 +248,29 @@ export const ApplicantListByStatus = ({ jobPostId }: Props) => {
           <S.NoResumeText>이력서 정보를 찾을 수 없습니다.</S.NoResumeText>
         )}
       </Modal>
+
+      {ctxMenu && canReportTarget(ctxMenu.applicant.userId) && (
+        <ReportContextMenu
+          anchorRect={ctxMenu.anchorRect}
+          onClose={() => setCtxMenu(null)}
+          onReport={() => {
+            setReportApplicant(ctxMenu.applicant);
+            setCtxMenu(null);
+          }}
+        />
+      )}
+
+      {reportApplicant && (
+        <ReportUserModal
+          isOpen
+          onClose={() => setReportApplicant(null)}
+          targetUserId={reportApplicant.userId}
+          targetLabel={reportApplicant.name}
+          onSuccess={() => {
+            window.alert('신고가 접수되었습니다.');
+          }}
+        />
+      )}
     </S.Wrapper>
   );
 };

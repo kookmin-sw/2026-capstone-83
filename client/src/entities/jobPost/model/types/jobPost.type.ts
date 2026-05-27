@@ -47,6 +47,8 @@ export interface JobPostDetail extends JobPost {
   urgentWageIncrease?: number | null;
   /** 자동 채용 제안 여부 */
   autoOfferEnabled?: boolean | null;
+  /** 공고 등록 고용주 User ID (구직자 → 고용주 신고용) */
+  employerUserId?: number | null;
 }
 
 export type JobPostOverviewProps = Pick<
@@ -65,7 +67,8 @@ export type JobPostOverviewProps = Pick<
   'workStart' |
   'workEnd' |
   'urgentEnabled' |
-  'urgentWageIncrease'
+  'urgentWageIncrease' |
+  'employerUserId'
 >;
 
 export type JobPostWorkContentProps = Pick<

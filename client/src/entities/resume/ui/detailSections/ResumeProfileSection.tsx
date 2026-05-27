@@ -167,7 +167,9 @@ const S = {
     display: flex;
     align-items: center;
     gap: 8px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    width: 100%;
+    min-width: 0;
   `,
   NameRow: styled.div`
     display: flex;
@@ -187,7 +189,8 @@ const S = {
   NameActionSlot: styled.div`
     display: flex;
     align-items: center;
-    flex-shrink: 0;
+    flex: 1;
+    min-width: 0;
   `,
   ActionSlot: styled.div`
     margin-left: auto;

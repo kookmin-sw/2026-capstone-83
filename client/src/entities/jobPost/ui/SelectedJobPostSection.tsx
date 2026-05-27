@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight, Calendar, Clock, MapPin } from 'lucide-react';
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import { JobPostOwnerActions } from 'features/jobPost/JobPostOwnerActions';
+import ReportUserModal from 'features/report/ReportUserModal';
+import { useReportEligibility } from 'features/report/useReportEligibility';
 import { useJobPost } from '../model/hooks/useJobPost';
 import { RECRUITMENT_STATUS_MAP } from '../model/constants';
 import Section from 'shared/ui/Layout/Section';
@@ -13,6 +15,7 @@ import Badge from 'shared/ui/Badge/Badge';
 import { UrgentJobPostBadge } from './UrgentJobPostBadge';
 import { UrgentWageIncreaseHint } from './UrgentWageIncreaseHint';
 import { BulkOfferButton } from 'features/offer/BulkOfferButton';
+import { CardActionsMenu, type CardMenuItem } from 'shared/ui/CardActionsMenu/CardActionsMenu';
 import Loading from 'shared/ui/Loading/Loading';
 
 interface Props {
@@ -25,6 +28,14 @@ const SelectedJobPostSection = ({ postId }: Props) => {
   const setSelectedJobPostId = useScheduleStore((s) => s.setSelectedJobPostId);
   const { data: jobPost, isLoading } = useJobPost(postId);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const canReportTarget = useReportEligibility();
+
+  /** 조건부 return보다 위에 두어 훅 순서가 항상 같아야 함 */
+  const applicantMenuItems: CardMenuItem[] = useMemo(
+    () => [{ label: '신고', onClick: () => setReportOpen(true), tone: 'danger' }],
+    [],
+  );
 
   if (isLoading) return <Loading message="공고 정보를 불러오는 중..." />;
   if (!jobPost) return null;
@@ -34,6 +45,10 @@ const SelectedJobPostSection = ({ postId }: Props) => {
   const description = jobPost.description || '';
   const shouldTruncate = description.length > 100;
   const displayDescription = isExpanded ? description : description.slice(0, 100);
+
+  const employerUserId = jobPost.employerUserId ?? null;
+  const showApplicantReportMenu =
+    role === 'APPLICANT' && employerUserId != null && canReportTarget(employerUserId);
 
   return (
     <Section>
@@ -55,6 +70,9 @@ const SelectedJobPostSection = ({ postId }: Props) => {
               status={jobPost.status}
               onDeleted={() => setSelectedJobPostId(null)}
             />
+          )}
+          {showApplicantReportMenu && (
+            <CardActionsMenu items={applicantMenuItems} ariaLabel="공고 메뉴" />
           )}
         </S.TitleRow>
 
@@ -126,6 +144,18 @@ const SelectedJobPostSection = ({ postId }: Props) => {
           </S.DescriptionSection>
         )}
       </S.Container>
+
+      {showApplicantReportMenu && employerUserId != null && (
+        <ReportUserModal
+          isOpen={reportOpen}
+          onClose={() => setReportOpen(false)}
+          targetUserId={employerUserId}
+          targetLabel={jobPost.company}
+          onSuccess={() => {
+            window.alert('신고가 접수되었습니다.');
+          }}
+        />
+      )}
     </Section>
   );
 };
