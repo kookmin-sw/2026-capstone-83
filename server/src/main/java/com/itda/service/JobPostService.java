@@ -381,8 +381,9 @@ public class JobPostService {
         JobPost jobPost = jobPostRepository.findById(jobPostId)
                 .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
 
-        List<Long> likedIds = jobPostLikeRepository.findByUserId(employerUserId)
-                .stream().map(l -> l.getJobPost().getWorkplace().getEmployer().getUser().getId()).toList();
+        // 고용주의 공고에 좋아요를 누른 구직자 ID 목록
+        List<Long> likedIds = jobPostLikeRepository.findByEmployerUserId(employerUserId)
+                .stream().map(l -> l.getUser().getId()).distinct().toList();
         List<Long> longTermIds = longTermWorkerRepository.findByEmployerUserId(employerUserId)
                 .stream().map(l -> l.getApplicantUser().getId()).toList();
 
@@ -421,8 +422,9 @@ public class JobPostService {
 
     // 오퍼 대상자 ID 목록 추출 (날짜 겹침 + 중복 지원 제외)
     private List<Long> getOfferTargetIds(JobPost jobPost, Long employerUserId) {
-        List<Long> likedIds = jobPostLikeRepository.findByUserId(employerUserId)
-                .stream().map(l -> l.getJobPost().getWorkplace().getEmployer().getUser().getId()).toList();
+        // 고용주의 공고에 좋아요를 누른 구직자 ID 목록
+        List<Long> likedIds = jobPostLikeRepository.findByEmployerUserId(employerUserId)
+                .stream().map(l -> l.getUser().getId()).distinct().toList();
         List<Long> longTermIds = longTermWorkerRepository.findByEmployerUserId(employerUserId)
                 .stream().map(l -> l.getApplicantUser().getId()).toList();
 
