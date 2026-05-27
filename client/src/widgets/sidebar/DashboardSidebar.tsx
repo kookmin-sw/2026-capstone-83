@@ -1,6 +1,6 @@
 import { useState, type MouseEvent } from 'react';
 import { useLocation, Link } from 'react-router-dom';
-import { Home, Building2, CalendarDays, Users, Settings, FileText, UserRoundPlus, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Home, Building2, CalendarDays, Users, Settings, FileText, UserRoundPlus, Heart, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import {
   getProfileAvatarUrl,
@@ -28,6 +28,7 @@ const APPLICANT_NAV: NavItem[] = [
   { label: '이력서 관리', path: '/dashboard/resume', icon: <FileText size={20} /> },
   { label: '캘린더', path: '/dashboard/calendar', icon: <CalendarDays size={20} /> },
   { label: '지원 이력', path: '/dashboard/applications', icon: <UserRoundPlus size={20} /> },
+  { label: '찜한 공고', path: '/dashboard/liked-job-posts', icon: <Heart size={20} /> },
   { label: '설정', path: '/dashboard/settings', icon: <Settings size={20} /> },
 ];
 

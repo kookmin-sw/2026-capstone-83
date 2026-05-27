@@ -9,6 +9,7 @@ export const useLikeJobPost = () => {
     onSuccess: (_data, id) => {
       queryClient.invalidateQueries({ queryKey: ['jobPost', id] });
       queryClient.invalidateQueries({ queryKey: ['jobPosts'] });
+      queryClient.invalidateQueries({ queryKey: ['likedJobPosts'] });
     },
   });
 };

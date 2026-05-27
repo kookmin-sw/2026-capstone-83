@@ -19,6 +19,7 @@ import WorkplacePage from 'pages/dashboard/employer/WorkplacePage';
 import TalentPoolPage from 'pages/dashboard/employer/TalentPoolPage';
 import ResumeManagePage from 'pages/dashboard/applicant/ResumeManagePage';
 import ApplicationsPage from 'pages/dashboard/applicant/ApplicationsPage';
+import LikedJobPostsPage from 'pages/dashboard/applicant/LikedJobPostsPage';
 import CalendarPage from 'pages/dashboard/common/CalendarPage';
 import SettingsPage from 'pages/dashboard/common/SettingsPage';
 import NotificationsPage from 'pages/dashboard/common/NotificationsPage';
@@ -59,6 +60,7 @@ const Routers = () => {
         <Route path="/dashboard/resume" element={<ResumeManagePage />} />
         <Route path="/dashboard/resume/edit" element={<ResumeFormPage />} />
         <Route path="/dashboard/applications" element={<ApplicationsPage />} />
+        <Route path="/dashboard/liked-job-posts" element={<LikedJobPostsPage />} />
         <Route path="/dashboard/settings" element={<SettingsPage />} />
         <Route path="/dashboard/notifications" element={<NotificationsPage />} />
       </Route>

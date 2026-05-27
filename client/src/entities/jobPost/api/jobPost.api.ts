@@ -94,6 +94,12 @@ export const fetchJobPostsByDateRange = async (start: string, end: string) => {
 }
 
 
+/** 구직자가 좋아요한 공고 목록 */
+export const fetchLikedJobPosts = async (params?: { cursor?: number; size?: number }): Promise<JobPostListCursor> => {
+  const response = await authClient.get<JobPostListCursor>('/api/v1/job-posts/liked', { params });
+  return response.data;
+};
+
 //고용주 본인 공고 목록 조회
 export const fetchJobPostsByEmployer = async (data: GetJobPostsParams): Promise<JobPostListCursor> => {
   const response = await authClient.get<JobPostListCursor>('/api/v1/job-posts/employer',
