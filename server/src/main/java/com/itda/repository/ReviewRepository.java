@@ -94,4 +94,7 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     // 내가 작성한 리뷰 목록
     List<Review> findByReviewerIdOrderByCreatedAtDesc(Long reviewerId);
+
+    // 공고 삭제 시 연관 리뷰 일괄 삭제 (Application FK 제약 해제용)
+    void deleteByApplicationIn(List<com.itda.entity.Application> applications);
 }

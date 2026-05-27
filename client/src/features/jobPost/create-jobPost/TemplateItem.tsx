@@ -52,7 +52,7 @@ const S = {
       }
     } */
   `,
-  Content: styled.button`
+  Content: styled.button.attrs({ type: 'button' })`
     flex: 1;
     display: flex;
     flex-direction: column;

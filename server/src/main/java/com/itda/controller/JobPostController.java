@@ -132,7 +132,7 @@ public class JobPostController {
     public ResponseEntity<JobPostDetailResponse> updateJobPost(
             @PathVariable Long id,
             @AuthenticationPrincipal User user,
-            @ModelAttribute JobPostUpdateRequest request,
+            @RequestPart("data") JobPostUpdateRequest request,
             @RequestPart(value = "descriptionImage", required = false) MultipartFile descriptionImage) {
         return ResponseEntity.ok(jobPostService.updateJobPost(id, request, descriptionImage, user.getId()));
     }
