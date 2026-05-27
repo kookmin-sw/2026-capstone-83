@@ -25,6 +25,7 @@ import com.itda.repository.ReviewRepository;
 import com.itda.repository.WorkplaceRepository;
 import com.itda.repository.LongTermWorkerRepository;
 import com.itda.repository.UserRepository;
+import com.itda.repository.ResumeLikeRepository;
 import com.itda.service.event.AutoMatchEvents;
 import com.itda.service.event.InteractionEvents;
 import lombok.RequiredArgsConstructor;
@@ -57,6 +58,7 @@ public class JobPostService {
     private final ApplicationEventPublisher eventPublisher;
     private final LongTermWorkerRepository longTermWorkerRepository;
     private final UserRepository userRepository;
+    private final ResumeLikeRepository resumeLikeRepository;
     private final ApplicationService applicationService;
 
     // ─── 조회 ────────────────────────────────────────────────────
@@ -381,13 +383,14 @@ public class JobPostService {
         JobPost jobPost = jobPostRepository.findById(jobPostId)
                 .orElseThrow(() -> new NotFoundException("공고를 찾을 수 없습니다."));
 
-        // 고용주의 공고에 좋아요를 누른 구직자 ID 목록
-        List<Long> likedIds = jobPostLikeRepository.findByEmployerUserId(employerUserId)
-                .stream().map(l -> l.getUser().getId()).distinct().toList();
+        // 고용주가 좋아요한 이력서의 구직자 ID 목록
+        List<Long> likedResumeUserIds = resumeLikeRepository.findByEmployerUserId(employerUserId)
+                .stream().map(l -> l.getResume().getUser().getId()).distinct().toList();
+        // 업장 장기 근무자 ID 목록
         List<Long> longTermIds = longTermWorkerRepository.findByEmployerUserId(employerUserId)
                 .stream().map(l -> l.getApplicantUser().getId()).toList();
 
-        List<Long> targetIds = java.util.stream.Stream.concat(likedIds.stream(), longTermIds.stream())
+        List<Long> targetIds = java.util.stream.Stream.concat(likedResumeUserIds.stream(), longTermIds.stream())
                 .distinct().toList();
 
         List<Long> excludedByDate = applicationRepository
@@ -409,7 +412,7 @@ public class JobPostService {
                     return new OfferTargetResponse(
                             userId,
                             applicant.getName(),
-                            likedIds.contains(userId),
+                            likedResumeUserIds.contains(userId),
                             longTermIds.contains(userId),
                             false
                     );
@@ -422,9 +425,9 @@ public class JobPostService {
 
     // 오퍼 대상자 ID 목록 추출 (날짜 겹침 + 중복 지원 제외)
     private List<Long> getOfferTargetIds(JobPost jobPost, Long employerUserId) {
-        // 고용주의 공고에 좋아요를 누른 구직자 ID 목록
-        List<Long> likedIds = jobPostLikeRepository.findByEmployerUserId(employerUserId)
-                .stream().map(l -> l.getUser().getId()).distinct().toList();
+        // 고용주가 좋아요한 이력서의 구직자 ID 목록
+        List<Long> likedResumeUserIds = resumeLikeRepository.findByEmployerUserId(employerUserId)
+                .stream().map(l -> l.getResume().getUser().getId()).distinct().toList();
         List<Long> longTermIds = longTermWorkerRepository.findByEmployerUserId(employerUserId)
                 .stream().map(l -> l.getApplicantUser().getId()).toList();
 
@@ -439,7 +442,7 @@ public class JobPostService {
                 .findByJobPostId(jobPost.getId())
                 .stream().map(a -> a.getApplicantUser().getId()).toList();
 
-        return java.util.stream.Stream.concat(likedIds.stream(), longTermIds.stream())
+        return java.util.stream.Stream.concat(likedResumeUserIds.stream(), longTermIds.stream())
                 .distinct()
                 .filter(id -> !excludedByDate.contains(id))
                 .filter(id -> !excludedByDuplicate.contains(id))
