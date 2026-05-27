@@ -609,15 +609,8 @@ public class ApplicationService {
                 .findByJobPostId(jobPostId)
                 .stream().map(a -> a.getApplicantUser().getId()).toList();
 
-        // 즉시 채용 대상 배치 조회 (N+1 방지)
         List<Long> allUserIds = request.userIds();
-        Set<Long> instantHireUserIds = new java.util.HashSet<>();
-        instantHireUserIds.addAll(
-                longTermWorkerRepository.findApplicantUserIdsByEmployerAndApplicantsIn(
-                        employer.getId(), allUserIds));
-        instantHireUserIds.addAll(
-                resumeLikeRepository.findApplicantUserIdsLikedByEmployer(
-                        employer.getId(), allUserIds));
+        boolean bulkInstantHire = Boolean.TRUE.equals(request.instantHire());
 
         int offeredCount = 0;
         int skippedCount = 0;
@@ -635,7 +628,7 @@ public class ApplicationService {
                 continue;
             }
 
-            boolean isInstant = instantHireUserIds.contains(userId);
+            boolean isInstant = bulkInstantHire;
             String offerMessage = isInstant
                     ? "[" + jobPost.getTitle() + "] 채용 제안이 왔습니다. 수락하면 바로 채용이 확정됩니다."
                     : "[" + jobPost.getTitle() + "]에 채용 제안이 왔습니다.";

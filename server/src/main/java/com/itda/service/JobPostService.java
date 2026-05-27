@@ -196,7 +196,7 @@ public class JobPostService {
             List<Long> targetIds = getOfferTargetIds(saved, workplace.getEmployer().getUser().getId());
             if (!targetIds.isEmpty()) {
                 applicationService.bulkOffer(saved.getId(),
-                        new BulkOfferRequest(targetIds),
+                        new BulkOfferRequest(targetIds, true),
                         workplace.getEmployer().getUser());
             }
         }
