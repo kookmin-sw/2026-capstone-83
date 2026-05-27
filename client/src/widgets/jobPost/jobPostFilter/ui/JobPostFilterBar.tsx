@@ -311,7 +311,11 @@ export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
                 buttonSize="xsmall"
                 fontSize="xsmall"
                 borderRadius="round"
-                onClick={() => setDraftUrgentOnly(!draftUrgentOnly)}
+                onClick={() => {
+                  const next = !draftUrgentOnly;
+                  setDraftUrgentOnly(next);
+                  onFilterChange({ urgentOnly: next || undefined });
+                }}
               >
                 🔥 급구 공고만 보기
               </Button>
