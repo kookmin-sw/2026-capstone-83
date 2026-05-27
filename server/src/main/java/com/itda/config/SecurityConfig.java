@@ -51,6 +51,7 @@ public class SecurityConfig {
 
                         // 공고 목록/상세 조회는 비로그인도 허용
                         .requestMatchers(HttpMethod.GET, "/api/v1/job-posts").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/job-posts/liked").hasRole("APPLICANT")
                         .requestMatchers(HttpMethod.GET, "/api/v1/job-posts/*").permitAll()
 
                         // CORS preflight

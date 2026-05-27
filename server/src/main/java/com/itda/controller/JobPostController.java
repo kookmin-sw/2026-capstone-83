@@ -72,6 +72,18 @@ public class JobPostController {
     }
 
     /**
+     * 좋아요한 공고 목록 조회 (구직자)
+     * GET /api/v1/job-posts/liked?cursor=&size=
+     */
+    @GetMapping("/liked")
+    public ResponseEntity<CursorPageResponse<JobPostCardResponse>> getLikedJobPosts(
+            @AuthenticationPrincipal User user,
+            @RequestParam(required = false) Long cursor,
+            @RequestParam(defaultValue = "10") int size) {
+        return ResponseEntity.ok(jobPostService.getLikedJobPosts(user.getId(), cursor, size));
+    }
+
+    /**
      * 캘린더용 날짜 범위 공고 조회
      * GET /api/v1/job-posts/employer/calendar?start=&end=
      */
