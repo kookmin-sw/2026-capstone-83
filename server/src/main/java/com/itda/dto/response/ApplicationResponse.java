@@ -11,14 +11,17 @@ public record ApplicationResponse(
         Long applicationId,
         String status,      // ApplicationStatus (APPLIED / OFFERED / PENDING / HIRED / REJECTED / COMPLETED)
         String appliedAt,
-        JobPostCardResponse jobPost  // 공고 카드 DTO 재활용 (liked 포함)
+        JobPostCardResponse jobPost,  // 공고 카드 DTO 재활용 (liked 포함)
+        Long employerUserId
+
 ) {
     public static ApplicationResponse from(Application application, boolean liked) {
         return new ApplicationResponse(
                 application.getId(),
                 application.getStatus().name(),
                 application.getAppliedAt() != null ? application.getAppliedAt().toString() : null,
-                JobPostCardResponse.from(application.getJobPost(), liked)
+                JobPostCardResponse.from(application.getJobPost(), liked),
+                application.getJobPost().getWorkplace().getEmployer().getUser().getId()
         );
     }
 }

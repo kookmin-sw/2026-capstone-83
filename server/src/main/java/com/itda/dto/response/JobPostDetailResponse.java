@@ -47,7 +47,11 @@ public record JobPostDetailResponse(
         // 급구 옵션
         Boolean urgentEnabled,
         Integer urgentWageIncrease,
-        Boolean autoOfferEnabled
+        Boolean autoOfferEnabled,
+
+        //고용주 ID 추가
+        Long employerUserId
+
 ) {
     // liked 포함 버전
     public static JobPostDetailResponse from(JobPost post, boolean liked) {
@@ -84,7 +88,8 @@ public record JobPostDetailResponse(
                 liked,
                 post.getUrgentEnabled(),
                 post.getUrgentWageIncrease(),
-                post.getAutoOfferEnabled()
+                post.getAutoOfferEnabled(),
+                post.getWorkplace().getEmployer().getUser().getId()
         );
     }
 }
