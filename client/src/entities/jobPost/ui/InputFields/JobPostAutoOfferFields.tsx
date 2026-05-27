@@ -39,6 +39,20 @@ export const JobPostAutoOfferFields = ({
           selectedUserIds={selectedOfferUserIds}
           onChange={onSelectedOfferUserIdsChange}
         />
+
+        {!!autoOfferEnabled && (
+          <>
+            <S.CheckboxWrapper>
+              <input type="checkbox" id="offerInstantHire" {...register('offerInstantHire')} />
+              <label htmlFor="offerInstantHire">
+                구직자가 승인하면 즉시 채용되게 하시겠습니까?
+              </label>
+            </S.CheckboxWrapper>
+            <S.HelperText>
+              체크하면 제안 수락 시 바로 채용이 확정되고, 해제하면 고용주 최종 확정 단계를 거칩니다.
+            </S.HelperText>
+          </>
+        )}
       </S.FormStack>
     </S.SectionWrapper>
   );

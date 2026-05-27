@@ -50,23 +50,14 @@ export const AutoOfferTargetPicker = ({ enabled, selectedUserIds, onChange }: Pr
   return (
     <S.Panel>
       <S.Hint>
-        공고 등록 후 선택한 구직자에게 채용 제안이 발송됩니다. 두 목록에서 중복 인원은 한 번만
-        제안됩니다.
+        공고 등록 후 선택한 구직자에게 채용 제안이 발송됩니다. 장기근무 구직자를 먼저, 이어서
+        좋아요한 구직자를 보여 주며, 중복 인원은 한 번만 제안됩니다.
       </S.Hint>
 
       {isLoading && <Loading message="제안 대상을 불러오는 중..." />}
 
       {!isLoading && (
         <>
-          <TargetSection
-            title="좋아요한 구직자"
-            items={likedResumes}
-            isError={likedError}
-            emptyMessage="좋아요한 구직자가 없습니다."
-            selectedUserIds={selectedUserIds}
-            onToggleOne={toggleOne}
-            onToggleSection={() => toggleSection(likedResumes)}
-          />
           <TargetSection
             title="장기근무 구직자"
             items={longTermWorkers}
@@ -75,6 +66,15 @@ export const AutoOfferTargetPicker = ({ enabled, selectedUserIds, onChange }: Pr
             selectedUserIds={selectedUserIds}
             onToggleOne={toggleOne}
             onToggleSection={() => toggleSection(longTermWorkers)}
+          />
+          <TargetSection
+            title="좋아요한 구직자"
+            items={likedResumes}
+            isError={likedError}
+            emptyMessage="좋아요한 구직자가 없습니다."
+            selectedUserIds={selectedUserIds}
+            onToggleOne={toggleOne}
+            onToggleSection={() => toggleSection(likedResumes)}
           />
         </>
       )}

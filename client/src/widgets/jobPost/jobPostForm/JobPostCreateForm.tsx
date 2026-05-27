@@ -50,6 +50,7 @@ export const JobPostCreateForm = () => {
       certRequirements: [],
       urgentEnabled: false,
       autoOfferEnabled: false,
+      offerInstantHire: false,
     },
   });
   const [selectedOfferUserIds, setSelectedOfferUserIds] = useState<Set<number>>(new Set());
@@ -79,13 +80,14 @@ export const JobPostCreateForm = () => {
   useEffect(() => {
     if (!autoOfferEnabled) {
       setSelectedOfferUserIds(new Set());
+      setValue('offerInstantHire', false);
     }
-  }, [autoOfferEnabled]);
+  }, [autoOfferEnabled, setValue]);
 
   const onSubmit = (data: JobPostCreate) => {
     console.log('Submitting job post:', data);
     // 서버로 보내기 전 데이터 가공
-    const { requirementsText, certRequirements, ...rest } = data;
+    const { requirementsText, certRequirements, offerInstantHire, ...rest } = data;
     const requestBody: JobPostCreateSubmit = {
       ...rest,
       urgentEnabled: !!data.urgentEnabled,
@@ -108,7 +110,11 @@ export const JobPostCreateForm = () => {
 
     console.log('가공된 데이터:', requestBody);
     mutate(
-      { data: requestBody, offerUserIds },
+      {
+        data: requestBody,
+        offerUserIds,
+        offerInstantHire: !!offerInstantHire,
+      },
       {
         onSuccess: (response) => {
           console.log('Job post created successfully:', response);

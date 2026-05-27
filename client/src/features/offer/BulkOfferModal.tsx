@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import styled from 'styled-components';
 import { useOfferTargets } from 'entities/jobPost/model/hooks/useOfferTargets';
 import { useBulkOffer } from 'entities/jobPost/model/hooks/useBulkOffer';
@@ -22,14 +22,26 @@ export const BulkOfferModal = ({ jobPostId, isOpen, onClose, onSuccess }: Props)
   const { mutate: sendBulkOffer, isPending } = useBulkOffer(jobPostId);
   const errorModal = useErrorAlertModal();
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [instantHire, setInstantHire] = useState(false);
+
+  /** 장기근무 대상을 목록 상단에 두기 (서버 순서와 무관하게 동일 우선순위 유지) */
+  const orderedTargets = useMemo(() => {
+    if (!targets?.length) return [];
+    return [...targets].sort((a, b) => {
+      if (a.longTerm === b.longTerm) return 0;
+      return a.longTerm ? -1 : 1;
+    });
+  }, [targets]);
 
   useEffect(() => {
-    if (!isOpen || !targets?.length) {
-      if (!isOpen) setSelectedIds(new Set());
+    if (!isOpen) {
+      setSelectedIds(new Set());
+      setInstantHire(false);
       return;
     }
-    setSelectedIds(new Set(targets.map((t) => t.userId)));
-  }, [isOpen, targets]);
+    if (!orderedTargets.length) return;
+    setSelectedIds(new Set(orderedTargets.map((t) => t.userId)));
+  }, [isOpen, orderedTargets]);
 
   const toggleOne = (userId: number) => {
     setSelectedIds((prev) => {
@@ -41,11 +53,11 @@ export const BulkOfferModal = ({ jobPostId, isOpen, onClose, onSuccess }: Props)
   };
 
   const toggleAll = () => {
-    if (!targets?.length) return;
-    if (selectedIds.size === targets.length) {
+    if (!orderedTargets.length) return;
+    if (selectedIds.size === orderedTargets.length) {
       setSelectedIds(new Set());
     } else {
-      setSelectedIds(new Set(targets.map((t) => t.userId)));
+      setSelectedIds(new Set(orderedTargets.map((t) => t.userId)));
     }
   };
 
@@ -54,7 +66,7 @@ export const BulkOfferModal = ({ jobPostId, isOpen, onClose, onSuccess }: Props)
     if (userIds.length === 0) return;
 
     sendBulkOffer(
-      { userIds },
+      { userIds, instantHire },
       {
         onSuccess: (result) => {
           onClose();
@@ -93,28 +105,28 @@ export const BulkOfferModal = ({ jobPostId, isOpen, onClose, onSuccess }: Props)
         <ModalContent>
           <h2>우선 채용 대상 일괄 제안</h2>
           <S.Hint>
-            장기근무자·인재풀 우선 대상에게 한 번에 채용 제안을 보냅니다. 이미 제안·지원·일정
+            장기근무 구직자를 먼저, 이어서 관심(이력서 좋아요) 인재를 표시합니다. 이미 제안·지원·일정
             충돌 대상은 서버에서 자동 제외됩니다.
           </S.Hint>
 
           {isLoading && <Loading message="대상자를 불러오는 중..." />}
           {isError && <S.Empty>대상자 목록을 불러오지 못했습니다.</S.Empty>}
-          {!isLoading && !isError && targets?.length === 0 && (
+          {!isLoading && !isError && orderedTargets.length === 0 && (
             <S.Empty>
               제안 가능한 우선 대상이 없습니다. 인재풀에서 이력서 좋아요·장기근무를 등록해
               보세요.
             </S.Empty>
           )}
-          {!isLoading && targets && targets.length > 0 && (
+          {!isLoading && orderedTargets.length > 0 && (
             <>
               <S.Toolbar>
                 <Button scheme="secondary" buttonSize="xsmall" onClick={toggleAll}>
-                  {selectedIds.size === targets.length ? '전체 해제' : '전체 선택'}
+                  {selectedIds.size === orderedTargets.length ? '전체 해제' : '전체 선택'}
                 </Button>
-                <S.Count>{targets.length}명</S.Count>
+                <S.Count>{orderedTargets.length}명</S.Count>
               </S.Toolbar>
               <S.List>
-                {targets.map((target) => (
+                {orderedTargets.map((target) => (
                   <TargetRow
                     key={target.userId}
                     target={target}
@@ -123,6 +135,20 @@ export const BulkOfferModal = ({ jobPostId, isOpen, onClose, onSuccess }: Props)
                   />
                 ))}
               </S.List>
+
+              <S.InstantHireBlock>
+                <S.InstantHireLabel>
+                  <input
+                    type="checkbox"
+                    checked={instantHire}
+                    onChange={(e) => setInstantHire(e.target.checked)}
+                  />
+                  <span>구직자가 승인하면 즉시 채용되게 하시겠습니까?</span>
+                </S.InstantHireLabel>
+                <S.InstantHireHint>
+                  체크하면 제안 수락 시 바로 채용이 확정되고, 해제하면 고용주 최종 확정 단계를 거칩니다.
+                </S.InstantHireHint>
+              </S.InstantHireBlock>
             </>
           )}
         </ModalContent>
@@ -222,5 +248,33 @@ const S = {
     display: flex;
     gap: 6px;
     flex-shrink: 0;
+  `,
+  InstantHireBlock: styled.div`
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid ${({ theme }) => theme.color.border};
+  `,
+  InstantHireLabel: styled.label`
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    cursor: pointer;
+    font-size: ${({ theme }) => theme.fontSize.small};
+    font-weight: ${({ theme }) => theme.fontWeight.medium};
+    line-height: 1.45;
+
+    input[type='checkbox'] {
+      width: 16px;
+      height: 16px;
+      margin-top: 2px;
+      flex-shrink: 0;
+      accent-color: ${({ theme }) => theme.color.primary};
+    }
+  `,
+  InstantHireHint: styled.p`
+    margin: 8px 0 0 26px;
+    font-size: ${({ theme }) => theme.fontSize.xsmall};
+    color: ${({ theme }) => theme.color.subText};
+    line-height: 1.5;
   `,
 };

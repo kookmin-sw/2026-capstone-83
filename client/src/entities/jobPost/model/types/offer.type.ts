@@ -10,6 +10,8 @@ export interface OfferTarget {
 /** POST /api/v1/job-posts/{id}/bulk-offer */
 export interface BulkOfferRequest {
   userIds: number[];
+  /** true: 공고 생성 후·서버 자동 일괄 등 즉시 채용 오퍼 / false: 대시보드에서 수동 일괄 제안 */
+  instantHire?: boolean;
 }
 
 export interface BulkOfferResponse {

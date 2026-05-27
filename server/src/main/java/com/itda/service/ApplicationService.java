@@ -596,6 +596,9 @@ public class ApplicationService {
         if (!jobPost.getWorkplace().getEmployer().getUser().getId().equals(employer.getId())) {
             throw new AccessDeniedException("본인의 공고만 제안할 수 있습니다.");
         }
+        if (jobPost.getStatus() != JobPostStatus.OPEN) {
+            throw new IllegalStateException("모집 중인 공고만 제안할 수 있습니다.");
+        }
 
         // 날짜 겹침 제외 대상
         List<Long> excludedByDate = applicationRepository
@@ -609,7 +612,9 @@ public class ApplicationService {
                 .findByJobPostId(jobPostId)
                 .stream().map(a -> a.getApplicantUser().getId()).toList();
 
-        List<Long> allUserIds = request.userIds();
+        List<Long> rawIds = request.userIds() != null ? request.userIds() : List.of();
+        List<Long> allUserIds = new java.util.ArrayList<>(new java.util.LinkedHashSet<>(rawIds));
+
         boolean bulkInstantHire = Boolean.TRUE.equals(request.instantHire());
 
         int offeredCount = 0;
@@ -624,6 +629,10 @@ public class ApplicationService {
 
             User applicant = userRepository.findById(userId).orElse(null);
             if (applicant == null) {
+                skippedCount++;
+                continue;
+            }
+            if (applicant.getRole() != UserRole.APPLICANT) {
                 skippedCount++;
                 continue;
             }

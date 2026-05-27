@@ -7,6 +7,8 @@ export interface CreateJobPostVariables {
   data: JobPostCreateSubmit;
   /** 공고 생성 성공 후 일괄 제안할 구직자 userId 목록 */
   offerUserIds?: number[];
+  /** 일괄 제안 시 즉시 채용 오퍼 여부 */
+  offerInstantHire?: boolean;
 }
 
 export const useCreateJobPost = () => {
@@ -14,13 +16,16 @@ export const useCreateJobPost = () => {
   const navigate = useNavigate();
 
   return useMutation({
-    mutationFn: async ({ data, offerUserIds }: CreateJobPostVariables) => {
+    mutationFn: async ({ data, offerUserIds, offerInstantHire }: CreateJobPostVariables) => {
       const created = await createJobPost({
         ...data,
         autoOfferEnabled: false,
       });
       if (offerUserIds?.length && created.id) {
-        await bulkOffer(created.id, { userIds: offerUserIds });
+        await bulkOffer(created.id, {
+          userIds: offerUserIds,
+          instantHire: !!offerInstantHire,
+        });
       }
       return created;
     },

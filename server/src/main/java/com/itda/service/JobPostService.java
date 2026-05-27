@@ -390,7 +390,7 @@ public class JobPostService {
         List<Long> longTermIds = longTermWorkerRepository.findByEmployerUserId(employerUserId)
                 .stream().map(l -> l.getApplicantUser().getId()).toList();
 
-        List<Long> targetIds = java.util.stream.Stream.concat(likedResumeUserIds.stream(), longTermIds.stream())
+        List<Long> targetIds = java.util.stream.Stream.concat(longTermIds.stream(), likedResumeUserIds.stream())
                 .distinct().toList();
 
         List<Long> excludedByDate = applicationRepository
@@ -442,7 +442,7 @@ public class JobPostService {
                 .findByJobPostId(jobPost.getId())
                 .stream().map(a -> a.getApplicantUser().getId()).toList();
 
-        return java.util.stream.Stream.concat(likedResumeUserIds.stream(), longTermIds.stream())
+        return java.util.stream.Stream.concat(longTermIds.stream(), likedResumeUserIds.stream())
                 .distinct()
                 .filter(id -> !excludedByDate.contains(id))
                 .filter(id -> !excludedByDuplicate.contains(id))

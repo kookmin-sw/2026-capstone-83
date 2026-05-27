@@ -119,6 +119,8 @@ export interface JobPostCreate {
   urgentWageIncrease?: number;
   /** 등록 시 우선 대상 자동 일괄 제안 */
   autoOfferEnabled?: boolean;
+  /** 일괄 제안 시 구직자 수락 즉시 채용(bulk-offer instantHire) — 폼 전용, 생성 API에는 미포함 */
+  offerInstantHire?: boolean;
 }
 
 /** 폼 제출 후 API/multipart 전송용 (List 필드 변환 완료) */

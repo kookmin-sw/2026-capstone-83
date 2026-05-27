@@ -1,7 +1,9 @@
 package com.itda.controller;
 
+import com.itda.dto.request.BulkOfferRequest;
 import com.itda.dto.response.ApplicantResponse;
 import com.itda.dto.response.ApplicationResponse;
+import com.itda.dto.response.BulkOfferResponse;
 import com.itda.dto.response.CursorPageResponse;
 import com.itda.dto.response.calendar.EmployeeScheduleResponse;
 import com.itda.entity.Application;
@@ -113,6 +115,15 @@ public class ApplicationController {
                 .orElseThrow(() -> new NotFoundException("사용자를 찾을 수 없습니다."));
         Application application = applicationService.offer(jobPostId, user, applicant); // user 추가
         return ResponseEntity.status(201).body(Map.of("applicationId", application.getId()));
+    }
+
+    /** 고용주 → 다수 구직자 일괄 채용 제안 */
+    @PostMapping("/api/v1/job-posts/{jobPostId}/bulk-offer")
+    public ResponseEntity<BulkOfferResponse> bulkOffer(
+            @PathVariable Long jobPostId,
+            @RequestBody BulkOfferRequest request,
+            @AuthenticationPrincipal User user) {
+        return ResponseEntity.ok(applicationService.bulkOffer(jobPostId, request, user));
     }
 
     // 지원자 목록 조회 (소유권 검증 + 커서 페이지네이션)
