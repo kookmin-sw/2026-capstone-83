@@ -16,7 +16,8 @@ export const useJobPostsInfinite = (params: GetJobPostsParams) => {
     params.certRequirements?.length ||
     params.jobCategories?.length ||
     params.locations?.length ||
-    params.weekdays?.length
+    params.weekdays?.length ||
+    params.urgentOnly
   );
 
   return useInfiniteQuery({

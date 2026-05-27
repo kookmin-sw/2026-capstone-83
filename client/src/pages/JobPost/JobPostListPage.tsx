@@ -27,6 +27,7 @@ export const JobPostListPage = () => {
     certRequirements: searchParams.getAll('certRequirements').length > 0
       ? searchParams.getAll('certRequirements') as CertificateType[]
       : undefined,
+    urgentOnly: searchParams.get('urgentOnly') === 'true' ? true : undefined,
     sortType: toJobPostSortApiParam(sortUiState),
   };
 

@@ -142,6 +142,7 @@ export const JobPostFilterBar = ({ activeFilters, sortUiState, onFilterChange }:
     !!activeFilters.wageType ||
     (activeFilters.timeTags?.length ?? 0) > 0 ||
     (activeFilters.certRequirements?.length ?? 0) > 0 ||
+    !!activeFilters.urgentOnly ||
     (sortUiState != null && sortUiState !== 'cleared' && sortUiState !== DEFAULT_SORT);
 
   const hasDraftFilters =
@@ -150,7 +151,8 @@ export const JobPostFilterBar = ({ activeFilters, sortUiState, onFilterChange }:
     !!draftMinWage ||
     !!draftWageType ||
     draftTimeTags.length > 0 ||
-    draftCerts.length > 0;
+    draftCerts.length > 0 ||
+    draftUrgentOnly;
 
   const canReset = hasAppliedFilters || hasDraftFilters;
 
