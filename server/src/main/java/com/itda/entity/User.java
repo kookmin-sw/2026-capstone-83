@@ -3,6 +3,7 @@ package com.itda.entity;
 import com.itda.enums.OAuthProvider;
 import com.itda.enums.UserRole;
 import com.itda.enums.UserStatus;
+import com.itda.converter.GenderConverter;
 import com.itda.enums.Gender;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -50,7 +51,7 @@ public class User {
     @Column(name = "birth")
     private LocalDate birth;
 
-    @Enumerated(EnumType.STRING)
+    @Convert(converter = GenderConverter.class)
     @Column(name = "gender")
     private Gender gender;
 
