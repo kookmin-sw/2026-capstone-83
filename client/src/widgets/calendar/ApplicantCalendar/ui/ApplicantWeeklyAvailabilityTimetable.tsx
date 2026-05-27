@@ -8,6 +8,7 @@ import {
   useUpdateWorkerAvailability,
   useWorkerAvailabilityRange,
 } from 'entities/workerAvailability/model/hooks/useWorkerAvailability';
+import DistrictSelector from 'entities/workerAvailability/ui/DistrictSelector';
 import { useScheduleStore } from 'entities/schedule/model/store/scheduleStore';
 import { calendarHeaderCss } from 'widgets/calendar/styles/calendar.styled';
 import { hoverOverlay } from 'shared/styles/hoverOverlay';
@@ -58,6 +59,7 @@ type DragState = {
 
 type DraftSlot = DragState & {
   minDurationMinutes: number;
+  preferredDistricts: string[];
 };
 
 type EditDraft = {
@@ -66,6 +68,7 @@ type EditDraft = {
   startMinute: number;
   endMinute: number;
   minDurationMinutes: number;
+  preferredDistricts: string[];
 };
 
 type ResizeState = {
@@ -116,6 +119,10 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
   const [mobileStart, setMobileStart] = useState('09:00');
   const [mobileEnd, setMobileEnd] = useState('18:00');
   const [mobileMin, setMobileMin] = useState(0);
+  const [mobileDistricts, setMobileDistricts] = useState<string[]>([]);
+  const [showMobileDistrictError, setShowMobileDistrictError] = useState(false);
+  const [showDraftDistrictError, setShowDraftDistrictError] = useState(false);
+  const [showEditDistrictError, setShowEditDistrictError] = useState(false);
   const [isIntroExpanded, setIsIntroExpanded] = useState(false);
   const [customViewHours, setCustomViewHours] = useState<ViewHourRange | null>(null);
 
@@ -228,7 +235,9 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
       startMinute,
       endMinute,
       minDurationMinutes: slot.minDurationMinutes,
+      preferredDistricts: slot.preferredDistricts ?? [],
     });
+    setShowEditDistrictError(false);
     setDraft(null);
     setDrag(null);
     setResize(null);
@@ -270,12 +279,18 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
       errorModal.showError(new Error(err), err);
       return;
     }
+    if (draft.preferredDistricts.length === 0) {
+      setShowDraftDistrictError(true);
+      return;
+    }
+    setShowDraftDistrictError(false);
     const { start, end } = buildDateTimeRange(draft.dateStr, startMinute, endMinute);
     createSlot(
       {
         startAt: toLocalDateTimeString(start),
         endAt: toLocalDateTimeString(end),
         minDurationMinutes: draft.minDurationMinutes || 0,
+        preferredDistricts: draft.preferredDistricts,
       },
       {
         onSuccess: () => clearInteraction(),
@@ -297,6 +312,11 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
       errorModal.showError(new Error(err), err);
       return;
     }
+    if (editDraft.preferredDistricts.length === 0) {
+      setShowEditDistrictError(true);
+      return;
+    }
+    setShowEditDistrictError(false);
     updateSlot(
       {
         id: selectedSlot.id,
@@ -304,6 +324,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
           startAt: toLocalDateTimeString(start),
           endAt: toLocalDateTimeString(end),
           minDurationMinutes: editDraft.minDurationMinutes || 0,
+          preferredDistricts: editDraft.preferredDistricts,
         },
       },
       {
@@ -338,7 +359,8 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
       setDrag(null);
       return;
     }
-    setDraft({ dateStr: state.dateStr, startMinute, endMinute, minDurationMinutes: 0 });
+    setDraft({ dateStr: state.dateStr, startMinute, endMinute, minDurationMinutes: 0, preferredDistricts: [] });
+    setShowDraftDistrictError(false);
     setDrag(null);
   };
 
@@ -528,12 +550,18 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
       errorModal.showError(new Error(err), err);
       return;
     }
+    if (mobileDistricts.length === 0) {
+      setShowMobileDistrictError(true);
+      return;
+    }
+    setShowMobileDistrictError(false);
     const { start, end } = buildDateTimeRange(dateStr, startMinute, endMinute);
     createSlot(
       {
         startAt: toLocalDateTimeString(start),
         endAt: toLocalDateTimeString(end),
         minDurationMinutes: mobileMin || 0,
+        preferredDistricts: mobileDistricts,
       },
       {
         onSuccess: () => {
@@ -541,6 +569,8 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
           setMobileStart('09:00');
           setMobileEnd('18:00');
           setMobileMin(0);
+          setMobileDistricts([]);
+          setShowMobileDistrictError(false);
         },
         onError: errorModal.onMutationError('가용시간 등록에 실패했습니다.'),
       },
@@ -716,6 +746,12 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                         {minutesToTime(startMinute)} - {minutesToTime(endMinute)}
                       </S.ListCardMeta>
                       <S.ListCardMeta>최소 근무 {slot.minDurationMinutes}분</S.ListCardMeta>
+                      {slot.preferredDistricts?.length > 0 && (
+                        <S.ListCardMeta>
+                          <MapPin size={14} />
+                          {slot.preferredDistricts.join(', ')}
+                        </S.ListCardMeta>
+                      )}
                     </S.ListCard>
                   ))}
 
@@ -739,11 +775,16 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                           onChange={(e) => setMobileMin(Number(e.target.value))}
                         />
                       </S.MobileRow>
+                      <DistrictSelector
+                        value={mobileDistricts}
+                        onChange={(d) => { setMobileDistricts(d); setShowMobileDistrictError(false); }}
+                        showError={showMobileDistrictError}
+                      />
                       <S.MobileActions>
                         <Button type="button" scheme="primary" buttonSize="xsmall" onClick={() => saveMobileAdd(dateStr)}>
                           저장
                         </Button>
-                        <Button type="button" scheme="secondary" buttonSize="xsmall" onClick={() => setMobileAddDate(null)}>
+                        <Button type="button" scheme="secondary" buttonSize="xsmall" onClick={() => { setMobileAddDate(null); setMobileDistricts([]); setShowMobileDistrictError(false); }}>
                           취소
                         </Button>
                       </S.MobileActions>
@@ -979,11 +1020,19 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                           />
                           <span>분</span>
                         </S.MinRow>
+                        <DistrictSelector
+                          value={showDraft.preferredDistricts}
+                          onChange={(d) => {
+                            setDraft({ ...showDraft, preferredDistricts: d });
+                            setShowDraftDistrictError(false);
+                          }}
+                          showError={showDraftDistrictError}
+                        />
                         <S.DraftActions>
                           <button type="button" onClick={saveDraft} disabled={isCreating}>
                             {isCreating ? '저장 중...' : '저장'}
                           </button>
-                          <button type="button" onClick={() => setDraft(null)}>
+                          <button type="button" onClick={() => { setDraft(null); setShowDraftDistrictError(false); }}>
                             취소
                           </button>
                         </S.DraftActions>
@@ -1039,6 +1088,14 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                 />
                 <span>분</span>
               </S.MinRow>
+              <DistrictSelector
+                value={editDraft.preferredDistricts}
+                onChange={(d) => {
+                  setEditDraft({ ...editDraft, preferredDistricts: d });
+                  setShowEditDistrictError(false);
+                }}
+                showError={showEditDistrictError}
+              />
               <S.EditActions>
                 <Button
                   type="button"
@@ -1066,6 +1123,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                   onClick={() => {
                     setEditDraft(null);
                     setResize(null);
+                    setShowEditDistrictError(false);
                     resizePointerRef.current = null;
                   }}
                 >
