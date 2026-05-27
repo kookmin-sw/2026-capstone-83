@@ -195,7 +195,9 @@ public class JobPostRepositoryImpl implements JobPostRepositoryCustom {
 
     private static String buildOrderBy(String sortType) {
         if ("WAGE".equals(sortType)) {
-            return " ORDER BY j.wage DESC, j.id DESC";
+            // 시급 환산은 JPQL에서 복잡하므로 단순 wage DESC로 조회 후
+            // 서비스 레이어에서 재정렬한다 — 여기서는 id DESC (최신순)로 fallback
+            return " ORDER BY j.id DESC";
         }
         if ("WORK_DATE".equals(sortType)) {
             return " ORDER BY j.workDate ASC, j.id DESC";
@@ -203,7 +205,6 @@ public class JobPostRepositoryImpl implements JobPostRepositoryCustom {
         if ("DEADLINE".equals(sortType)) {
             return " ORDER BY j.deadline ASC, j.id DESC";
         }
-        // LOCATION 정렬은 거리 정보 부재로 미지원 — 최신순으로 fallback
         return " ORDER BY j.id DESC";
     }
 
