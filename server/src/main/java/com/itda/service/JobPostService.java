@@ -82,6 +82,12 @@ public class JobPostService {
             int fetchSize = filter.getSize() + 1;
             List<JobPost> posts = jobPostRepository.findByDynamicFilter(filter, fetchSize);
 
+            // 급여순: 시급 환산 기준으로 메모리 정렬
+            if ("WAGE".equals(filter.sortType())) {
+                posts = new ArrayList<>(posts);
+                posts.sort((a, b) -> Double.compare(toHourlyWage(b), toHourlyWage(a)));
+            }
+
             boolean hasNext = posts.size() > filter.getSize();
             if (hasNext) posts = posts.subList(0, filter.getSize());
 
@@ -454,6 +460,22 @@ public class JobPostService {
         if (!jobPost.getWorkplace().getEmployer().getUser().getId().equals(userId)) {
             throw new IllegalStateException("본인의 공고만 수정/삭제할 수 있습니다.");
         }
+    }
+
+    /** 시급 환산 — HOURLY 그대로, DAILY÷근무시간, MONTHLY÷209 */
+    private static double toHourlyWage(JobPost post) {
+        if (post.getWage() == null) return 0.0;
+        return switch (post.getWageType()) {
+            case HOURLY -> post.getWage();
+            case DAILY -> {
+                if (post.getWorkStartAt() != null && post.getWorkEndAt() != null) {
+                    long minutes = java.time.Duration.between(post.getWorkStartAt(), post.getWorkEndAt()).toMinutes();
+                    yield minutes > 0 ? post.getWage() / (minutes / 60.0) : post.getWage();
+                }
+                yield post.getWage() / 8.0; // fallback: 8시간 기준
+            }
+            case MONTHLY -> post.getWage() / 209.0;
+        };
     }
 
     /** 응답에 포함된 공고들을 ImpressionBatchEvent 로 묶어 발행. 비어 있으면 발행하지 않음. */

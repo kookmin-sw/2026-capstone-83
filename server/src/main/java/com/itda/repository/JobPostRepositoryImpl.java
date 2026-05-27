@@ -195,16 +195,9 @@ public class JobPostRepositoryImpl implements JobPostRepositoryCustom {
 
     private static String buildOrderBy(String sortType) {
         if ("WAGE".equals(sortType)) {
-            // 시급 환산 정렬:
-            // HOURLY → wage 그대로
-            // DAILY → wage / 근무시간(시간) — workStartAt~workEndAt 차이로 계산
-            // MONTHLY → wage / 209
-            return " ORDER BY CASE " +
-                    "WHEN j.wageType = com.itda.enums.WageType.HOURLY THEN CAST(j.wage AS double) " +
-                    "WHEN j.wageType = com.itda.enums.WageType.DAILY THEN " +
-                    "  CAST(j.wage AS double) / (FUNCTION('TIMESTAMPDIFF', MINUTE, j.workStartAt, j.workEndAt) / 60.0) " +
-                    "WHEN j.wageType = com.itda.enums.WageType.MONTHLY THEN CAST(j.wage AS double) / 209.0 " +
-                    "ELSE CAST(j.wage AS double) END DESC, j.id DESC";
+            // 시급 환산은 JPQL에서 복잡하므로 단순 wage DESC로 조회 후
+            // 서비스 레이어에서 재정렬한다 — 여기서는 id DESC (최신순)로 fallback
+            return " ORDER BY j.id DESC";
         }
         if ("WORK_DATE".equals(sortType)) {
             return " ORDER BY j.workDate ASC, j.id DESC";
