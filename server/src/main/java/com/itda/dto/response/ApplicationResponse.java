@@ -13,7 +13,8 @@ public record ApplicationResponse(
         String appliedAt,
         JobPostCardResponse jobPost,  // 공고 카드 DTO 재활용 (liked 포함)
         Long employerUserId,
-        boolean instantHire  // 즉시 채용 오퍼 여부 — 구직자 화면에서 수락 버튼 동작 결정에 사용
+        boolean instantHire, // 즉시 채용 오퍼 여부 — 구직자 화면에서 수락 버튼 동작 결정에 사용
+        String initiatedBy
 ) {
     public static ApplicationResponse from(Application application, boolean liked) {
         return new ApplicationResponse(
@@ -22,7 +23,9 @@ public record ApplicationResponse(
                 application.getAppliedAt() != null ? application.getAppliedAt().toString() : null,
                 JobPostCardResponse.from(application.getJobPost(), liked),
                 application.getJobPost().getWorkplace().getEmployer().getUser().getId(),
-                application.isInstantHire()
+                application.isInstantHire(),
+                application.getInitiatedBy().name()
+
         );
     }
 }

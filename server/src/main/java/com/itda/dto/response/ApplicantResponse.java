@@ -22,7 +22,8 @@ public record ApplicantResponse(
         long matchCount,
         String status,
         String appliedAt,
-        boolean instantHire  // 즉시 채용 오퍼 여부
+        boolean instantHire, // 즉시 채용 오퍼 여부
+        String initiatedBy
 ) {
     public static ApplicantResponse from(Application application, long matchCount, Long resumeId) {
         User user = application.getApplicantUser();
@@ -44,7 +45,10 @@ public record ApplicantResponse(
                 matchCount,
                 application.getStatus().name(),
                 application.getAppliedAt() != null ? application.getAppliedAt().toString() : null,
-                application.isInstantHire()
+                application.isInstantHire(),
+                application.getInitiatedBy().name()
+
+                
         );
     }
 }
