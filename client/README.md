@@ -11,21 +11,23 @@
 
 | 분류 | 기술 |
 |------|------|
-| Framework | React 19, TypeScript 6 |
+| Framework | React 19.2, TypeScript ~6.0 |
 | Build | Vite 8 |
-| Styling | Styled Components 6 |
+| Styling | styled-components 6 |
 | 클라이언트 상태 | Zustand 5 |
-| 서버 상태 | TanStack React Query 5 |
-| HTTP | Axios (`httpClient` / `authClient`) |
+| 서버 상태 | TanStack Query 5 (`@tanstack/react-query`, 개발 시 Devtools) |
+| HTTP | Axios 1 (`httpClient` / `authClient`), `qs` (쿼리 직렬화) |
 | 라우팅 | React Router DOM 7 (`BrowserRouter`) |
 | 폼 | React Hook Form 7 |
-| DnD | @dnd-kit |
+| DnD | @dnd-kit (core, sortable) |
+| UI 보조 | Radix Progress, `polished` |
 | 아이콘 | Lucide React |
 | 토스트 | react-hot-toast |
 | 무한 스크롤 | react-intersection-observer |
+| 주소 검색 | react-daum-postcode |
 | Mock (개발) | MSW 2 |
-| 테스트 | Vitest, Testing Library |
-| Lint | ESLint 9 + TypeScript ESLint |
+| 테스트 | Vitest 3, Testing Library, jsdom |
+| Lint | ESLint 9 + typescript-eslint |
 
 ---
 
@@ -63,42 +65,49 @@ src/
 │   ├── footer/
 │   ├── sidebar/                # DashboardSidebar (접기/펼치기)
 │   ├── manager/                # ManagerSidebar, 지표 카드
-│   ├── landing/                # 메인 랜딩 섹션
-│   ├── jobPost/                # 필터, 무한 목록, 상세, 폼
+│   ├── landing/                # 메인 랜딩 (핵심 기능·쇼케이스)
+│   ├── jobPost/                # 필터, 무한 목록, 상세, 작성·수정 폼
 │   ├── resume/
 │   ├── workplace/
-│   ├── calendar/               # 월간/주간 캘린더 (고용주·구직자)
-│   ├── application/            # 지원 상태별 목록
-│   ├── applicant/
+│   ├── calendar/               # 고용주·구직자 캘린더, 주간 시간표·가용 시간표
+│   ├── application/            # 지원·제안 상태별 목록
+│   ├── applicant/              # 공고별 지원자 목록·일괄 제안 진입
 │   ├── notification/
 │   └── settings/
 │
 ├── features/
 │   ├── auth/                   # 로그인·회원가입, 세션 복구
-│   ├── jobPost/                # 공고 CRUD, 템플릿, 필터
+│   ├── jobPost/                # 공고 CRUD, 템플릿, 마감·소유자 액션
 │   ├── workplace/              # 사업장 CRUD
 │   ├── apply/                  # 지원하기
-│   ├── application/            # 제안 수락·거절
-│   ├── applicant/              # 지원자 승인·거절·채용 취소
-│   ├── offer/                  # 인재 제안
+│   ├── application/            # 제안 수락·거절, 구직자 액션 메뉴
+│   ├── applicant/              # 지원자 승인·거절·채용 확정·완료
+│   ├── offer/                  # 일괄 고용 제안, 자동 제안 대상, 이력서·공고 제안
 │   ├── like/                   # 공고·이력서 좋아요
 │   ├── review/                 # 근무 후 리뷰
-│   ├── manager/                # 신고 처리, 회원 정지
+│   ├── report/                 # 유저 신고 (모달·컨텍스트 메뉴)
+│   ├── manager/                # 회원 정지, 신고 상태 처리
 │   ├── user-profile/           # 프로필·비밀번호·이미지
+│   ├── profileSetup/           # 사업장 필수 등록 유도 등 온보딩
+│   ├── longTermWorker/         # 장기 근로자 토글
 │   ├── search-address/         # 다음 우편번호
-│   ├── control-Image/            # 이미지 업로드 UI
-│   └── notification/           # SSE 토스트
+│   ├── control-Image/          # 이미지 업로드 UI
+│   └── notification/           # SSE 연동 토스트
 │
 ├── entities/
 │   ├── auth/                   # JWT, refresh, 역할(EMPLOYER|APPLICANT|MANAGER)
 │   ├── user/
-│   ├── jobPost/                # 공고 API, 카드, 마감일 필터
+│   ├── jobPost/                # 공고 API, 카드, 템플릿, 일괄 제안
 │   ├── resume/
 │   ├── workplace/
 │   ├── application/
 │   ├── schedule/               # 캘린더 일정
-│   ├── notification/           # 알림 목록, SSE
+│   ├── workerAvailability/     # 구직자 주간 가용 시간
+│   ├── notification/           # 알림 API, SSE 훅
 │   ├── review/
+│   ├── report/                 # 신고 API·타입
+│   ├── longTermWorker/
+│   ├── profileSetup/           # 프로필·사업장 세팅 상태
 │   └── manager/                # 관리자 API·지표
 │
 └── shared/
@@ -131,15 +140,15 @@ flowchart TB
   end
 
   subgraph L3["widgets — UI 블록 조합"]
-    W["header · sidebar · jobPost · calendar · landing …"]
+    W["header · sidebar · jobPost · calendar · applicant · landing …"]
   end
 
   subgraph L4["features — 사용자 액션"]
-    F["auth · apply · like · workplace · manager …"]
+    F["auth · apply · like · workplace · offer · report …"]
   end
 
   subgraph L5["entities — 도메인"]
-    E["jobPost · resume · auth · application · schedule …"]
+    E["jobPost · resume · auth · application · schedule · notification · workerAvailability …"]
   end
 
   subgraph L6["shared — 공통"]
@@ -215,18 +224,20 @@ mindmap
       admin
       auth
     widgets
-      header footer sidebar
-      landing jobPost calendar
-      resume workplace manager
+      header footer sidebar notification
+      landing jobPost calendar applicant
+      application resume workplace manager settings
     features
       auth apply like
       jobPost workplace
       application applicant offer
-      review manager user-profile
+      review report manager
+      user-profile profileSetup longTermWorker
     entities
       auth user jobPost resume
       workplace application schedule
-      notification review manager
+      workerAvailability notification review
+      report longTermWorker profileSetup manager
     shared
       ui api theme mocks lib
 ```
@@ -281,13 +292,14 @@ flowchart LR
 - 공고 검색·필터·무한 스크롤 목록, 추천순(`RECOMMENDED`) 정렬
 - 메인 추천 공고, 공고 상세·지원·좋아요
 - 이력서 작성·관리, 지원·제안 내역
+- 주간 가용 시간 등록·수정(매칭·추천 시그널에 활용)
 - 근무 일정 캘린더(월간/주간), 리뷰 작성
 
 ### 고용주 (Employer)
 - 사업장 등록·수정(multipart), 네이버 지도·주소 검색
-- 공고 작성·수정·삭제·마감, 템플릿 저장/불러오기
-- 지원자 관리(승인/거절), 인재풀·제안
-- 캘린더 일정, 대시보드 공고 요약
+- 공고 작성·수정·삭제·마감, 템플릿 저장/불러오기, 자동 제안 조건 입력
+- 지원자 관리(승인/거절/채용 확정·완료), **일괄 고용 제안(Bulk offer)**
+- 인재풀·이력서 기반 제안, 캘린더 일정, 대시보드 공고 요약
 
 ### 관리자 (Manager)
 - `/admin` — `ManagerGuard` + 전용 사이드바
@@ -442,4 +454,4 @@ npm run test:watch
 ## 관련 문서
 
 - [프로젝트 소개 (GitHub Pages)](https://kookmin-sw.github.io/2026-capstone-83/)
-- [백엔드 README](../server/README.md) (있는 경우)
+- [백엔드 README](../server/README.md)
