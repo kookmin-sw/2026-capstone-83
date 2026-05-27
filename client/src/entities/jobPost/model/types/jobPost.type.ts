@@ -240,6 +240,9 @@ export interface GetJobPostsParams extends CursorParams {
   jobSubcategory?: string;
   location?: string;
   workDate?: string;
+
+  // 급구 공고만 필터링
+  urgentOnly?: boolean;
 }
 
 // 목록 조회 응답

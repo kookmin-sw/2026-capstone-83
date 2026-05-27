@@ -48,6 +48,7 @@ const RESET_FILTER_PARAMS: Partial<GetJobPostsParams> = {
   ageRequirements: undefined,
   benefits: undefined,
   weekdays: undefined,
+  urgentOnly: undefined,
   workDate: undefined,
   workDateFrom: undefined,
   workDateTo: undefined,
@@ -71,6 +72,7 @@ export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
   const [draftWageType, setDraftWageType] = useState<WageType | undefined>(activeFilters.wageType);
   const [draftTimeTags, setDraftTimeTags] = useState<TimeTag[]>(activeFilters.timeTags || []);
   const [draftCerts, setDraftCerts] = useState<CertificateType[]>(activeFilters.certRequirements || []);
+  const [draftUrgentOnly, setDraftUrgentOnly] = useState<boolean>(activeFilters.urgentOnly || false);
 
   // 검색 버튼: 키워드 + 필터 패널 옵션 한 번에 반영
   const handleSearch = () => {
@@ -81,6 +83,7 @@ export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
       wageType: draftWageType,
       timeTags: draftTimeTags.length > 0 ? draftTimeTags : undefined,
       certRequirements: draftCerts.length > 0 ? draftCerts : undefined,
+      urgentOnly: draftUrgentOnly || undefined,
     });
   };
 
@@ -116,6 +119,7 @@ export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
     setDraftWageType(undefined);
     setDraftTimeTags([]);
     setDraftCerts([]);
+    setDraftUrgentOnly(false);
   };
 
   const handleReset = () => {
@@ -148,6 +152,7 @@ export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
     draftLocation,
     draftMinWage,
     draftWageType,
+    draftUrgentOnly,
   ].filter(Boolean).length;
 
   return (
@@ -293,6 +298,23 @@ export const JobPostFilterBar = ({ activeFilters, onFilterChange }: Props) => {
                   {opt.label}
                 </Button>
               ))}
+            </S.TagGroup>
+          </S.FilterSection>
+
+          {/* 급구 */}
+          <S.FilterSection>
+            <S.FilterLabel>급구</S.FilterLabel>
+            <S.TagGroup>
+              <Button
+                type="button"
+                scheme={draftUrgentOnly ? 'optionActive' : 'option'}
+                buttonSize="xsmall"
+                fontSize="xsmall"
+                borderRadius="round"
+                onClick={() => setDraftUrgentOnly(!draftUrgentOnly)}
+              >
+                🔥 급구 공고만 보기
+              </Button>
             </S.TagGroup>
           </S.FilterSection>
 
