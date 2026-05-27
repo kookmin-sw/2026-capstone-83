@@ -37,8 +37,8 @@ import java.util.List;
  *
  * <h3>생성 불가 케이스 (AutoMatchTransactionalSupport 에서 처리)</h3>
  * <ul>
- *   <li>활성 지원(APPLIED/OFFERED/PENDING/HIRED)이 이미 존재하면 스킵</li>
- *   <li>REJECTED/CANCELLED 만 있으면 재매칭 허용</li>
+ *   <li>상태에 관계없이 지원 이력이 한 번이라도 있으면 스킵 — REJECTED/CANCELLED 포함</li>
+ *   <li>재지원은 구직자가 수동으로만 가능</li>
  *   <li>절대로 HIRED 상태로 자동 생성하지 않는다 — 항상 APPLIED + APPLICANT</li>
  * </ul>
  */

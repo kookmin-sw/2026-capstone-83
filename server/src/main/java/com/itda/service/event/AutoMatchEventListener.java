@@ -3,9 +3,10 @@ package com.itda.service.event;
 import com.itda.service.AutoMatchService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.event.TransactionPhase;
+import org.springframework.transaction.event.TransactionalEventListener;
 
 /**
  * 자동 매칭 이벤트 리스너.
@@ -26,9 +27,12 @@ public class AutoMatchEventListener {
     /**
      * 구직자 가용시간 등록/수정 이벤트 처리.
      * 가용시간 범위에 포함되는 OPEN 공고와 자동 매칭을 시도한다.
+     *
+     * <p>{@code AFTER_COMMIT}: 가용시간 저장 트랜잭션이 커밋된 뒤에만 실행된다.
+     * 트랜잭션이 롤백되면 이벤트는 폐기된다.
      */
     @Async("eventsExecutor")
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onAvailabilityCreated(AutoMatchEvents.AvailabilityCreatedEvent event) {
         try {
             autoMatchService.matchForAvailability(event);
@@ -41,9 +45,13 @@ public class AutoMatchEventListener {
     /**
      * 구인 공고 등록 이벤트 처리.
      * 공고 시간대를 포함하는 가용시간을 가진 구직자와 자동 매칭을 시도한다.
+     *
+     * <p>{@code AFTER_COMMIT}: 공고 저장 트랜잭션이 커밋된 뒤에만 실행된다.
+     * 커밋 전에 실행하면 {@code tryCreate} 의 {@code findById(jobPostId)} 가
+     * 미커밋 공고를 찾지 못해 {@link com.itda.exception.NotFoundException} 을 던지고 매칭이 실패한다.
      */
     @Async("eventsExecutor")
-    @EventListener
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void onJobPostCreated(AutoMatchEvents.JobPostCreatedEvent event) {
         try {
             autoMatchService.matchForJobPost(event);

@@ -17,7 +17,6 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
-import java.util.Set;
 
 /**
  * 자동 매칭 1건의 트랜잭션 처리 지원 빈.
@@ -33,13 +32,6 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class AutoMatchTransactionalSupport {
 
-    /** 활성 지원 상태 — 이미 진행 중인 지원이면 중복 생성 없이 스킵. */
-    private static final Set<ApplicationStatus> ACTIVE_STATUSES = Set.of(
-            ApplicationStatus.APPLIED,
-            ApplicationStatus.OFFERED,
-            ApplicationStatus.PENDING,
-            ApplicationStatus.HIRED);
-
     private final ApplicationRepository applicationRepository;
     private final JobPostRepository jobPostRepository;
     private final UserRepository userRepository;
@@ -49,23 +41,24 @@ public class AutoMatchTransactionalSupport {
      * (구직자, 공고) 한 쌍에 대해 Application 생성을 시도한다.
      *
      * <ul>
-     *   <li>활성 지원(APPLIED/OFFERED/PENDING/HIRED)이 이미 존재하면 <b>스킵</b>한다.</li>
-     *   <li>REJECTED/CANCELLED 상태만 있으면 재매칭을 허용한다(새 Application 생성).</li>
+     *   <li>상태에 관계없이 지원 이력이 한 번이라도 존재하면 <b>스킵</b>한다.
+     *       REJECTED(고용주 거절)·CANCELLED(구직자 취소) 포함 — 재지원은 구직자가 수동으로만 가능.</li>
      *   <li>Application 이 성공적으로 생성되면 구직자에게 {@code AUTO_MATCHED},
      *       고용주에게 {@code NEW_APPLICATION} 알림을 각각 발송한다.</li>
      * </ul>
      *
      * @param applicantUserId 구직자 User ID
-     * @param jobPostId       대표 JobPost ID (자정 분할 공고의 Day1 레코드 PK)
+     * @param jobPostId       대표 JobPost ID
      */
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void tryCreate(Long applicantUserId, Long jobPostId) {
-        // 활성 지원이 이미 존재하면 스킵
+        // 지원 이력이 한 번이라도 있으면 자동 재매칭하지 않는다.
+        // REJECTED/CANCELLED 포함 — 재지원은 구직자가 수동으로만 가능.
         Optional<Application> existing =
                 applicationRepository.findByJobPostIdAndApplicantUserId(jobPostId, applicantUserId);
-        if (existing.isPresent() && ACTIVE_STATUSES.contains(existing.get().getStatus())) {
-            log.debug("[AutoMatch] 스킵 — 활성 지원 존재: applicantUserId={}, jobPostId={}",
-                    applicantUserId, jobPostId);
+        if (existing.isPresent()) {
+            log.debug("[AutoMatch] 스킵 — 지원 이력 존재(status={}): applicantUserId={}, jobPostId={}",
+                    existing.get().getStatus(), applicantUserId, jobPostId);
             return;
         }
 
