@@ -15,6 +15,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
 import java.util.List;
 
 @Configuration
@@ -39,10 +40,7 @@ public class SecurityConfig {
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .userDetailsService(customUserDetailsService)
                 .authorizeHttpRequests(auth -> auth
-                        // CORS 프리플라이트 통과
-                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-
-                        // 인증 관련 공개 엔드포인트
+                        // ── 공개 엔드포인트 ──────────────────────────
                         .requestMatchers(
                                 "/api/v1/signup",
                                 "/api/v1/login",
@@ -51,14 +49,30 @@ public class SecurityConfig {
                                 "/api/v1/auth/**"
                         ).permitAll()
 
-                        // 공고 목록/상세 조회는 비로그인 허용
+                        // 공고 목록/상세 조회는 비로그인도 허용
                         .requestMatchers(HttpMethod.GET, "/api/v1/job-posts").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/v1/job-posts/*").permitAll()
 
-                        // 매니저 전용 엔드포인트
-                        .requestMatchers("/api/v1/manager/**").hasRole("MANAGER")
+                        // CORS preflight
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
-                        // 그 외는 모두 인증 필요
+                        // ── 고용주 전용 ─────────────────────────────
+                        .requestMatchers(HttpMethod.POST, "/api/v1/job-posts").hasRole("EMPLOYER")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/job-posts/*/close").hasRole("EMPLOYER")
+                        .requestMatchers("/api/v1/job-posts/employer/**").hasRole("EMPLOYER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/job-posts/*/applicants").hasRole("EMPLOYER")
+                        .requestMatchers("/api/v1/applications/*/accept").hasRole("EMPLOYER")
+                        .requestMatchers("/api/v1/applications/*/reject").hasRole("EMPLOYER")
+                        .requestMatchers("/api/v1/workplaces/**").hasRole("EMPLOYER")
+
+                        // ── 구직자 전용 ─────────────────────────────
+                        .requestMatchers(HttpMethod.POST, "/api/v1/job-posts/*/apply").hasRole("APPLICANT")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/job-posts/*/applied").hasRole("APPLICANT")
+                        .requestMatchers("/api/v1/applications/*/accept-offer").hasRole("APPLICANT")
+                        .requestMatchers("/api/v1/worker/**").hasRole("APPLICANT")
+                        .requestMatchers("/api/v1/resume/**").hasRole("APPLICANT")
+
+                        // ── 그 외는 인증 필요 ────────────────────────
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
@@ -79,9 +93,6 @@ public class SecurityConfig {
 
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
-        // 응답에서 FE 가 읽을 수 있도록 명시 노출.
-        // - X-Request-Id: 공고 목록 응답 → 클릭 시 같은 값을 X-Request-Id 헤더로 되돌려 보내 NDCG@10 정확도 향상
-        config.setExposedHeaders(List.of("X-Request-Id"));
         config.setAllowCredentials(true); // credentials: include 필수
         config.setMaxAge(3600L);
 

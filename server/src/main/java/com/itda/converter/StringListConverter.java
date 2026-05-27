@@ -19,7 +19,9 @@ public class StringListConverter implements AttributeConverter<List<String>, Str
     // Java List -> DB JSON String
     @Override
     public String convertToDatabaseColumn(List<String> attribute) {
-        if (attribute == null || attribute.isEmpty()) return null;
+        // null·빈 리스트를 null 로 저장하면 JSON_CONTAINS(NULL, ...) = NULL → 매칭 불가.
+        // '[]' 로 저장해야 JSON 함수가 안전하게 동작한다.
+        if (attribute == null || attribute.isEmpty()) return "[]";
         try {
             return objectMapper.writeValueAsString(attribute);
         } catch (Exception e) {
