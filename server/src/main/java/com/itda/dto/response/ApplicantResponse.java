@@ -10,7 +10,7 @@ import java.time.Period;
  * 지원자 목록 조회, 근무자 목록 조회에서 공통 사용
  */
 public record ApplicantResponse(
-        Long applicationId,  // ✨ 추가
+        Long applicationId,
         Long userId,
         Long resumeId,
         String name,
@@ -21,7 +21,8 @@ public record ApplicantResponse(
         String location,
         long matchCount,
         String status,
-        String appliedAt    
+        String appliedAt,
+        boolean instantHire  // 즉시 채용 오퍼 여부
 ) {
     public static ApplicantResponse from(Application application, long matchCount, Long resumeId) {
         User user = application.getApplicantUser();
@@ -31,7 +32,7 @@ public record ApplicantResponse(
         }
 
         return new ApplicantResponse(
-                application.getId(),  // ✨ 추가
+                application.getId(),
                 user.getId(),
                 resumeId,
                 user.getName(),
@@ -42,7 +43,8 @@ public record ApplicantResponse(
                 user.getLocation(),
                 matchCount,
                 application.getStatus().name(),
-                application.getAppliedAt() != null ? application.getAppliedAt().toString() : null
+                application.getAppliedAt() != null ? application.getAppliedAt().toString() : null,
+                application.isInstantHire()
         );
     }
 }

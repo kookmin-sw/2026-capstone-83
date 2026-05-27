@@ -35,6 +35,16 @@ public class Application {
     @Column(name = "initiated_by", nullable = false, length = 10)
     private InitiatedBy initiatedBy;
 
+    /**
+     * 즉시 채용 오퍼 플래그 (오퍼 발송 시점 정책 스냅샷).
+     * true  → 구직자 수락 시 OFFERED → HIRED 즉시 전환 (장기근무자·이력서 좋아요 대상)
+     * false → 구직자 수락 시 OFFERED → PENDING (고용주 최종 확정 대기)
+     * 오퍼 발송 후 변경되지 않는다.
+     */
+    @Builder.Default
+    @Column(name = "instant_hire", nullable = false)
+    private boolean instantHire = false;
+
     @Column(name = "applied_at", updatable = false)
     private LocalDateTime appliedAt;
 

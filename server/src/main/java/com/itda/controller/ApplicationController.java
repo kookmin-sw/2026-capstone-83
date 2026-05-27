@@ -45,12 +45,13 @@ public class ApplicationController {
         return ResponseEntity.ok(Map.of("applied", applied));
     }
 
-    // 지원자 → 고용주 제안 수락 (OFFERED → PENDING)
+    // 지원자 → 오퍼 수락
+    // instantHire=true 이면 OFFERED → HIRED, false 이면 OFFERED → PENDING
     @PostMapping("/api/v1/applications/{id}/accept-offer")
     public ResponseEntity<Void> acceptOffer(
             @PathVariable Long id,
             @AuthenticationPrincipal User user) {
-        applicationService.acceptOffer(id);
+        applicationService.acceptOffer(id, user);
         return ResponseEntity.ok().build();
     }
 

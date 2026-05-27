@@ -21,6 +21,8 @@ import com.itda.enums.JobPostStatus;
 import com.itda.repository.ApplicationRepository;
 import com.itda.repository.JobPostLikeRepository;
 import com.itda.repository.JobPostRepository;
+import com.itda.repository.LongTermWorkerRepository;
+import com.itda.repository.ResumeLikeRepository;
 import com.itda.repository.ResumeRepository;
 import com.itda.repository.UserRepository;
 import com.itda.exception.DuplicateException;
@@ -34,6 +36,7 @@ import org.springframework.security.access.AccessDeniedException;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
 
@@ -49,6 +52,8 @@ public class ApplicationService {
     private final ResumeRepository resumeRepository;
     private final NotificationService notificationService;
     private final UserRepository userRepository;
+    private final LongTermWorkerRepository longTermWorkerRepository;
+    private final ResumeLikeRepository resumeLikeRepository;
 
 
     // ─── 구직자 API ───────────────────────────────────────────
@@ -67,6 +72,7 @@ public class ApplicationService {
                 .applicantUser(applicant)
                 .status(ApplicationStatus.APPLIED)
                 .initiatedBy(InitiatedBy.APPLICANT)
+                .instantHire(false)
                 .build();
 
         Application saved = applicationRepository.save(application);
@@ -90,23 +96,48 @@ public class ApplicationService {
                 .isPresent();
     }
 
-    // 지원자 → 고용주 제안 수락 (OFFERED → PENDING)
+    /**
+     * 구직자의 오퍼 수락 처리.
+     *
+     * <ul>
+     *   <li>일반 오퍼 ({@code instantHire=false}): OFFERED → PENDING (고용주 최종 확정 대기)</li>
+     *   <li>즉시 채용 오퍼 ({@code instantHire=true}): OFFERED → HIRED
+     *       (장기근무자·이력서 좋아요 대상에게 발송된 오퍼 — filledSlots 증가 포함)</li>
+     * </ul>
+     *
+     * 분기 정책은 오퍼 발송 시점에 {@code Application.instantHire} 로 스냅샷 저장되어 있으므로
+     * 수락 시점에는 그 값만 보고 라우팅한다.
+     */
     @Transactional
-    public Application acceptOffer(Long applicationId) {
+    public Application acceptOffer(Long applicationId, User applicant) {
         Application application = applicationRepository.findById(applicationId)
                 .orElseThrow(() -> new NotFoundException("지원 내역을 찾을 수 없습니다."));
 
+        if (!application.getApplicantUser().getId().equals(applicant.getId())) {
+            throw new AccessDeniedException("본인의 지원만 수락할 수 있습니다.");
+        }
         if (application.getStatus() != ApplicationStatus.OFFERED) {
             throw new IllegalStateException("현재 상태에서는 수락할 수 없습니다.");
         }
 
+        return application.isInstantHire()
+                ? processInstantHire(application)
+                : processRegularOffer(application);
+    }
+
+    /** 즉시 채용: OFFERED → HIRED */
+    private Application processInstantHire(Application application) {
         JobPost jobPost = application.getJobPost();
+        jobPost.confirmHire();
+        jobPostRepository.save(jobPost);
+
         Application saved = applicationRepository.save(Application.builder()
                 .id(application.getId())
                 .jobPost(jobPost)
                 .applicantUser(application.getApplicantUser())
-                .status(ApplicationStatus.PENDING)
+                .status(ApplicationStatus.HIRED)
                 .initiatedBy(application.getInitiatedBy())
+                .instantHire(true)
                 .appliedAt(application.getAppliedAt())
                 .build());
 
@@ -114,9 +145,37 @@ public class ApplicationService {
         notificationService.notify(
                 employerUserId,
                 NotificationType.OFFER_ACCEPTED,
-                application.getApplicantUser().getName() + "님이 [" + jobPost.getTitle() + "] 제안을 수락했습니다.",
-                saved.getId()
-        );
+                application.getApplicantUser().getName() + "님이 ["
+                        + jobPost.getTitle() + "] 채용을 수락했습니다.",
+                saved.getId());
+        notificationService.notify(
+                application.getApplicantUser().getId(),
+                NotificationType.HIRED,
+                "[" + jobPost.getTitle() + "] 채용이 확정되었습니다.",
+                saved.getId());
+        return saved;
+    }
+
+    /** 일반 오퍼: OFFERED → PENDING */
+    private Application processRegularOffer(Application application) {
+        JobPost jobPost = application.getJobPost();
+        Application saved = applicationRepository.save(Application.builder()
+                .id(application.getId())
+                .jobPost(jobPost)
+                .applicantUser(application.getApplicantUser())
+                .status(ApplicationStatus.PENDING)
+                .initiatedBy(application.getInitiatedBy())
+                .instantHire(false)
+                .appliedAt(application.getAppliedAt())
+                .build());
+
+        Long employerUserId = jobPost.getWorkplace().getEmployer().getUser().getId();
+        notificationService.notify(
+                employerUserId,
+                NotificationType.OFFER_ACCEPTED,
+                application.getApplicantUser().getName() + "님이 ["
+                        + jobPost.getTitle() + "] 제안을 수락했습니다.",
+                saved.getId());
         return saved;
     }
 
@@ -141,6 +200,7 @@ public class ApplicationService {
                 .applicantUser(application.getApplicantUser())
                 .status(ApplicationStatus.HIRED)
                 .initiatedBy(application.getInitiatedBy())
+                .instantHire(application.isInstantHire())
                 .appliedAt(application.getAppliedAt())
                 .build());
 
@@ -273,11 +333,16 @@ public class ApplicationService {
         if (applicant.getRole() != UserRole.APPLICANT) {
             throw new IllegalStateException("구직자에게만 제안할 수 있습니다.");
         }
-
         // 공고 상태 검증
         if (jobPost.getStatus() != JobPostStatus.OPEN) {
             throw new IllegalStateException("모집 중인 공고만 제안할 수 있습니다.");
         }
+
+        // 오퍼 발송 시점에 즉시 채용 여부 결정 (정책 스냅샷)
+        boolean isInstant = isInstantHireTarget(employer.getId(), applicant.getId());
+        String offerMessage = isInstant
+                ? "[" + jobPost.getTitle() + "] 채용 제안이 왔습니다. 수락하면 바로 채용이 확정됩니다."
+                : "[" + jobPost.getTitle() + "]에 채용 제안이 왔습니다.";
 
         // 중복 제안 처리
         Application existing = applicationRepository
@@ -294,15 +359,13 @@ public class ApplicationService {
                         .applicantUser(existing.getApplicantUser())
                         .status(ApplicationStatus.OFFERED)
                         .initiatedBy(InitiatedBy.EMPLOYER)
+                        .instantHire(isInstant)
                         .appliedAt(existing.getAppliedAt())
                         .build());
 
                 notificationService.notify(
-                        applicant.getId(),
-                        NotificationType.OFFER_RECEIVED,
-                        "[" + jobPost.getTitle() + "]에 채용 제안이 왔습니다.",
-                        updated.getId()
-                );
+                        applicant.getId(), NotificationType.OFFER_RECEIVED,
+                        offerMessage, updated.getId());
                 return updated;
             }
             // 활성 상태면 차단
@@ -315,15 +378,12 @@ public class ApplicationService {
                 .applicantUser(applicant)
                 .status(ApplicationStatus.OFFERED)
                 .initiatedBy(InitiatedBy.EMPLOYER)
+                .instantHire(isInstant)
                 .build());
 
-        // 알림: 구직자에게 채용 제안 알림
         notificationService.notify(
-                applicant.getId(),
-                NotificationType.OFFER_RECEIVED,
-                "[" + jobPost.getTitle() + "]에 채용 제안이 왔습니다.",
-                saved.getId()
-        );
+                applicant.getId(), NotificationType.OFFER_RECEIVED,
+                offerMessage, saved.getId());
 
         return saved;
     }
@@ -342,6 +402,7 @@ public class ApplicationService {
                 .applicantUser(application.getApplicantUser())
                 .status(ApplicationStatus.PENDING)
                 .initiatedBy(application.getInitiatedBy())
+                .instantHire(application.isInstantHire())
                 .appliedAt(application.getAppliedAt())
                 .build());
 
@@ -379,6 +440,7 @@ public class ApplicationService {
                 .applicantUser(application.getApplicantUser())
                 .status(ApplicationStatus.HIRED)
                 .initiatedBy(application.getInitiatedBy())
+                .instantHire(application.isInstantHire())
                 .appliedAt(application.getAppliedAt())
                 .build());
 
@@ -406,6 +468,7 @@ public class ApplicationService {
                 .applicantUser(application.getApplicantUser())
                 .status(ApplicationStatus.REJECTED)
                 .initiatedBy(application.getInitiatedBy())
+                .instantHire(application.isInstantHire())
                 .appliedAt(application.getAppliedAt())
                 .build());
 
@@ -435,6 +498,7 @@ public class ApplicationService {
                 .applicantUser(application.getApplicantUser())
                 .status(ApplicationStatus.COMPLETED)
                 .initiatedBy(application.getInitiatedBy())
+                .instantHire(application.isInstantHire())
                 .appliedAt(application.getAppliedAt())
                 .build());
 
@@ -545,10 +609,20 @@ public class ApplicationService {
                 .findByJobPostId(jobPostId)
                 .stream().map(a -> a.getApplicantUser().getId()).toList();
 
+        // 즉시 채용 대상 배치 조회 (N+1 방지)
+        List<Long> allUserIds = request.userIds();
+        Set<Long> instantHireUserIds = new java.util.HashSet<>();
+        instantHireUserIds.addAll(
+                longTermWorkerRepository.findApplicantUserIdsByEmployerAndApplicantsIn(
+                        employer.getId(), allUserIds));
+        instantHireUserIds.addAll(
+                resumeLikeRepository.findApplicantUserIdsLikedByEmployer(
+                        employer.getId(), allUserIds));
+
         int offeredCount = 0;
         int skippedCount = 0;
 
-        for (Long userId : request.userIds()) {
+        for (Long userId : allUserIds) {
             // 날짜 겹침 or 중복 지원이면 스킵
             if (excludedByDate.contains(userId) || excludedByDuplicate.contains(userId)) {
                 skippedCount++;
@@ -561,19 +635,22 @@ public class ApplicationService {
                 continue;
             }
 
-            applicationRepository.save(Application.builder()
+            boolean isInstant = instantHireUserIds.contains(userId);
+            String offerMessage = isInstant
+                    ? "[" + jobPost.getTitle() + "] 채용 제안이 왔습니다. 수락하면 바로 채용이 확정됩니다."
+                    : "[" + jobPost.getTitle() + "]에 채용 제안이 왔습니다.";
+
+            Application saved = applicationRepository.save(Application.builder()
                     .jobPost(jobPost)
                     .applicantUser(applicant)
                     .status(ApplicationStatus.OFFERED)
                     .initiatedBy(InitiatedBy.EMPLOYER)
+                    .instantHire(isInstant)
                     .build());
 
             notificationService.notify(
-                    userId,
-                    NotificationType.OFFER_RECEIVED,
-                    "[" + jobPost.getTitle() + "]에 채용 제안이 왔습니다.",
-                    jobPostId
-            );
+                    userId, NotificationType.OFFER_RECEIVED,
+                    offerMessage, saved.getId());
 
             offeredCount++;
         }
@@ -608,6 +685,23 @@ public class ApplicationService {
     }
 
     // ─── 내부 헬퍼 ───────────────────────────────────────────
+
+    /**
+     * (고용주, 구직자) 조합이 즉시 채용 오퍼 대상인지 판정.
+     * 다음 조건 중 하나라도 만족하면 true:
+     *   - 고용주가 해당 구직자를 장기근무자로 등록
+     *   - 고용주가 해당 구직자의 이력서를 좋아요
+     */
+    private boolean isInstantHireTarget(Long employerUserId, Long applicantUserId) {
+        if (longTermWorkerRepository.existsByEmployerUserIdAndApplicantUserId(
+                employerUserId, applicantUserId)) {
+            return true;
+        }
+        return resumeRepository.findByUserId(applicantUserId)
+                .map(resume -> resumeLikeRepository.existsByEmployerUserIdAndResumeId(
+                        employerUserId, resume.getId()))
+                .orElse(false);
+    }
 
     // 소유권 검증: 해당 공고의 고용주인지 확인
     private void verifyOwnership(Application application, Long userId) {
