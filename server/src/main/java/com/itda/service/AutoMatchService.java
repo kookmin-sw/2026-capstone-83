@@ -62,6 +62,13 @@ public class AutoMatchService {
      * 공고 근무 시간이 {@code minDurationMinutes} 이상이면 Application 생성을 시도한다.
      */
     public void matchForAvailability(AutoMatchEvents.AvailabilityCreatedEvent event) {
+        // preferredDistricts 가 비어있으면 JPQL 의 IN () 구문이 DB 오류를 유발한다 → 조기 종료.
+        if (event.preferredDistricts() == null || event.preferredDistricts().isEmpty()) {
+            log.warn("[AutoMatch] preferredDistricts 미설정 — 매칭 건너뜀. userId={}, availabilityId={}",
+                    event.userId(), event.availabilityId());
+            return;
+        }
+
         List<Long> postIds = jobPostRepository.findMatchingJobPostIdsForAvailability(
                 event.availStartAt(), event.availEndAt(), event.userId(),
                 event.preferredDistricts());
@@ -99,6 +106,14 @@ public class AutoMatchService {
      * 탐색하고, 각 구직자에 대해 Application 생성을 시도한다.
      */
     public void matchForJobPost(AutoMatchEvents.JobPostCreatedEvent event) {
+        // workplaceDistrict 가 비어있으면 JSON_CONTAINS(preferred, JSON_QUOTE('')) 로 아무것도 매칭 안 된다.
+        // V5 이전에 생성된 사업장(district='')이거나 아직 지역 미설정 사업장인 경우에 해당한다.
+        if (event.workplaceDistrict() == null || event.workplaceDistrict().isBlank()) {
+            log.warn("[AutoMatch] workplaceDistrict 미설정 — 사업장에 지역을 등록해야 자동 매칭됩니다. jobPostId={}",
+                    event.jobPostId());
+            return;
+        }
+
         int postDurationMinutes = (int) Duration.between(
                 event.workStartAt(), event.workEndAt()).toMinutes();
 
