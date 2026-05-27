@@ -98,8 +98,8 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JobPost
     // 공고 목록 통합 필터 조회는 JobPostRepositoryCustom#findByDynamicFilter 로 위임.
 
     /**
-     * 자동 매칭(가용시간 등록 트리거)용 — 구직자 가용시간 범위에 완전히 포함되는
-     * OPEN 공고의 ID 목록을 반환한다.
+     * 자동 매칭(가용시간 등록 트리거)용 — 구직자 가용시간 범위에 완전히 포함되고
+     * 희망 지역에 해당하는 OPEN 공고의 ID 목록을 반환한다.
      *
      * <p><b>매칭 조건 (avail ⊇ post):</b>
      * <ol>
@@ -107,13 +107,15 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JobPost
      *   <li>{@code workEndAt ≤ availEnd}: 공고가 가용시간 종료 이전에 끝난다.</li>
      *   <li>{@code status = OPEN}: 모집 중인 공고만 대상.</li>
      *   <li>{@code employer.user.id ≠ userId}: 가용시간 등록자 본인 공고 제외.</li>
+     *   <li>{@code workplace.district IN preferredDistricts}: 희망 지역 필터.</li>
      * </ol>
      *
      * <p>minDurationMinutes 필터는 공고마다 적용할 구직자별 값이 다르므로 Java 레이어에서 처리한다.
      *
-     * @param availStart 가용시간 그룹 시작 일시
-     * @param availEnd   가용시간 그룹 종료 일시
-     * @param userId     가용시간 등록 구직자 User ID (본인 공고 제외)
+     * @param availStart         가용시간 그룹 시작 일시
+     * @param availEnd           가용시간 그룹 종료 일시
+     * @param userId             가용시간 등록 구직자 User ID (본인 공고 제외)
+     * @param preferredDistricts 구직자 희망 근무 지역 목록 (시/구 단위)
      * @return 매칭 후보 JobPost ID 목록
      */
     @Query("""
@@ -122,9 +124,11 @@ public interface JobPostRepository extends JpaRepository<JobPost, Long>, JobPost
               AND j.workStartAt >= :availStart
               AND j.workEndAt   <= :availEnd
               AND j.workplace.employer.user.id <> :userId
+              AND j.workplace.district IN :preferredDistricts
             """)
     List<Long> findMatchingJobPostIdsForAvailability(
             @Param("availStart") LocalDateTime availStart,
             @Param("availEnd") LocalDateTime availEnd,
-            @Param("userId") Long userId);
+            @Param("userId") Long userId,
+            @Param("preferredDistricts") List<String> preferredDistricts);
 }

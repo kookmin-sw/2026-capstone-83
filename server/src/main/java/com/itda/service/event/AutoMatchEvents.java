@@ -1,6 +1,7 @@
 package com.itda.service.event;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 자동 매칭 이벤트 모델.
@@ -27,27 +28,31 @@ public final class AutoMatchEvents {
      * @param availStartAt       가용시간 시작 일시
      * @param availEndAt         가용시간 종료 일시
      * @param minDurationMinutes 구직자가 요구하는 최소 근무 시간(분)
+     * @param preferredDistricts 구직자 희망 근무 지역 목록 (시/구 단위)
      */
     public record AvailabilityCreatedEvent(
             Long userId,
             Long availabilityId,
             LocalDateTime availStartAt,
             LocalDateTime availEndAt,
-            int minDurationMinutes
+            int minDurationMinutes,
+            List<String> preferredDistricts
     ) {}
 
     /**
      * 구인 공고 등록 이벤트.
      *
-     * @param jobPostId      JobPost DB PK
-     * @param workStartAt    공고 근무 시작 일시 (매칭 전용)
-     * @param workEndAt      공고 근무 종료 일시 (매칭 전용, 항상 workStartAt 보다 큼)
-     * @param employerUserId 공고 등록 고용주의 User ID
+     * @param jobPostId        JobPost DB PK
+     * @param workStartAt      공고 근무 시작 일시 (매칭 전용)
+     * @param workEndAt        공고 근무 종료 일시 (매칭 전용, 항상 workStartAt 보다 큼)
+     * @param employerUserId   공고 등록 고용주의 User ID
+     * @param workplaceDistrict 공고 사업장 행정구역 (시/구 단위)
      */
     public record JobPostCreatedEvent(
             Long jobPostId,
             LocalDateTime workStartAt,
             LocalDateTime workEndAt,
-            Long employerUserId
+            Long employerUserId,
+            String workplaceDistrict
     ) {}
 }

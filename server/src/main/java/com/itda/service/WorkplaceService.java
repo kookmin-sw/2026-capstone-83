@@ -65,6 +65,7 @@ public class WorkplaceService {
                 .companyName(request.companyName())
                 .businessNumber(request.businessNumber())
                 .address(request.address())
+                .district(request.district())
                 .companyLogoUrl(companyLogoUrl)
                 .build());
 
@@ -92,6 +93,7 @@ public class WorkplaceService {
                 .companyName(request.companyName() != null ? request.companyName() : workplace.getCompanyName())
                 .businessNumber(request.businessNumber() != null ? request.businessNumber() : workplace.getBusinessNumber())
                 .address(request.address() != null ? request.address() : workplace.getAddress())
+                .district(request.district() != null ? request.district() : workplace.getDistrict())
                 .companyLogoUrl(companyLogoUrl)
                 .createdAt(workplace.getCreatedAt())
                 .build());
