@@ -81,17 +81,26 @@ public class JobPostService {
                 user != null ? user.getId() : "null",
                 user != null ? user.getRole() : "null");
 
+        // 추천 정렬: 필터가 없는 경우에만 개인화 랭킹 사용
+        boolean hasFilter = filter.keyword() != null
+                || !filter.effectiveJobCategories().isEmpty()
+                || !filter.effectiveLocations().isEmpty()
+                || filter.effectiveWorkDateFrom() != null
+                || filter.effectiveWorkDateTo() != null
+                || (filter.weekdays() != null && !filter.weekdays().isEmpty())
+                || filter.timeFrom() != null || filter.timeTo() != null
+                || (filter.timeTags() != null && !filter.timeTags().isEmpty())
+                || (filter.ageRequirements() != null && !filter.ageRequirements().isEmpty())
+                || (filter.certRequirements() != null && !filter.certRequirements().isEmpty())
+                || filter.minWage() != null
+                || (filter.benefits() != null && !filter.benefits().isEmpty())
+                || Boolean.TRUE.equals(filter.urgentOnly());
+
         if ("RECOMMENDED".equalsIgnoreCase(filter.sortType())
                 && user != null
-                && user.getRole() == UserRole.APPLICANT) {
+                && user.getRole() == UserRole.APPLICANT
+                && !hasFilter) {
             response = rankingService.recommend(user, filter.cursor(), filter.getSize());
-            // 급구 필터가 켜져 있으면 추천 결과에서도 급구 공고만 남김
-            if (Boolean.TRUE.equals(filter.urgentOnly()) && response.contents() != null) {
-                List<JobPostCardResponse> filtered = response.contents().stream()
-                        .filter(j -> Boolean.TRUE.equals(j.urgentEnabled()))
-                        .toList();
-                response = CursorPageResponse.of(filtered, response.nextCursor(), response.hasNext());
-            }
         } else {
             int fetchSize = filter.getSize() + 1;
             List<JobPost> posts = jobPostRepository.findByDynamicFilter(filter, fetchSize);
