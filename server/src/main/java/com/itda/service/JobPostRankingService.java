@@ -154,6 +154,7 @@ public class JobPostRankingService {
 
         Long employerUserId = post.getWorkplace().getEmployer().getUser().getId();
         if (snap.likedEmployerIds().contains(employerUserId)) score += weights.likedEmployer();
+        if (snap.likedPostIds().contains(post.getId())) score += weights.likedEmployer(); // 좋아요 누른 공고 자체에도 가산
         if (snap.hiredEmployerIds().contains(employerUserId)) score += weights.hiredEmployer();
 
         if (snap.appliedOrPendingPostIds().contains(post.getId())) score -= weights.appliedPenalty();

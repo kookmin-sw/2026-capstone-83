@@ -29,6 +29,7 @@ import com.itda.repository.ResumeLikeRepository;
 import com.itda.service.event.AutoMatchEvents;
 import com.itda.service.event.InteractionEvents;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
@@ -41,6 +42,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -73,6 +75,11 @@ public class JobPostService {
             JobPostFilterRequest filter, User user, String requestId) {
 
         CursorPageResponse<JobPostCardResponse> response;
+
+        log.info("[getJobPosts] sortType={}, user={}, role={}",
+                filter.sortType(),
+                user != null ? user.getId() : "null",
+                user != null ? user.getRole() : "null");
 
         if ("RECOMMENDED".equalsIgnoreCase(filter.sortType())
                 && user != null
