@@ -71,9 +71,10 @@ public class AuthService {
             throw new IllegalArgumentException("이메일 또는 비밀번호가 올바르지 않습니다.");
         }
 
-        // 사용자가 선택한 회원 유형과 실제 가입된 role 일치 검증
-        // (프론트가 role을 보내지 않을 경우 검증 생략 — 하위 호환)
-        if (request.role() != null && !request.role().isBlank()) {
+        // MANAGER 계정은 어느 탭에서 로그인해도 허용 (role 검증 생략)
+        // 그 외 role은 선택한 탭과 실제 가입 role이 일치해야 함
+        if (user.getRole() != UserRole.MANAGER
+                && request.role() != null && !request.role().isBlank()) {
             UserRole requestedRole;
             try {
                 requestedRole = UserRole.valueOf(request.role());
