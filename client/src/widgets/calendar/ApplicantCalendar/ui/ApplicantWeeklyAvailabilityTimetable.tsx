@@ -1453,6 +1453,7 @@ const S = {
     overflow-x: auto;
     min-width: 0;
     position: relative;
+    margin-bottom: 24px;
 
     @media (${({ theme }) => theme.mediaQuery.tablet_small}) {
       display: none;
