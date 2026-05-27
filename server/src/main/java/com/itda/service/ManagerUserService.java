@@ -54,6 +54,10 @@ public class ManagerUserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new NotFoundException("유저를 찾을 수 없습니다."));
 
+        if (user.getRole() == UserRole.MANAGER) {
+            throw new SecurityException("관리자 계정은 정지할 수 없습니다.");
+        }
+
         user.suspend(request.days(), request.reason());
         userRepository.save(user);
         return toManagerUserResponse(user);

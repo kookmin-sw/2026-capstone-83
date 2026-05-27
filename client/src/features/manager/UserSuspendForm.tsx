@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import styled from 'styled-components';
 import { useSuspendUser } from 'entities/manager/model/hooks/useManagerQueries';
 import { useErrorAlertModal } from 'shared/lib/useErrorAlertModal';
 import Button from 'shared/ui/Button/Button';
@@ -48,6 +49,10 @@ const UserSuspendForm = ({ userId, onSuccess }: Props) => {
 
   return (
     <form onSubmit={handleSubmit}>
+      <S.HintList>
+        <li>정지 일수에 <strong>0</strong>을 입력하면 <strong>영구 정지</strong>입니다. 1 이상이면 그 일수만큼만 정지됩니다.</li>
+        <li>정지 사유는 <strong>필수</strong>입니다.</li>
+      </S.HintList>
       <InputText
         label="정지 일수"
         labelSize="xsmall"
@@ -55,14 +60,16 @@ const UserSuspendForm = ({ userId, onSuccess }: Props) => {
         min={0}
         value={days}
         onChange={(e) => setDays(e.target.value)}
-        placeholder="0 = 영구 정지"
+        placeholder="예: 7 (0이면 영구)"
       />
       <InputTextarea
         label="정지 사유"
         labelSize="xsmall"
+        name="suspend-reason"
+        required
         value={reason}
         onChange={(e) => setReason(e.target.value)}
-        placeholder="정지 사유를 입력하세요"
+        placeholder="정지 사유를 입력하세요 (필수)"
         rows={3}
       />
       <ActionRow>
@@ -87,3 +94,18 @@ const UserSuspendForm = ({ userId, onSuccess }: Props) => {
 };
 
 export default UserSuspendForm;
+
+const S = {
+  HintList: styled.ul`
+    margin: 0 0 16px;
+    padding-left: 18px;
+    font-size: ${({ theme }) => theme.fontSize.xsmall};
+    color: ${({ theme }) => theme.color.subText};
+    line-height: 1.55;
+
+    strong {
+      color: ${({ theme }) => theme.color.text};
+      font-weight: ${({ theme }) => theme.fontWeight.semibold};
+    }
+  `,
+};
