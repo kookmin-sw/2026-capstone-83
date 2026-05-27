@@ -839,12 +839,19 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                         {minutesToTime(startMinute)} - {minutesToTime(endMinute)}
                       </S.ListCardMeta>
                       <S.ListCardMeta>최소 근무 {slot.minDurationMinutes}분</S.ListCardMeta>
-                      {slot.preferredDistricts?.length > 0 && (
-                        <S.ListCardMeta>
-                          <MapPin size={14} />
-                          {slot.preferredDistricts.join(', ')}
-                        </S.ListCardMeta>
-                      )}
+                      {(() => {
+                        const districts =
+                          editDraft?.slotId === slot.id && editDraft.dateStr === dateStr
+                            ? editDraft.preferredDistricts
+                            : slot.preferredDistricts;
+                        if (!districts?.length) return null;
+                        return (
+                          <S.ListCardMeta>
+                            <MapPin size={14} />
+                            {districts.join(', ')}
+                          </S.ListCardMeta>
+                        );
+                      })()}
                     </S.ListCard>
                   ))}
 
@@ -1066,6 +1073,22 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                             최소{' '}
                             {isEditing ? editDraft.minDurationMinutes : slot.minDurationMinutes}분
                           </S.BarMeta>
+                          {(() => {
+                            const districts = isEditing
+                              ? editDraft.preferredDistricts
+                              : slot.preferredDistricts;
+                            if (!districts?.length) return null;
+                            return (
+                              <S.BarMeta
+                                $light
+                                $wrap
+                                title={districts.join(', ')}
+                              >
+                                <MapPin size={10} />
+                                {districts.join(', ')}
+                              </S.BarMeta>
+                            );
+                          })()}
                         </S.AvailBar>
                       );
                     })}
@@ -1830,7 +1853,8 @@ const S = {
     z-index: ${({ $selected }) => ($selected ? 5 : 2)};
     pointer-events: auto;
     cursor: ${({ $selected }) => ($selected ? 'default' : 'pointer')};
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: auto;
     box-shadow: ${({ theme, $selected }) =>
       $selected ? theme.shadow.default : 'none'};
 
@@ -2008,7 +2032,7 @@ const S = {
     color: ${({ theme }) => theme.color.white};
     background: color-mix(in srgb, ${({ theme }) => theme.color.white} 24%, transparent);
   `,
-  BarMeta: styled.span<{ $light?: boolean }>`
+  BarMeta: styled.span<{ $light?: boolean; $wrap?: boolean }>`
     display: flex;
     align-items: center;
     gap: 3px;
@@ -2022,7 +2046,17 @@ const S = {
     svg {
       color: inherit;
       stroke: currentColor;
+      flex-shrink: 0;
     }
+
+    ${({ $wrap }) =>
+      $wrap &&
+      css`
+        flex-shrink: 1;
+        align-items: flex-start;
+        line-height: 1.35;
+        overflow-wrap: anywhere;
+      `}
   `,
   EditTimeRow: styled.div`
     display: flex;
