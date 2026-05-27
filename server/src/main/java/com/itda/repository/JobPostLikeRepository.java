@@ -17,4 +17,7 @@ public interface JobPostLikeRepository extends JpaRepository<JobPostLike, Long> 
 
     boolean existsByUserIdAndJobPostId(Long userId, Long jobPostId);
 
+    // 공고 삭제 시 연관 좋아요 일괄 삭제
+    void deleteByJobPostId(Long jobPostId);
+
 }
