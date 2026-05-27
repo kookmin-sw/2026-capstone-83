@@ -65,6 +65,12 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/applications/*/reject").hasRole("EMPLOYER")
                         .requestMatchers("/api/v1/workplaces/**").hasRole("EMPLOYER")
 
+                        // 고용주 — 이력서 상세·목록(인재풀)은 /api/v1/resume 하위이므로
+                        // 아래 구직자 전용 /resume/** 보다 먼저 선언해야 403이 나지 않음
+                        .requestMatchers(HttpMethod.GET, "/api/v1/resume/liked").hasRole("EMPLOYER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/resume/list").hasRole("EMPLOYER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/resume/{resumeId:\\d+}").hasRole("EMPLOYER")
+
                         // ── 구직자 전용 ─────────────────────────────
                         .requestMatchers(HttpMethod.POST, "/api/v1/job-posts/*/apply").hasRole("APPLICANT")
                         .requestMatchers(HttpMethod.GET, "/api/v1/job-posts/*/applied").hasRole("APPLICANT")
