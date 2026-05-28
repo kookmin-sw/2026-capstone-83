@@ -59,7 +59,6 @@ type DragState = {
 
 type DraftSlot = DragState & {
   minDurationMinutes: number;
-  preferredDistricts: string[];
 };
 
 type EditDraft = {
@@ -125,9 +124,6 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
   const [mobileStart, setMobileStart] = useState('09:00');
   const [mobileEnd, setMobileEnd] = useState('18:00');
   const [mobileMin, setMobileMin] = useState(0);
-  const [mobileDistricts, setMobileDistricts] = useState<string[]>([]);
-  const [showMobileDistrictError, setShowMobileDistrictError] = useState(false);
-  const [showDraftDistrictError, setShowDraftDistrictError] = useState(false);
   const [showEditDistrictError, setShowEditDistrictError] = useState(false);
   const [isIntroExpanded, setIsIntroExpanded] = useState(false);
   const [customViewHours, setCustomViewHours] = useState<ViewHourRange | null>(null);
@@ -375,18 +371,13 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
       errorModal.showError(new Error(err), err);
       return;
     }
-    if (draft.preferredDistricts.length === 0) {
-      setShowDraftDistrictError(true);
-      return;
-    }
-    setShowDraftDistrictError(false);
     const { start, end } = buildDateTimeRange(draft.dateStr, startMinute, endMinute);
     createSlot(
       {
         startAt: toLocalDateTimeString(start),
         endAt: toLocalDateTimeString(end),
         minDurationMinutes: draft.minDurationMinutes || 0,
-        preferredDistricts: draft.preferredDistricts,
+        preferredDistricts: [],
       },
       {
         onSuccess: () => clearInteraction(),
@@ -455,8 +446,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
       setDrag(null);
       return;
     }
-    setDraft({ dateStr: state.dateStr, startMinute, endMinute, minDurationMinutes: 0, preferredDistricts: [] });
-    setShowDraftDistrictError(false);
+    setDraft({ dateStr: state.dateStr, startMinute, endMinute, minDurationMinutes: 0 });
     setDrag(null);
   };
 
@@ -643,18 +633,13 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
       errorModal.showError(new Error(err), err);
       return;
     }
-    if (mobileDistricts.length === 0) {
-      setShowMobileDistrictError(true);
-      return;
-    }
-    setShowMobileDistrictError(false);
     const { start, end } = buildDateTimeRange(dateStr, startMinute, endMinute);
     createSlot(
       {
         startAt: toLocalDateTimeString(start),
         endAt: toLocalDateTimeString(end),
         minDurationMinutes: mobileMin || 0,
-        preferredDistricts: mobileDistricts,
+        preferredDistricts: [],
       },
       {
         onSuccess: () => {
@@ -662,8 +647,6 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
           setMobileStart('09:00');
           setMobileEnd('18:00');
           setMobileMin(0);
-          setMobileDistricts([]);
-          setShowMobileDistrictError(false);
         },
         onError: errorModal.onMutationError('가용시간 등록에 실패했습니다.'),
       },
@@ -725,6 +708,7 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                   <li>매번 공고를 찾아 직접 지원하지 않아도 됩니다.</li>
                   <li>내 일정(채용 확정·근무 완료)과 겹치지 않는 시간만 등록하면 됩니다.</li>
                   <li>최소 근무 시간을 정해 두면, 너무 짧은 공고는 걸러집니다.</li>
+                  <li>희망 근무 지역은 등록 후 블록을 선택해 수정할 때 설정할 수 있습니다.</li>
                 </ul>
               </S.IntroBlock>
               <S.IntroBlock>
@@ -875,16 +859,11 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                           onChange={(e) => setMobileMin(Number(e.target.value))}
                         />
                       </S.MobileRow>
-                      <DistrictSelector
-                        value={mobileDistricts}
-                        onChange={(d) => { setMobileDistricts(d); setShowMobileDistrictError(false); }}
-                        showError={showMobileDistrictError}
-                      />
                       <S.MobileActions>
                         <Button type="button" scheme="primary" buttonSize="xsmall" onClick={() => saveMobileAdd(dateStr)}>
                           저장
                         </Button>
-                        <Button type="button" scheme="secondary" buttonSize="xsmall" onClick={() => { setMobileAddDate(null); setMobileDistricts([]); setShowMobileDistrictError(false); }}>
+                        <Button type="button" scheme="secondary" buttonSize="xsmall" onClick={() => setMobileAddDate(null)}>
                           취소
                         </Button>
                       </S.MobileActions>
@@ -1136,19 +1115,11 @@ export const ApplicantWeeklyAvailabilityTimetable = ({
                           />
                           <span>분</span>
                         </S.MinRow>
-                        <DistrictSelector
-                          value={showDraft.preferredDistricts}
-                          onChange={(d) => {
-                            setDraft({ ...showDraft, preferredDistricts: d });
-                            setShowDraftDistrictError(false);
-                          }}
-                          showError={showDraftDistrictError}
-                        />
                         <S.DraftActions>
                           <button type="button" onClick={saveDraft} disabled={isCreating}>
                             {isCreating ? '저장 중...' : '저장'}
                           </button>
-                          <button type="button" onClick={() => { setDraft(null); setShowDraftDistrictError(false); }}>
+                          <button type="button" onClick={() => setDraft(null)}>
                             취소
                           </button>
                         </S.DraftActions>

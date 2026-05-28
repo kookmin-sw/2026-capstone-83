@@ -62,7 +62,7 @@ public class WorkerAvailabilityService {
                 .availStartAt(req.startAt())
                 .availEndAt(req.endAt())
                 .minDurationMinutes(req.getMinDurationMinutes())
-                .preferredDistricts(req.preferredDistricts())
+                .preferredDistricts(req.getPreferredDistricts())
                 .build();
         WorkerAvailability saved = availabilityRepository.save(slot);
 

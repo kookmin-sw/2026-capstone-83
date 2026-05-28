@@ -18,12 +18,18 @@ export interface WorkerAvailabilityCreateRequest {
   endAt: string;
   /** null/미입력 시 서버에서 0(제한 없음) */
   minDurationMinutes?: number;
-  /** 희망 근무 지역 목록 — 최소 1개 필수 */
-  preferredDistricts: string[];
+  /** 희망 근무 지역 — 등록 시 생략 가능(빈 배열), 수정에서 설정 */
+  preferredDistricts?: string[];
 }
 
 /** PUT /api/v1/worker/availability/{id} */
-export type WorkerAvailabilityUpdateRequest = WorkerAvailabilityCreateRequest;
+export interface WorkerAvailabilityUpdateRequest {
+  startAt: string;
+  endAt: string;
+  minDurationMinutes?: number;
+  /** 희망 근무 지역 목록 — 수정 시 최소 1개 필수 */
+  preferredDistricts: string[];
+}
 
 export interface WorkerAvailabilityRangeParams {
   fromDate: string;
