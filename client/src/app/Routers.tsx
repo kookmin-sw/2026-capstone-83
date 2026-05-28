@@ -25,6 +25,7 @@ import SettingsPage from 'pages/dashboard/common/SettingsPage';
 import NotificationsPage from 'pages/dashboard/common/NotificationsPage';
 import ManagerLayout from './layouts/ManagerLayout';
 import ManagerGuard from './guards/ManagerGuard';
+import EmployerResumeListGuard from './guards/EmployerResumeListGuard';
 import AdminDashboardPage from 'pages/admin/AdminDashboardPage';
 import AdminUsersPage from 'pages/admin/AdminUsersPage';
 import AdminUserDetailPage from 'pages/admin/AdminUserDetailPage';
@@ -46,7 +47,9 @@ const Routers = () => {
 
         <Route path='/applicants' element={<ApplicantListPage />} />
 
-        <Route path="/resumes" element={<ResumeListPage />} />
+        <Route element={<EmployerResumeListGuard />}>
+          <Route path="/resumes" element={<ResumeListPage />} />
+        </Route>
         <Route path="/resume/:id" element={<ResumeDetailPage />} />
         <Route path="/resume/edit" element={<ResumeFormPage />} />
       </Route>

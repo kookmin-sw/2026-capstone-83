@@ -4,6 +4,7 @@ import { Bell, User } from 'lucide-react';
 import { useAuthStore } from 'entities/auth/model/store/authStore';
 import { useLogout } from 'entities/auth/model/hooks/useAuth';
 import { NoWorkplaceForJobPostModal } from 'features/profileSetup/NoWorkplaceForJobPostModal';
+import { EmployerOnlyResumeListModal } from 'features/resume/EmployerOnlyResumeListModal';
 import { useWorkplaceRequiredForJobPost } from 'features/profileSetup/useWorkplaceRequiredForJobPost';
 import { useNotificationStore } from 'entities/notification/model/store/notificationStore';
 import { NotificationDropdown } from 'widgets/notification/NotificationDropdown';
@@ -36,6 +37,7 @@ const Header = () => {
   const [isUserOpen, setIsUserOpen] = useState(false);
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isResumeListModalOpen, setIsResumeListModalOpen] = useState(false);
 
   const unreadCount = useNotificationStore((s) => s.unreadCount);
 
@@ -87,6 +89,14 @@ const Header = () => {
                     if (path === '/dashboard' && !isLoggedIn) {
                       e.preventDefault();
                       setIsLoginModalOpen(true);
+                      return;
+                    }
+                    if (
+                      path === '/resumes' &&
+                      (!isLoggedIn || role === 'APPLICANT')
+                    ) {
+                      e.preventDefault();
+                      setIsResumeListModalOpen(true);
                     }
                   }}
                 >
@@ -224,6 +234,12 @@ const Header = () => {
         isOpen={isNoWorkplaceModalOpen}
         onClose={closeNoWorkplaceModal}
         onConfirm={confirmNoWorkplaceModal}
+      />
+
+      <EmployerOnlyResumeListModal
+        isOpen={isResumeListModalOpen}
+        onClose={() => setIsResumeListModalOpen(false)}
+        isLoggedIn={isLoggedIn}
       />
 
       {/* 로그인 유도 모달 (작업 관리) */}
